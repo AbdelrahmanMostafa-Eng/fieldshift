@@ -1,0 +1,279 @@
+@import "tailwindcss";
+
+/* ==== Tokens ====================================================================================
+   "A field notebook meets an observatory": warm paper, soil black, one wheat-gold accent.
+   Light and dark are two designed palettes, not one inverted. */
+:root {
+  --paper: #f4efe6; --surface: #fbf8f2; --raised: #fffdf8; --ink: #1b1a17; --muted: #5d574c;
+  --line: #ddd5c5; --line-strong: #c4b9a3; --gold: #b8862b; --gold-ink: #1b1a17; --gold-text: #7d5a12;
+  --danger: #a13a28; --water: #4f7f97; --space: #0b0f14;
+  --space-far: #0d1828; --space-near: #1b2d47; --veil: 9 17 30;
+  /* warm, low-opacity shadows */
+  --shadow-1: 0 1px 2px rgb(64 44 12 / .06), 0 2px 8px rgb(64 44 12 / .05);
+  --shadow-2: 0 2px 6px rgb(64 44 12 / .07), 0 14px 36px rgb(64 44 12 / .13);
+  /* radius scale */
+  --r-1: 6px; --r-2: 10px; --r-3: 16px; --r-4: 24px;
+  /* motion: three durations, one curve */
+  --t-1: 120ms; --t-2: 220ms; --t-3: 420ms; --ease: cubic-bezier(.2, .7, .2, 1);
+  --grain-blend: multiply; --grain-opacity: .04;
+}
+:root[data-theme="dark"] {
+  --paper: #0e0d0b; --surface: #17150f; --raised: #1f1c14; --ink: #f1ece0; --muted: #a59e8e;
+  --line: #2c281e; --line-strong: #443e2f; --gold: #d8a63f; --gold-ink: #14110a; --gold-text: #e3b95c;
+  --danger: #e2806b; --water: #7fb0c6;
+  --space-far: #03050a; --space-near: #0a111d; --veil: 3 5 10;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .4), 0 2px 8px rgb(0 0 0 / .3);
+  --shadow-2: 0 2px 6px rgb(0 0 0 / .45), 0 16px 40px rgb(0 0 0 / .5);
+  --grain-blend: screen; --grain-opacity: .035;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e0d0b; --surface: #17150f; --raised: #1f1c14; --ink: #f1ece0; --muted: #a59e8e;
+    --line: #2c281e; --line-strong: #443e2f; --gold: #d8a63f; --gold-ink: #14110a; --gold-text: #e3b95c;
+    --danger: #e2806b; --water: #7fb0c6;
+    --space-far: #03050a; --space-near: #0a111d; --veil: 3 5 10;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / .4), 0 2px 8px rgb(0 0 0 / .3);
+    --shadow-2: 0 2px 6px rgb(0 0 0 / .45), 0 16px 40px rgb(0 0 0 / .5);
+    --grain-blend: screen; --grain-opacity: .035;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --color-gold-text: var(--gold-text);
+  --color-danger: var(--danger);
+  --color-water: var(--water);
+  /* Each stack ends with faces for other scripts, so Arabic, Hindi, Bengali and Chinese never fall to a random default. */
+  --font-sans: var(--font-grotesk), var(--font-arabic), var(--font-deva), var(--font-bengali), "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), var(--font-naskh), var(--font-deva), var(--font-bengali), "Songti SC", "SimSun", "Noto Serif SC", serif;
+  --font-mono: var(--font-jbmono), var(--font-arabic), var(--font-deva), var(--font-bengali), "PingFang SC", "Microsoft YaHei", ui-monospace, monospace;
+  /* radius scale 6 / 10 / 16 / 24 */
+  --radius-sm: var(--r-1);
+  --radius-md: var(--r-2);
+  --radius-lg: var(--r-3);
+  --radius-xl: var(--r-4);
+  --shadow-soft: var(--shadow-1);
+  --shadow-lift: var(--shadow-2);
+  --ease-fs: var(--ease);
+}
+
+/* Base and component rules live in cascade layers, so a Tailwind utility on the same element always wins. */
+@layer base {
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* Figures line up in columns everywhere. */
+.tnum, .font-mono, output, dd { font-variant-numeric: tabular-nums; }
+h1, h2, h3 { font-optical-sizing: auto; text-wrap: balance; }
+/* Arabic has no capitals or tracking, and needs a little more line height. */
+:lang(ar) { letter-spacing: 0 !important; }
+:lang(ar) body, :lang(ar) p, :lang(ar) li { line-height: 1.75; }
+}
+
+@layer components {
+
+/* ==== Type roles =============================================================================== */
+/* Small mono caption, the "pencilled margin note" of the notebook. */
+.fs-eyebrow { font-family: var(--font-mono); font-size: 11px; line-height: 1.4; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+:lang(ar) .fs-eyebrow { font-size: 12px; }
+
+/* ==== Controls: one family, 44 px targets, 10 px corners ======================================= */
+.fs-field {
+  min-height: 44px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-2);
+  padding: 0 12px; color: var(--ink); transition: border-color var(--t-1) var(--ease), background-color var(--t-1) var(--ease);
+}
+.fs-field:hover { border-color: var(--line-strong); }
+.fs-field::placeholder { color: var(--muted); opacity: 1; }
+select.fs-field { padding-inline-end: 8px; }
+
+.fs-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px;
+  border-radius: var(--r-2); border: 1px solid transparent; font-size: 14px; font-weight: 600; white-space: nowrap;
+  transition: background-color var(--t-1) var(--ease), border-color var(--t-1) var(--ease), transform var(--t-1) var(--ease), opacity var(--t-1) var(--ease);
+}
+.fs-btn:active { transform: translateY(1px); }
+.fs-btn:disabled { opacity: .55; cursor: default; }
+.fs-btn-primary { background: var(--gold); color: var(--gold-ink); }
+.fs-btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--gold) 88%, #fff); }
+.fs-btn-quiet { background: var(--surface); border-color: var(--line); color: var(--ink); font-weight: 500; }
+.fs-btn-quiet:hover:not(:disabled) { border-color: var(--line-strong); }
+.fs-btn-icon { width: 44px; padding: 0; flex: none; }
+/* On the dark intro, whatever the theme. */
+.fs-btn-ghost { border-color: rgb(241 236 224 / .38); color: #f1ece0; font-weight: 500; }
+.fs-btn-ghost:hover { background: rgb(241 236 224 / .1); border-color: rgb(241 236 224 / .6); }
+
+/* Segmented control (2D/3D, theme, tabs) */
+.fs-seg { display: inline-flex; gap: 2px; min-height: 44px; padding: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-2); }
+.fs-seg > button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 38px; padding: 0 10px; border-radius: 7px;
+  font-size: 14px; color: var(--muted); white-space: nowrap; transition: background-color var(--t-2) var(--ease), color var(--t-1) var(--ease);
+}
+.fs-seg > button:hover { color: var(--ink); }
+.fs-seg > button[aria-checked="true"], .fs-seg > button[aria-selected="true"] { background: var(--gold); color: var(--gold-ink); font-weight: 600; }
+.fs-seg-block { display: flex; }
+.fs-seg-block > button { flex: 1 1 0; min-width: 0; }
+/* Tab strip: fills the width when it fits, scrolls sideways on narrow screens. */
+.fs-tabs { display: flex; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+.fs-tabs::-webkit-scrollbar { display: none; }
+.fs-tabs > button { flex: 1 0 auto; }
+
+/* Range with a value bubble. --p is the filled share, 0..1, set by the Range component. */
+.fs-range-wrap { position: relative; display: flex; align-items: center; min-width: 0; flex: 1 1 auto; height: 44px; }
+.fs-range { -webkit-appearance: none; appearance: none; width: 100%; height: 44px; margin: 0; background: transparent; cursor: pointer; }
+.fs-range::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(to right, var(--gold) calc(var(--p, 0) * 100%), var(--line) 0); }
+.fs-range::-moz-range-track { height: 4px; border-radius: 4px; background: linear-gradient(to right, var(--gold) calc(var(--p, 0) * 100%), var(--line) 0); }
+[dir="rtl"] .fs-range::-webkit-slider-runnable-track { background: linear-gradient(to left, var(--gold) calc(var(--p, 0) * 100%), var(--line) 0); }
+[dir="rtl"] .fs-range::-moz-range-track { background: linear-gradient(to left, var(--gold) calc(var(--p, 0) * 100%), var(--line) 0); }
+.fs-range::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; margin-top: -8px; border-radius: 50%; background: var(--gold); border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--gold), var(--shadow-1); transition: transform var(--t-1) var(--ease); }
+.fs-range::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--gold); border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--gold), var(--shadow-1); }
+.fs-range:active::-webkit-slider-thumb { transform: scale(1.12); }
+/* With a mouse the rows can sit closer; touch keeps the full 44 px. */
+@media (hover: hover) and (pointer: fine) { .fs-range-wrap, .fs-range { height: 34px; } }
+.fs-range-bubble {
+  position: absolute; bottom: 34px; inset-inline-start: calc(var(--p, 0) * (100% - 20px) + 10px); transform: translateX(-50%) translateY(4px);
+  padding: 2px 7px; border-radius: var(--r-1); background: var(--ink); color: var(--paper); font-family: var(--font-mono); font-size: 11px; line-height: 1.5;
+  white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity var(--t-1) var(--ease), transform var(--t-1) var(--ease);
+}
+[dir="rtl"] .fs-range-bubble { transform: translateX(50%) translateY(4px); }
+.fs-range-wrap:hover .fs-range-bubble, .fs-range-wrap:focus-within .fs-range-bubble { opacity: 1; transform: translateX(-50%); }
+[dir="rtl"] .fs-range-wrap:hover .fs-range-bubble, [dir="rtl"] .fs-range-wrap:focus-within .fs-range-bubble { transform: translateX(50%); }
+
+/* Checkbox and switch share the same stroke, corner and gold "on" state. */
+.fs-check { -webkit-appearance: none; appearance: none; flex: none; width: 22px; height: 22px; margin: 0; border-radius: var(--r-1); border: 1.5px solid var(--line-strong); background: var(--surface); display: inline-grid; place-content: center; cursor: pointer; transition: background-color var(--t-1) var(--ease), border-color var(--t-1) var(--ease); }
+.fs-check::after { content: ""; width: 11px; height: 6px; border-left: 2px solid var(--gold-ink); border-bottom: 2px solid var(--gold-ink); transform: rotate(-45deg) scale(0); transition: transform var(--t-1) var(--ease); margin-top: -2px; }
+.fs-check:checked { background: var(--gold); border-color: var(--gold); }
+.fs-check:checked::after { transform: rotate(-45deg) scale(1); }
+.fs-switch { -webkit-appearance: none; appearance: none; flex: none; display: inline-flex; align-items: center; width: 42px; height: 24px; margin: 0; border-radius: 12px; border: 1.5px solid var(--line-strong); background: var(--surface); cursor: pointer; transition: background-color var(--t-2) var(--ease), border-color var(--t-2) var(--ease); }
+.fs-switch::after { content: ""; width: 16px; height: 16px; margin-inline-start: 2.5px; border-radius: 50%; background: var(--line-strong); transition: margin var(--t-2) var(--ease), background-color var(--t-2) var(--ease); }
+.fs-switch:checked { background: var(--gold); border-color: var(--gold); }
+.fs-switch:checked::after { margin-inline-start: 20.5px; background: var(--gold-ink); }
+/* The visible box is small; the label around it carries the 44 px target. */
+.fs-tap { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
+
+/* Chips: small labelled facts. A chip that is a button gets a taller hit area. */
+.fs-chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 12px; line-height: 1.5; white-space: nowrap; }
+button.fs-chip { position: relative; min-height: 32px; padding-inline: 12px; white-space: normal; text-align: start; transition: border-color var(--t-1) var(--ease), background-color var(--t-1) var(--ease); }
+button.fs-chip::before { content: ""; position: absolute; inset: -6px 0; }
+button.fs-chip:hover { border-color: var(--line-strong); background: var(--raised); }
+.fs-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+
+/* Floating panels (layers, language, crop list, search results) */
+.fs-pop { background: var(--raised); border: 1px solid var(--line); border-radius: var(--r-3); box-shadow: var(--shadow-2); color: var(--ink); animation: fs-pop var(--t-2) var(--ease) both; }
+@keyframes fs-pop { from { opacity: 0; transform: translateY(-4px); } }
+.fs-option { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 12px; border-radius: var(--r-2); text-align: start; font-size: 14px; }
+.fs-option:hover, .fs-option[data-active="true"] { background: var(--paper); }
+.fs-option[data-selected="true"] { font-weight: 600; }
+
+/* Paper grain on large surfaces: 3 to 4 percent, never over text contrast. The host must already be positioned. */
+.fs-grain::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none; opacity: var(--grain-opacity); mix-blend-mode: var(--grain-blend);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .4  0 0 0 0 .3  0 0 0 1.1 -.2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.fs-grain > * { position: relative; z-index: 1; }
+
+/* ==== Motion =================================================================================== */
+/* Result entries rise in, 40 ms apart. --i is the entry's index. */
+.fs-rise { animation: fs-rise var(--t-3) var(--ease) both; animation-delay: calc(var(--i, 0) * 40ms); }
+@keyframes fs-rise { from { opacity: 0; transform: translateY(8px); } }
+/* Intro: each line fades up over 600 ms, staggered. */
+.fs-intro-item { animation: fs-rise 600ms var(--ease) both; animation-delay: calc(var(--i, 0) * 90ms + 150ms); }
+/* Loading placeholders: same box as the real content, so nothing shifts when it arrives. */
+.fs-skel { border-radius: var(--r-1); background: linear-gradient(100deg, var(--line) 30%, color-mix(in srgb, var(--line) 55%, var(--surface)) 50%, var(--line) 70%); background-size: 300% 100%; animation: fs-shimmer 1.5s linear infinite; }
+@keyframes fs-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.fs-spin { animation: fs-spin .9s linear infinite; }
+@keyframes fs-spin { to { transform: rotate(360deg); } }
+/* Disclosure arrow */
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] > summary .fs-caret { transform: rotate(180deg); }
+.fs-caret { transition: transform var(--t-2) var(--ease); }
+
+}
+
+/* Soft ring that trails the pointer (fine pointers only, see CursorRing.tsx). The native cursor stays. */
+.fs-cursor { position: fixed; top: 0; left: 0; z-index: 90; width: 0; height: 0; pointer-events: none; opacity: 0; transition: opacity var(--t-2) var(--ease); }
+.fs-cursor[data-on="true"] { opacity: 1; }
+.fs-cursor > i {
+  position: absolute; top: -15px; left: -15px; width: 30px; height: 30px; border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--gold) 75%, transparent); background: transparent;
+  transition: transform var(--t-2) var(--ease), background-color var(--t-2) var(--ease), border-color var(--t-2) var(--ease), opacity var(--t-2) var(--ease);
+}
+.fs-cursor[data-mode="hover"] > i { transform: scale(1.55); background: color-mix(in srgb, var(--gold) 14%, transparent); }
+.fs-cursor[data-mode="text"] > i { opacity: 0; }
+/* Over the planet the ring tightens into a sight around the crosshair. */
+.fs-cursor[data-mode="globe"] > i { transform: scale(.62); border-color: rgb(255 255 255 / .8); }
+.fs-cursor[data-mode="down"] > i { transform: scale(.85); }
+
+/* ==== Globe ==================================================================================== */
+/* Space behind the transparent map canvas. The star field is drawn on top of this, under the map. */
+.fs-space { background: radial-gradient(120% 90% at 50% 40%, var(--space-near) 0%, var(--space-far) 72%); }
+.fs-globe .maplibregl-map { background: transparent; font-family: inherit; }
+.fs-globe .maplibregl-canvas { outline: none; }
+.fs-globe .maplibregl-canvas:focus-visible { outline: 2px solid var(--gold); outline-offset: -4px; }
+
+/* Cursor: grab over space, crosshair over the planet, grabbing while the button is down. */
+.fs-globe .maplibregl-canvas-container.maplibregl-interactive { cursor: grab; }
+.fs-globe[data-over="globe"] .maplibregl-canvas-container.maplibregl-interactive { cursor: crosshair; }
+.fs-globe .maplibregl-canvas-container.maplibregl-interactive:active { cursor: grabbing; }
+
+/* Corner controls ride above the bottom sheet on phones. */
+.fs-globe .maplibregl-ctrl-bottom-left, .fs-globe .maplibregl-ctrl-bottom-right { bottom: var(--fs-ctrl-bottom, 0px); transition: bottom .3s ease-out; z-index: 3; }
+.fs-globe .maplibregl-ctrl-attrib { font-size: 11px; }
+/* MapLibre's control stylesheet is written for left-to-right. On an Arabic page its info button would land on top of the credit text. */
+.fs-globe .maplibregl-control-container { direction: ltr; }
+/* Zoom buttons in the app's own family. */
+.fs-globe .maplibregl-ctrl-group { border-radius: var(--r-2); overflow: hidden; box-shadow: var(--shadow-1); background: var(--raised); }
+.fs-globe .maplibregl-ctrl-group button { width: 36px; height: 36px; background-color: var(--raised); }
+.fs-globe .maplibregl-ctrl-group button + button { border-top: 1px solid var(--line); }
+:root[data-theme="dark"] .fs-globe .maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(1) brightness(.9); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .fs-globe .maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(1) brightness(.9); } }
+
+/* Intro veil: keeps the headline readable without hiding the globe. Bottom-up on phones, reading-start side on laptops. */
+.fs-intro-veil { background: linear-gradient(to top, rgb(var(--veil) / .94) 0%, rgb(var(--veil) / .62) 32%, rgb(var(--veil) / 0) 60%); }
+@media (min-width: 64rem) {
+  .fs-intro-veil { background: linear-gradient(to right, rgb(var(--veil) / .9) 0%, rgb(var(--veil) / .55) 28%, rgb(var(--veil) / 0) 54%); }
+  [dir="rtl"] .fs-intro-veil { background: linear-gradient(to left, rgb(var(--veil) / .9) 0%, rgb(var(--veil) / .55) 28%, rgb(var(--veil) / 0) 54%); }
+}
+/* One italic word in the headline. Arabic has no italics, so the emphasis is colour alone. */
+.fs-intro-title em { font-style: italic; color: #e9c26a; }
+:lang(ar) .fs-intro-title em { font-style: normal; }
+
+/* Place names: plain DOM text placed by src/components/globe/labels.ts, so every script shapes correctly. */
+.fs-labels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; direction: ltr; }
+.fs-label {
+  position: absolute; top: 0; left: 0; white-space: nowrap; opacity: 0; transition: opacity .35s ease-out; will-change: transform;
+  font-family: var(--font-sans);
+  font-size: 11px; line-height: 1.25; font-weight: 500; color: rgb(255 255 255 / .86);
+  text-shadow: 0 0 2px rgb(0 0 0 / .95), 0 1px 3px rgb(0 0 0 / .7), 0 0 8px rgb(0 0 0 / .45);
+}
+.fs-label.is-on { opacity: 1; }
+.fs-label-country { font-weight: 600; color: rgb(255 255 255 / .8); }
+.fs-label-country.fs-label-major { font-size: 12px; color: rgb(255 255 255 / .92); }
+/* Capitals and wide tracking only for scripts that have them. Never letter-space Arabic. */
+.fs-labels[data-spaced="1"] .fs-label-country { text-transform: uppercase; letter-spacing: .14em; font-size: 10px; }
+.fs-labels[data-spaced="1"] .fs-label-country.fs-label-major { font-size: 11px; }
+/* Arabic letterforms read smaller than Latin capitals at the same size. */
+.fs-labels:lang(ar) .fs-label { font-size: 13px; }
+.fs-labels:lang(ar) .fs-label-country.fs-label-major { font-size: 14px; }
+.fs-label-city { display: inline-flex; align-items: center; gap: 5px; direction: inherit; }
+.fs-label-city::before { content: ""; width: 5px; height: 5px; flex: none; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1.5px rgb(0 0 0 / .55); }
+.fs-label-city.fs-label-major { font-weight: 600; }
+[dir="rtl"] .fs-label-city { flex-direction: row-reverse; }
+
+/* Picked place: a gold dot and one soft ring that expands once. */
+.fs-pin { position: relative; display: block; width: 18px; height: 18px; pointer-events: none; }
+.fs-pin-dot { position: absolute; inset: 3px; border-radius: 50%; background: var(--gold); border: 2px solid #fff; box-shadow: 0 1px 6px rgb(0 0 0 / .5); }
+.fs-pin-ring { position: absolute; inset: -16px; border-radius: 50%; border: 1.5px solid var(--gold); opacity: 0; animation: fs-pin-pulse 1.8s cubic-bezier(.2, .7, .2, 1) .2s 1 both; }
+@keyframes fs-pin-pulse { 0% { transform: scale(.2); opacity: .95; } 70% { opacity: .35; } 100% { transform: scale(1.5); opacity: 0; } }
+.fs-pin-flat { position: absolute; transform: translate(-50%, -50%); pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) { * { animation-duration: .001ms !important; animation-delay: 0ms !important; transition-duration: .001ms !important; } }
