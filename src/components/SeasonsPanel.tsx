@@ -106,7 +106,7 @@ export function SeasonsPanel({ climate, forecast, plan, now }: { climate: Climat
             <p className="mt-2 text-xs leading-relaxed text-muted">{t("forecastKey")}</p>
           </>
         ) : <p className="mt-2 text-muted">{t("forecastNone")}</p>}
-        <p className="mt-2"><span className="fs-chip text-muted">{t("forecastSource")}</span></p>
+        <p className="mt-2"><span className="fs-chip max-w-full whitespace-normal text-muted">{t("forecastSource")}</span></p>
       </section>
     </div>
   );

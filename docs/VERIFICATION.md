@@ -33,7 +33,7 @@ Note for anyone repeating this in a sandbox: Node's built-in `fetch` ignores `HT
 | Fertiliser guidance | Principles only (soil test first, legumes and nitrogen, potassium for roots and tubers, sulfur for brassicas, calcium for fruiting crops, organic matter, 4R), with sources. No product names and no rates, by project rule. |
 | Current conditions | Header line and Seasons card; graceful message when the service refuses. |
 | Sunlight | Monthly sunlight row (NASA POWER all-sky surface shortwave) under the climate chart. |
-| Languages | English, Persian, Thai (full walk-through), Urdu, German, Ukrainian, Vietnamese, Arabic (place picked, suggestions shown): no missing strings, no console errors, no sideways scrolling. Persian and Urdu run right to left. Month names always use the Gregorian calendar, which the data uses (Persian would otherwise show Solar Hijri months). |
+| Languages | English, Persian, Thai, Finnish, Malay (full walk-through), Urdu, German, Ukrainian, Vietnamese, Arabic (place picked, suggestions shown): no missing strings, no console errors, no sideways scrolling. Persian and Urdu run right to left. Month names always use the Gregorian calendar, which the data uses (Persian would otherwise show Solar Hijri months). |
 
 ## Phase 2 and Phase 3 checklist (from `BUILD_PROMPT.md`)
 
@@ -50,12 +50,12 @@ Note for anyone repeating this in a sandbox: Node's built-in `fetch` ignores `HT
 | 3.3 Crop library: 40 or more sourced crops, search, family filter, details, add to plan | Done: 81 crops. |
 | 3.4 Soil explorer: 12 USDA classes on a triangle, drainage, water holding, workability, suited crops, sources | Done, with suited crops from EcoCrop's texture classes. Not done: a numeric available-water range and a soil-adjusted water score. The citable table (FAO Irrigation and Drainage Paper 56) could not be opened from this container, and no number is added without checking it against its source. |
 | 3.5 Assistant v2: soil, season calendar, compare, typo tolerance, copy, follow-up chips, declines dosing; evaluation set as unit tests | Done. Fertiliser questions now get the principles above and still decline doses. |
-| First-pass translations, key parity test, honest note that Atlas answers in English and Arabic only | Done for 16 languages besides English and Arabic. |
+| First-pass translations, key parity test, honest note that Atlas answers in English and Arabic only | Done for 18 languages besides English and Arabic (Finnish and Malay added last, with all 81 crop names). |
 
 ## Checks run on the code
 - `npm run typecheck`, `npm test` (235 tests), `npx eslint src` and `npm run build` pass.
 - The assistant's evaluation prompts are unit tests in `src/lib/assistant/assistant.test.ts`. The assistant contains no AI model and makes no network call.
-- Logic with its own tests: rotation engine (1 to 5 seasons, Low/Medium/High weights, crops without economics, per-place fit), suitability zones (including the land mask, on a real POWER extract), climatology (including sunlight), costs and return, seasons, frost months, planting windows, texture classes, fertiliser notes, NASA POWER and Open-Meteo parsers (including current conditions), GIBS addresses and time handling, the crop library against its EcoCrop records, the CSV import, and translation key parity across 18 languages.
+- Logic with its own tests: rotation engine (1 to 5 seasons, Low/Medium/High weights, crops without economics, per-place fit), suitability zones (including the land mask, on a real POWER extract), climatology (including sunlight), costs and return, seasons, frost months, planting windows, texture classes, fertiliser notes, NASA POWER and Open-Meteo parsers (including current conditions), GIBS addresses and time handling, the crop library against its EcoCrop records, the CSV import, and translation key parity across 20 languages.
 
 ## Not tested
 - Lighthouse scores themselves (the package download was not allowed); earlier numbers came from the browser's performance APIs.

@@ -24,7 +24,7 @@ const thai = Noto_Sans_Thai({ variable: "--font-thai", subsets: ["thai"], preloa
 const cyrSans = Noto_Sans({ variable: "--font-cyr-sans", subsets: ["cyrillic"], preload: false });
 const cyrSerif = Literata({ variable: "--font-cyr-serif", subsets: ["cyrillic"], preload: false });
 
-const DESCRIPTION = "A free decision aid for farmers: compare crop rotations of one to five seasons for soil, water and income with NASA Earth observations, in 18 languages.";
+const DESCRIPTION = "A free decision aid for farmers: compare crop rotations of one to five seasons for soil, water and income with NASA Earth observations, in 20 languages.";
 export const metadata: Metadata = {
   title: "FieldShift",
   description: DESCRIPTION,

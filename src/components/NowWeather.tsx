@@ -65,7 +65,7 @@ export function NowCard({ now }: { now: CurrentWeather | null }) {
         ))}
       </dl>
       <p className="mt-2 text-xs text-muted">{t("updated", { time: clock(now.time, locale) })}</p>
-      <p className="mt-1"><span className="fs-chip text-muted">{t("source")}</span></p>
+      <p className="mt-1"><span className="fs-chip max-w-full whitespace-normal text-muted">{t("source")}</span></p>
     </section>
   );
 }

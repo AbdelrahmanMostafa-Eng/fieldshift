@@ -14,7 +14,7 @@ export default function OpengraphImage() {
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 80px", width: 760 }}>
           <div style={{ display: "flex", fontSize: 22, letterSpacing: 6, color: "#e9c26a", fontFamily: "monospace" }}>FIELDSHIFT · SPACE APPS 2026</div>
           <div style={{ display: "flex", fontSize: 68, lineHeight: 1.1, marginTop: 28 }}>Plan the next three seasons with NASA&apos;s view of your land</div>
-          <div style={{ display: "flex", fontSize: 28, marginTop: 28, color: "rgba(241,236,224,0.75)", fontFamily: "sans-serif" }}>Crop rotations for soil, water and income. Free, no sign-up, in 18 languages.</div>
+          <div style={{ display: "flex", fontSize: 28, marginTop: 28, color: "rgba(241,236,224,0.75)", fontFamily: "sans-serif" }}>Crop rotations for soil, water and income. Free, no sign-up, in 20 languages.</div>
         </div>
       </div>
     ),

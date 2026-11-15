@@ -89,7 +89,7 @@ export function ClimateChart({ climate }: { climate: ClimateSeries }) {
       <figcaption className="mt-2 text-xs leading-relaxed text-muted">
         <p className="text-ink">{summary}</p>
         <p className="mt-1">{t("band")}</p>
-        <p className="mt-2"><span className="fs-chip">{t("source", { from: String(from), to: String(to) })}</span></p>
+        <p className="mt-2"><span className="fs-chip max-w-full whitespace-normal">{t("source", { from: String(from), to: String(to) })}</span></p>
       </figcaption>
     </figure>
   );

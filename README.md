@@ -13,7 +13,7 @@ A decision aid for farmers, built for the NASA Space Apps Challenge 2026 ("Field
 - Costs and return in 166 currencies (searchable, alphabetical): editable cost lines, break-even price and yield, a sensitivity table and a total for all planned seasons. Saved on the device only.
 - A crop library of 81 crops, each with its own drawn icon, temperature, rain, crop-cycle and soil-texture limits from the FAO EcoCrop database, ranked by how well each fits the picked place, plus feeding principles (no product names or doses).
 - A soil texture explorer (the 12 USDA classes) with the crops that do best on each, and Atlas, which answers from the app's own data and declines dosing questions.
-- 18 languages: English and Arabic, plus first-pass Spanish, French, Portuguese, German, Russian, Ukrainian, Turkish, Persian, Urdu, Hindi, Bengali, Indonesian, Vietnamese, Thai, Swahili and Chinese. Arabic, Persian and Urdu run right to left. Installable on a phone's home screen.
+- 20 languages: English and Arabic, plus first-pass Spanish, French, Portuguese, German, Finnish, Russian, Ukrainian, Turkish, Persian, Urdu, Hindi, Bengali, Indonesian, Malay, Vietnamese, Thai, Swahili and Chinese. Map place names come from Natural Earth, which has them in 11 of these languages; the others show English place names. Arabic, Persian and Urdu run right to left. Installable on a phone's home screen.
 
 ## Run it
 1. `npm install`
