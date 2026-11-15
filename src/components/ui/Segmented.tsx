@@ -1,5 +1,7 @@
 "use client";
+import { useRef } from "react";
 import { Icon, type IconName } from "./Icon";
+import { useThumb } from "./hooks";
 
 export interface SegOption<T extends string> { value: T; label: string; icon?: IconName }
 
@@ -10,6 +12,8 @@ export interface SegOption<T extends string> { value: T; label: string; icon?: I
 export function Segmented<T extends string>({ label, value, options, onChange, iconOnly = false, block = false }: {
   label: string; value: T; options: SegOption<T>[]; onChange: (v: T) => void; iconOnly?: boolean; block?: boolean;
 }) {
+  const box = useRef<HTMLDivElement>(null);
+  useThumb(box, `${value}|${iconOnly}|${options.map((o) => o.label).join("|")}`);
   const key = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const rtl = getComputedStyle(e.currentTarget).direction === "rtl";
     const step = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
@@ -22,7 +26,7 @@ export function Segmented<T extends string>({ label, value, options, onChange, i
     (e.currentTarget.querySelector(`[data-value="${next.value}"]`) as HTMLElement | null)?.focus();
   };
   return (
-    <div role="radiogroup" aria-label={label} onKeyDown={key} className={`fs-seg${block ? " fs-seg-block" : ""}`}>
+    <div ref={box} role="radiogroup" aria-label={label} onKeyDown={key} className={`fs-seg${block ? " fs-seg-block" : ""}`}>
       {options.map((o) => (
         <button key={o.value} type="button" role="radio" data-value={o.value} aria-checked={value === o.value} tabIndex={value === o.value ? 0 : -1}
           aria-label={iconOnly ? o.label : undefined} title={iconOnly ? o.label : undefined} onClick={() => onChange(o.value)}>

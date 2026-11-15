@@ -6,7 +6,7 @@ const HALF = 0.5, FULL = 0.92; // visible share of the viewport height
 const WIDE = 1024;             // from here up the sheet is a side panel and does not move
 
 /**
- * Bottom sheet on phones and tablets, side panel on laptops.
+ * The island: a floating glass pane. Bottom sheet on phones and tablets, a free-standing panel at the reading-start side on laptops.
  * Three resting heights: peek (just the summary), half, full. Drag the header, tap it, or use the arrow keys.
  * `summary` is always visible, so the peek height still says where you are and what was found.
  * `onVisibleChange` reports the height (px) the sheet covers at rest, so the globe can frame itself above it.
@@ -62,20 +62,30 @@ export function ResultsSheet({ title, summary, children, onVisibleChange }: { ti
     if (e.key === "ArrowDown") { e.preventDefault(); setSnap((s) => Math.max(0, s - 1)); }
   };
 
+  // The glass rim brightens near the pointer. Written straight to the element: no re-render per mouse move.
+  const sheen = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType === "touch") return;
+    const el = e.currentTarget, r = el.getBoundingClientRect();
+    el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    el.style.setProperty("--my", `${e.clientY - r.top}px`);
+    el.style.setProperty("--sheen-on", "1");
+  };
+
   return (
     <section
       aria-label={title}
+      onPointerMove={sheen} onPointerLeave={(e) => e.currentTarget.style.setProperty("--sheen-on", "0")}
       style={{ ["--sheet-y" as string]: `${offset}px`, height: `${full}px` }}
-      className={`fs-grain fixed inset-x-0 bottom-0 z-20 flex flex-col rounded-t-xl border border-line bg-surface shadow-lift [transform:translateY(var(--sheet-y))] ${drag === null ? "transition-transform duration-300 ease-fs" : ""} lg:inset-y-0 lg:start-0 lg:end-auto lg:!h-dvh lg:w-[440px] lg:rounded-none lg:rounded-e-xl lg:[transform:none]`}
+      className={`fs-island fs-glass fs-grain fs-sheen fixed inset-x-1.5 bottom-0 z-20 flex flex-col [transform:translateY(var(--sheet-y))] ${drag === null ? "transition-transform duration-[450ms] ease-fs" : ""} lg:inset-x-auto lg:bottom-3 lg:start-3 lg:top-3 lg:!h-auto lg:w-[440px] lg:[transform:none]`}
     >
       <div onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onClick={tap}
         className="shrink-0 cursor-grab touch-none select-none active:cursor-grabbing lg:cursor-auto lg:touch-auto lg:select-text">
-        <button type="button" onKeyDown={key} aria-expanded={snap > 0} aria-label={title} className="flex h-6 w-full items-center justify-center lg:hidden">
-          <span className="h-1 w-10 rounded-full bg-line-strong" />
+        <button type="button" onKeyDown={key} aria-expanded={snap > 0} aria-label={title} className="group flex h-6 w-full items-center justify-center lg:hidden">
+          <span className="h-1 w-10 rounded-full bg-line-strong transition-[width] duration-300 ease-fs group-active:w-14" />
         </button>
-        <div className="px-5 pb-3 lg:pt-5">{summary}</div>
+        <div className="fs-island-head px-5 pb-3.5 lg:pt-5">{summary}</div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain border-t border-line px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">{children}</div>
+      <div className="fs-scroll min-h-0 flex-1 px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-4">{children}</div>
     </section>
   );
 }

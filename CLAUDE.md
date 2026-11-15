@@ -17,6 +17,8 @@ Decision-support web app for farmers (NASA Space Apps 2026, "Field Shift"). Next
 - Every number the assistant says must come from the catalogue, the engine or fetched data, and show a source chip. No chemical dosing advice.
 - Keep `cacheComponents` OFF (cookie-based locale in the root layout breaks prerendering with it on).
 - Use logical CSS (`ms-`, `me-`, `ps-`, `pe-`, `start-`, `end-`) so Arabic RTL works. No `left`/`right` utilities.
+- Floating UI (island, header controls, pop-ups, map buttons) uses the one glass material in `globals.css` (`--glass-*`, `.fs-glass`, `.fs-chrome`). Do not invent a second one, and never show scroll bars (`.fs-scroll` fades the edges).
+- The globe's sunlight is `src/components/globe/optics.ts`; its sun direction also feeds MapLibre's `light`, so change it in one place only.
 - Footer must keep the NASA non-endorsement line and the data-use note.
 - Code is a decision aid. Show uncertainty (bands, confidence, gaps). Never present a score as a guarantee.
 

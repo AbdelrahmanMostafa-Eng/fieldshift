@@ -8,7 +8,8 @@ import { easeOutCubic, wrapLon, zoomForGlobeDiameter } from "@/lib/geo";
 import type { Box, zonesGeoJson } from "@/lib/zones";
 import { FlatFallback } from "./globe/FlatFallback";
 import { LabelLayer } from "./globe/labels";
-import { StarField } from "./globe/StarField";
+import { GlobeOptics } from "./globe/optics";
+import { StarField, type StarFieldHandle } from "./globe/StarField";
 import {
   FLAT_STATE, LAYER, PALETTE, TERRAIN_EXAGGERATION, TERRAIN_OFF_ZOOM, TERRAIN_ON_ZOOM,
   buildStyle, overlayId, rasterSource, skyFor, type Theme,
@@ -48,6 +49,8 @@ const DOLLY_MS = 4000;           // gentle move-in at the start
 const DOLLY_ZOOM = 0.55;         // how much farther away the intro starts
 const GLOBE_FILL = 0.84;         // share of the free space the globe fills
 const PICK_ZOOM = 8;             // closest view the daily imagery still supports sharply
+const PICK_PITCH = 38;           // where 3D terrain runs, a picked place is seen at an angle, so hills read as hills
+const STARS_MAX_ZOOM = 4;         // above this the planet covers the whole view
 const FLY_MS = 2500;
 const FLATTEN_MS = 900;
 const HOME_MS = 1800;
@@ -101,10 +104,13 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
   const map = useRef<MlMap | null>(null);
   const pin = useRef<Marker | null>(null);
   const labels = useRef<LabelLayer | null>(null);
+  const optics = useRef<GlobeOptics | null>(null);
+  const stars = useRef<StarFieldHandle>(null);
   const flatness = useRef(0);                 // 0 = globe, 1 = flat map, in between while animating
   const lastMarker = useRef<GlobeProps["marker"]>(null);
   const dolly = useRef({ from: 0, to: 0, t0: 0 });
-  const flight = useRef<{ lon: number; lat: number; zoom: number; end: number } | null>(null);
+  const flight = useRef<{ lon: number; lat: number; zoom: number; pitch: number; end: number } | null>(null);
+  const relief = useRef(false);               // true where the device draws 3D terrain
   const lib = useRef<typeof import("maplibre-gl") | null>(null);
   const autoFit = useRef(true);               // true until the user moves the globe or picks a place
   const restartSpin = useRef<() => void>(() => {});
@@ -224,6 +230,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
 
         // 3D terrain only from field-ish zooms, and only where it is likely to stay smooth.
         const capable = finePointer && window.innerWidth >= 768 && (navigator.hardwareConcurrency ?? 4) >= 4;
+        relief.current = capable;
         let terrainOn = false;
         const syncTerrain = () => {
           if (!m || !capable) return;
@@ -232,9 +239,14 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
           else if (terrainOn && z < TERRAIN_OFF_ZOOM) { terrainOn = false; m.setTerrain(null); }
         };
         m.on("zoom", syncTerrain);
+        // The sky behind turns with the camera, a little, which is what gives the scene its depth.
+        // Skipped once the planet fills the view and no sky is left to see.
+        m.on("move", () => { if (m && m.getZoom() < STARS_MAX_ZOOM) { const c = m.getCenter(); stars.current?.turn(c.lng + m.getBearing(), c.lat); } });
 
         m.once("load", async () => {
           if (cancelled || !m || !el.current) return;
+          optics.current = new GlobeOptics(m, live.current.theme);
+          optics.current.flatness = flatness.current;
           setStatus("ready");
           startSpin();
           try {
@@ -265,6 +277,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
       root?.removeEventListener("keydown", touched);
       document.removeEventListener("visibilitychange", onVisibility);
       labels.current?.destroy(); labels.current = null;
+      optics.current?.destroy(); optics.current = null;
       pin.current?.remove(); pin.current = null;
       homeCtrl.current = null;
       m?.remove(); map.current = null;
@@ -285,6 +298,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
       flatness.current = f;
       m.setGlobalStateProperty(FLAT_STATE, f); // the projection and the limb glow both read this (see globe/style.ts)
       if (labels.current) labels.current.flat = f >= 0.5;
+      if (optics.current) optics.current.flatness = f;
     };
     if (from === to) return;
     if (prefersReducedMotion()) { apply(to); return; }
@@ -303,6 +317,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
     if (!ready || !m) return;
     m.setSky(skyFor(theme as Theme));
     m.setPaintProperty(LAYER.ground, "background-color", PALETTE[theme].ground);
+    optics.current?.setTheme(theme);
   }, [theme, ready]);
 
   // ---- overlays: added on first use, then only shown, hidden or re-tinted -----------------------
@@ -380,15 +395,17 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
         // opacityWhenCovered also hides the pin when it is on the far side of the globe
         pin.current = new ml.Marker({ element: holder, anchor: "center", opacityWhenCovered: "0" }).setLngLat([marker.lon, marker.lat]).addTo(m);
         const zoom = Math.max(PICK_ZOOM, m.getZoom());
-        flight.current = { lon: marker.lon, lat: marker.lat, zoom, end: performance.now() + (reduce ? 0 : FLY_MS) };
-        m.flyTo({ center: [marker.lon, marker.lat], zoom, padding: pad, duration: reduce ? 0 : FLY_MS, curve: 1.3, easing: easeInOut, essential: true });
+        // Never flatten a view the user has already tilted further themselves.
+        const pitch = flatness.current < 0.5 && relief.current ? Math.max(PICK_PITCH, m.getPitch()) : m.getPitch();
+        flight.current = { lon: marker.lon, lat: marker.lat, zoom, pitch, end: performance.now() + (reduce ? 0 : FLY_MS) };
+        m.flyTo({ center: [marker.lon, marker.lat], zoom, pitch, padding: pad, duration: reduce ? 0 : FLY_MS, curve: 1.3, easing: easeInOut, essential: true });
         return;
       }
     }
     const f = flight.current;
     if (f && performance.now() < f.end - 60) {
       // The layout changed while flying to a picked place (the panel opened): keep flying, with the new framing.
-      m.flyTo({ center: [f.lon, f.lat], zoom: f.zoom, padding: pad, duration: f.end - performance.now(), curve: 1.3, easing: easeOutCubic, essential: true });
+      m.flyTo({ center: [f.lon, f.lat], zoom: f.zoom, pitch: f.pitch, padding: pad, duration: f.end - performance.now(), curve: 1.3, easing: easeOutCubic, essential: true });
     } else if (live.current.spin && !reduce) {
       // Still in the intro: re-frame without fighting the spin loop.
       m.setPadding(pad);
@@ -416,7 +433,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
 
   return (
     <div ref={wrap} className="fs-globe absolute inset-0" data-ready={ready} style={{ ["--fs-ctrl-bottom" as string]: `${controlsBottom}px` }}>
-      <StarField strength={PALETTE[theme].stars} />
+      <StarField ref={stars} strength={PALETTE[theme].stars} />
       {status === "unsupported" ? (
         <FlatFallback marker={marker} message={t("noWebgl")} label={t("flatLabel")} inset={inset} onPick={(lat, lon) => { onUserInteract?.(); onPick?.(lat, lon); }} />
       ) : (

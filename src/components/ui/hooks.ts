@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 
 /** Closes a floating panel on a press outside it or on Escape. */
 export function useDismiss(ref: RefObject<HTMLElement | null>, open: boolean, close: () => void) {
@@ -65,4 +65,35 @@ export function useOnline(): boolean {
     () => navigator.onLine,
     () => true,
   );
+}
+
+const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/**
+ * Sliding thumb for a segmented control or tab strip (.fs-seg in globals.css).
+ * Measures the chosen option and writes its place to --thumb-x / --thumb-w on the container; the CSS draws and animates the thumb.
+ * Until the first measurement the chosen option keeps its own fill, so nothing flashes without JavaScript.
+ * `value` is only there to re-measure when the choice changes.
+ */
+export function useThumb(ref: RefObject<HTMLElement | null>, value: string) {
+  useIsoLayoutEffect(() => {
+    const box = ref.current;
+    if (!box) return;
+    let live = 0;
+    const place = () => {
+      const on = box.querySelector<HTMLElement>(':scope > [aria-checked="true"], :scope > [aria-selected="true"]');
+      if (!on) { delete box.dataset.thumb; return; }
+      box.style.setProperty("--thumb-x", `${on.offsetLeft}px`);
+      box.style.setProperty("--thumb-w", `${on.offsetWidth}px`);
+      if (!box.dataset.thumb) {
+        box.dataset.thumb = "set"; // placed without a transition the first time
+        live = requestAnimationFrame(() => { live = requestAnimationFrame(() => { box.dataset.thumb = "live"; }); });
+      }
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(box);
+    for (const child of box.children) ro.observe(child);
+    return () => { ro.disconnect(); cancelAnimationFrame(live); };
+  }, [ref, value]);
 }

@@ -28,6 +28,9 @@ import { ThemeToggle } from "./ThemeToggle";
 import { CurrencyCombobox } from "./ui/CurrencyCombobox";
 import { Icon } from "./ui/Icon";
 import { Segmented } from "./ui/Segmented";
+
+import { useDismiss, useOnline, useThumb } from "./ui/hooks";
+
 import { useDismiss, useOnline } from "./ui/hooks";
 import { ZoneLegend } from "./ZoneLegend";
 
@@ -39,7 +42,8 @@ type Tab = (typeof TABS)[number];
 const WEIGHT_KEYS = ["soil", "water", "climate", "economics", "risk"] as const;
 const MONTHS = Array.from({ length: 12 }, (_, i) => i);
 const PRICED = CROPS.filter(hasEconomics).length;
-const PANEL_WIDTH = 440; // the side panel on laptops (see ResultsSheet)
+const PANEL_WIDTH = 440; // the island on laptops (see ResultsSheet)
+const ISLAND_GAP = 12;   // space around the island, and between it and the header controls
 const WIDE = 1024;       // the lg breakpoint
 // Header tiers, by the width left for it. Below COMPACT the view and theme controls move into one menu.
 const COMPACT = 720, ROOMY = 1060;
@@ -71,6 +75,7 @@ export function AppShell() {
   const t = useTranslations();
   const locale = useLocale();
   const [intro, setIntro] = useState(true);
+  const [introOut, setIntroOut] = useState(false); // the intro is fading away; it is removed when that ends
   const [spin, setSpin] = useState(true);
   const [flat, setFlat] = useState(false);
   const [noGlobe, setNoGlobe] = useState(false); // true when the device cannot draw the 3D map
@@ -89,6 +94,7 @@ export function AppShell() {
   const [sheetPx, setSheetPx] = useState(0);
   const [headerPx, setHeaderPx] = useState(68);
   const header = useRef<HTMLElement>(null);
+  const tabStrip = useRef<HTMLDivElement>(null);
   const introLabel = useRef<HTMLParagraphElement>(null);
   const [introTextPx, setIntroTextPx] = useState(0); // space the intro text takes at the bottom of narrow screens
   const [history, setHistory] = useState(["wheat", "wheat", "maize"]);
@@ -227,19 +233,19 @@ export function AppShell() {
   const money = (usd: number) => formatMoney(fromUsd(usd, currency, rates) ?? usd, fromUsd(usd, currency, rates) === null ? "USD" : currency, locale);
 
   const wide = view.w >= WIDE;
-  const free = view.w - (wide ? PANEL_WIDTH + 20 : 0) - 24; // width left for the header controls
+  const free = view.w - (wide ? PANEL_WIDTH + ISLAND_GAP * 2 : 0) - 24; // width left for the header controls
   const compact = free < COMPACT, roomy = free >= ROOMY;
   const inset = useMemo<GlobeInset>(() => {
     if (intro) return wide ? { top: 0, bottom: 0, start: Math.max(Math.round(view.w * 0.4), 520), end: 0 } : { top: 64, bottom: Math.max(Math.round(view.h * 0.46), introTextPx + 24), start: 0, end: 0 };
-    return wide ? { top: headerPx, bottom: 0, start: PANEL_WIDTH, end: 0 } : { top: headerPx, bottom: sheetPx, start: 0, end: 0 };
+    return wide ? { top: headerPx, bottom: 0, start: PANEL_WIDTH + ISLAND_GAP, end: 0 } : { top: headerPx, bottom: sheetPx, start: 0, end: 0 };
   }, [intro, wide, view.w, view.h, headerPx, sheetPx, introTextPx]);
   const activeOverlays = useMemo(() => OVERLAYS.filter((o) => overlays[o.id]?.on).map((o) => ({ layer: o, opacity: overlays[o.id].opacity })), [overlays]);
   const changeOverlay = useCallback((id: string, patch: Partial<{ on: boolean; opacity: number }>) => setOverlays((s) => ({ ...s, [id]: { ...s[id], ...patch } })), []);
   const stopSpin = useCallback(() => setSpin(false), []);
   const globeUnsupported = useCallback(() => setNoGlobe(true), []);
 
-  const pick = (lat: number, lon: number, label?: string) => { setLoc({ lat, lon }); setPlaceLabel(label ?? null); setIntro(false); setSpin(false); setTab("rotations"); };
-  const leaveIntro = () => { setIntro(false); setSpin(false); };
+  const leaveIntro = () => { if (intro) setIntroOut(true); setIntro(false); setSpin(false); };
+  const pick = (lat: number, lon: number, label?: string) => { setLoc({ lat, lon }); setPlaceLabel(label ?? null); leaveIntro(); setTab("rotations"); };
   const setAt = (arr: string[], set: (v: string[]) => void, i: number, v: string) => set(arr.map((x, j) => (j === i ? v : x)));
   const canAdd = current.length < MAX_SEASONS;
   const addCrop = (id: string) => { if (current.length < MAX_SEASONS) setCurrent([...current, id]); };
@@ -253,6 +259,7 @@ export function AppShell() {
     : status === "failed" ? t("plan.failed")
     : top ? `${t("results.count", { count: strategies.length })} · ${t("results.topFor", { name: t(`results.strategy.${top.id}`), score: Math.round(top.scores.overall) })}`
     : "";
+  useThumb(tabStrip, `${tab}|${locale}`);
   const viewOptions = [{ value: "globe" as const, label: t("nav.globe"), icon: "globe" as const }, { value: "flat" as const, label: t("nav.flat"), icon: "map" as const }];
   const setViewMode = (v: ViewMode) => setFlat(v === "flat");
   // Tabs pattern: arrow keys move along the row (mirrored right to left), Home and End jump to the ends.
@@ -268,7 +275,7 @@ export function AppShell() {
 
   const summary = (
     <div className="flex items-center gap-3">
-      <span className="grid h-10 w-10 shrink-0 place-content-center rounded-md border border-line bg-paper text-gold-text"><Icon name={loc ? "pin" : "globe"} /></span>
+      <span className="grid h-11 w-11 shrink-0 place-content-center rounded-[14px] bg-paper text-gold-text shadow-[inset_0_0_0_1px_var(--line),inset_0_1px_0_var(--rim-hi)]"><Icon name={loc ? "pin" : "globe"} /></span>
       <div className="min-w-0 flex-1">
         <p className="fs-eyebrow truncate">{loc ? t("results.place") : "FieldShift"}</p>
         <h2 className="truncate font-serif text-xl leading-snug" dir="auto">{loc ? placeName : t("plan.pickTitle")}</h2>
@@ -308,9 +315,10 @@ export function AppShell() {
 
   return (
     <main className="fs-space relative h-dvh w-full overflow-hidden">
-      {intro && (
+      {(intro || introOut) && (
         // The veil and the text let touches through, so the globe behind stays draggable; only the controls catch them.
-        <div className="fs-intro-veil pointer-events-none absolute inset-0 z-30 flex flex-col text-[#f1ece0]">
+        <div className={`fs-intro-veil pointer-events-none absolute inset-0 z-30 flex flex-col text-[#f1ece0] ${introOut ? "fs-intro-out" : ""}`}
+          onAnimationEnd={(e) => { if (introOut && e.target === e.currentTarget) setIntroOut(false); }}>
           <div className="flex items-center justify-between gap-2 p-3 lg:px-8 lg:pt-6">
             <p className="flex items-center gap-2 font-mono text-xs tracking-[0.28em] text-[#e9c26a]"><Icon name="sprout" />FIELDSHIFT</p>
             <div className="pointer-events-auto flex items-center gap-2">
@@ -336,7 +344,7 @@ export function AppShell() {
       {!intro && (
         <>
           {/* The bar itself lets clicks through to the globe; only its controls catch them. */}
-          <header ref={header} className={`pointer-events-none absolute inset-x-0 top-0 flex items-center justify-end gap-2 p-3 *:pointer-events-auto lg:ps-[460px] ${layersOpen ? "z-40" : "z-30"}`}>
+          <header ref={header} className={`fs-chrome pointer-events-none absolute inset-x-0 top-0 flex items-center justify-end gap-2 p-3 *:pointer-events-auto lg:ps-[464px] ${layersOpen ? "z-40" : "z-30"}`}>
             {compact ? <PlaceSearch grow onPick={pick} onLocated={pick} /> : <><PlaceSearch onPick={pick} /><LocateButton onLocated={pick} variant={roomy ? "primary" : "icon"} /></>}
             {/* The 2D switch and the satellite layers belong to the 3D map; the flat fallback has neither. */}
             {!noGlobe && !compact && <Segmented label={t("nav.view")} value={flat ? "flat" : "globe"} onChange={setViewMode} iconOnly={!roomy} options={viewOptions} />}
@@ -346,12 +354,13 @@ export function AppShell() {
           </header>
 
           <ResultsSheet title={t("results.title")} summary={summary} onVisibleChange={setSheetPx}>
-            <div role="tablist" aria-label={t("results.title")} className="fs-seg fs-tabs" onKeyDown={tabKeys}>
+            <div ref={tabStrip} role="tablist" aria-label={t("results.title")} className="fs-seg fs-tabs" onKeyDown={tabKeys}>
               {TABS.map((k) => (
                 <button key={k} id={`fs-tab-${k}`} type="button" role="tab" aria-selected={tab === k} aria-controls="fs-tabpanel" tabIndex={tab === k ? 0 : -1} onClick={() => setTab(k)}>{t(`tabs.${k}`)}</button>
               ))}
             </div>
             <div id="fs-tabpanel" role="tabpanel" aria-labelledby={`fs-tab-${tab}`}>
+            <div key={tab} className="fs-swap">
 
             {tab === "atlas" && <div className="mt-4 h-[55dvh]"><AssistantChat location={loc} climate={climate} forecast={forecast} strategies={strategies} startMonth={startMonth} money={money} /></div>}
             {tab === "seasons" && (climate ? <SeasonsPanel climate={climate} forecast={forecast} plan={current} now={now} /> : stateBlock)}
@@ -405,6 +414,7 @@ export function AppShell() {
                 {Object.keys(rates).length > 0 && <p className="mt-2 text-xs text-muted">{t("money.ratesFrom")}</p>}
               </>
             )}
+            </div>
             </div>
             <footer className="mt-6 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
               <p>{t("footer.credit")} {GIBS_CREDIT}. {BASE_LAYER.label}.</p>

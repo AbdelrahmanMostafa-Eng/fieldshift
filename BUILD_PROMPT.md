@@ -58,6 +58,8 @@ Keep MapLibre's globe projection. The current `Globe.tsx` is a basic version: NA
 
 **Avoid the AI look.** No purple or blue gradients, no glow blobs, no glassmorphism everywhere, no emoji as icons, no gradient-text hero, no three identical rounded cards in a row, no stock-feeling copy.
 
+**Glass (owner's decision, November 2026).** Things that float over the globe are one glass material: the results island, the header controls, the pop-up panels and the map buttons. It is defined once in `globals.css` (`--glass-*`, `--rim-*`, `.fs-glass`): a warm tint over a blurred view of the globe, edges drawn with inset highlights. Nothing else is glass, content inside a pane is never glass on glass, and reading text keeps 4.5:1 over any imagery. No visible scroll bars anywhere: scrolling areas fade at their edges instead (`.fs-scroll`).
+
 **System**
 - **Scales.** 4/8 spacing, a radius scale (6/10/16/24), warm low-opacity shadows, 1px hairlines, a modular type scale. Use Fraunces optical sizing for large headings and `tabular-nums` for all figures. A subtle paper grain (3 to 4 percent opacity) is allowed.
 - **Motion tokens.** 120 / 220 / 420 ms, one easing curve, 40 ms stagger on result cards, number count-up on net return, skeleton shimmer while loading. Everything respects `prefers-reduced-motion`. Zero layout shift.
