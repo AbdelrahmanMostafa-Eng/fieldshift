@@ -29,7 +29,19 @@ const PICK = {
   554: "Brassica oleracea var. capitata", 553: "Brassica oleracea var. botrytis", 548: "Brassica juncea",
   364: "Allium cepa", 367: "Allium sativum", 1160: "Gossypium hirsutum", 289: "Abelmoschus esculentus",
   1428: "Medicago sativa", 10522: "Trifolium alexandrinum",
+  // added 15 Nov 2026
+  9732: "Setaria italica", 2285: "Fagopyrum esculentum", 390: "Amaranthus cruentus", 7164: "Lathyrus sativus",
+  238003: "Vicia sativa ssp. sativa", 10554: "Trigonella foenum-graecum", 1311: "Lablab purpureus", 830: "Cyamopsis tetragonoloba",
+  2149: "Vigna mungo", 1666: "Phaseolus lunatus", 6567: "Guizotia abyssinica", 11291: "Raphanus sativus var. radicula",
+  3881: "Brassica rapa var. rapifera", 3878: "Brassica rapa Pak Choi", 2474: "Beta vulgaris var. cicla",
+  1313: "Lactuca sativa var. capitata", 556: "Brassica oleracea var. italica", 3867: "Brassica oleracea var. acephala",
+  363: "Allium ampeloprasum", 1096: "Allium cepa var. aggregatum", 621: "Capsicum frutescens", 432: "Apium graveolens var. dulce",
+  7795: "Momordica charantia", 1315: "Lagenaria siceraria", 784: "Coriandrum sativum", 5043: "Cuminum cyminum",
+  1213: "Hibiscus cannabinus", 7389: "Lolium multiflorum", 1534: "Nicotiana tabacum",
 };
+const TEXTURES = ["light", "medium", "heavy", "organic"];
+/** EcoCrop soil texture field ("heavy, medium, light, organic") → list of known words. */
+const textures = (v) => (v || "").split(",").map((x) => x.trim().toLowerCase()).filter((x) => TEXTURES.includes(x));
 
 /** RFC 4180 style: commas inside double quotes, "" for a literal quote. */
 export function parseCsv(text) {
@@ -71,6 +83,7 @@ function main() {
       tMin: num(rec, "TMIN"), tOptLow: num(rec, "TOPMN"), tOptHigh: num(rec, "TOPMX"), tMax: num(rec, "TMAX"), killC: optional(rec, "KTMP"),
       rMin: num(rec, "RMIN"), rOptLow: num(rec, "ROPMN"), rOptHigh: num(rec, "ROPMX"), rMax: num(rec, "RMAX"),
       gMin: num(rec, "GMIN"), gMax: num(rec, "GMAX"),
+      textOpt: textures(rec.TEXT), textAbs: textures(rec.TEXTR),
     };
     if (!(e.tMin <= e.tOptLow && e.tOptLow <= e.tOptHigh && e.tOptHigh <= e.tMax)) throw new Error(`${name}: temperatures out of order`);
     if (!(e.rMin <= e.rOptLow && e.rOptLow <= e.rOptHigh && e.rOptHigh <= e.rMax)) throw new Error(`${name}: rainfall out of order`);
@@ -78,7 +91,7 @@ function main() {
     return e;
   });
   const head = {
-    source: "FAO EcoCrop database, as redistributed in EcoCrop_DB.csv by OpenCLIM/ecocrop (UKCEH), github.com/OpenCLIM/ecocrop. Columns: TMIN, TOPMN, TOPMX, TMAX, KTMP (°C); RMIN, ROPMN, ROPMX, RMAX (mm over the crop cycle); GMIN, GMAX (days).",
+    source: "FAO EcoCrop database, as redistributed in EcoCrop_DB.csv by OpenCLIM/ecocrop (UKCEH), github.com/OpenCLIM/ecocrop. Columns: TMIN, TOPMN, TOPMX, TMAX, KTMP (°C); RMIN, ROPMN, ROPMX, RMAX (mm over the crop cycle); GMIN, GMAX (days); TEXT, TEXTR (optimal and absolute soil texture: light, medium, heavy, organic).",
     importedAt: new Date().toISOString().slice(0, 10),
   };
   // One record per line, so a diff shows exactly which crop changed.

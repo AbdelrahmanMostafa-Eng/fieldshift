@@ -38,7 +38,18 @@
     "ndviNote": "8 天合成数据，每天重新发布，因此变化缓慢。",
     "date": "影像日期",
     "dateHint": "从昨天到 {days} 天前。日期为 UTC。",
-    "base": "近景影像：VIIRS 真彩色（NOAA-20），每天一幅。远景：Blue Marble。"
+    "base": "近景影像：VIIRS 真彩色（NOAA-20），每天一幅。远景：Blue Marble。",
+    "airTemp": "气温（2 米）",
+    "wind": "地面风速",
+    "humidity": "相对湿度",
+    "rain": "降雨强度",
+    "soilWater": "根区土壤水分",
+    "windUnit": "米每秒。",
+    "humidityUnit": "百分比，近地面。",
+    "rainUnit": "毫米每小时，来自 NASA IMERG 卫星降水估算。",
+    "soilWaterUnit": "根区每单位体积土壤中的水体积（MERRA-2 模型）。",
+    "monthlyNote": "月平均：显示 NASA 已发布的最新月份，通常是几个月前，不是下方的影像日期。",
+    "lagNote": "每日更新，约滞后 {days} 天：最新的日期显示可用的最后一天。"
   },
   "globe": {
     "label": "可交互的地球。拖动可旋转，滚动或双指捏合可缩放，点击或轻触可选择地点。",
@@ -68,18 +79,20 @@
     "forage": "饲草",
     "allium": "葱科",
     "mallow": "锦葵科",
-    "amaranth": "苋科"
+    "amaranth": "苋科",
+    "umbel": "伞形科",
+    "daisy": "菊科",
+    "other": "其他科"
   },
   "plan": {
     "field": "你的田地",
-    "history": "最近三季作物",
-    "current": "计划的下三季作物",
+    "history": "以往作物（最早的在前）",
+    "current": "你的计划，按季节排列",
     "searchCrop": "搜索作物",
     "noCrop": "没有匹配的作物。",
     "startMonth": "播种月份",
     "irrigated": "我可以灌溉",
     "priorities": "你最看重什么",
-    "importance": "{value}（满分 10）",
     "soil": "土壤健康",
     "water": "用水",
     "climate": "气候适宜度",
@@ -90,7 +103,11 @@
     "pickHint": "点击地球、搜索城镇，或使用你的位置。",
     "loading": "正在读取 NASA 的 24 季气候数据…",
     "failed": "无法加载气候数据。请一分钟后再试。",
-    "retry": "重试"
+    "retry": "重试",
+    "seasonsOf": "{count} / {max}",
+    "addSeason": "添加一季",
+    "removeSeason": "删除第 {n} 季",
+    "noHistory": "尚未填写以往作物。"
   },
   "climate": {
     "title": "此地的气候",
@@ -118,7 +135,7 @@
     "evidence": "依据",
     "gaps": "我们不知道的",
     "risks": "请在当地核实",
-    "net": "三年净收益",
+    "net": "净收益（{count} 季）",
     "perHa": "每公顷",
     "illustrative": "示例值",
     "range": "过去各季的可能范围",
@@ -134,7 +151,10 @@
   },
   "money": {
     "currency": "货币",
-    "ratesFrom": "汇率：ExchangeRate-API，每日更新"
+    "ratesFrom": "汇率：ExchangeRate-API，每日更新",
+    "search": "搜索货币",
+    "count": "{count} 种有每日汇率的货币",
+    "none": "没有匹配的货币。"
   },
   "atlas": {
     "title": "问问 Atlas",
@@ -200,7 +220,7 @@
     "sensNote": "当单产和价格下降或上升 20% 时，你这块面积的净收益。",
     "yieldRow": "单产",
     "priceCol": "价格",
-    "three": "三季合计",
+    "three": "所有季节合计",
     "missing": "目录中没有这种作物的产量或价格。填入你自己的产量、价格和成本即可看到收益。",
     "illustrative": "示例初始值"
   },
@@ -216,6 +236,8 @@
     "frost": "霜冻夜",
     "frostV": "{month}（{years} 年中有 {count} 年）",
     "frostRule": "霜冻指当月最低气温（NASA POWER T2M_MIN，2 米高度）低于 {t} °C。地面霜冻在稍暖一些的夜晚也可能出现。",
+    "solar": "地面日照",
+    "solarNote": "中间年份，单位为每平方米每天兆焦（MJ），来自 NASA POWER 全天空地表短波辐射（ALLSKY_SFC_SW_DWN）。",
     "windows": "按气温推算的播种窗口",
     "plantIn": "{crop}，按播种月份",
     "good": "在最佳范围内",
@@ -285,7 +307,13 @@
     "econ": "每公顷经济数据",
     "econNa": "目录中没有。请在“成本”页填入你自己的数字。",
     "illustrative": "示例",
-    "about": "共 {count} 种作物。温度、降雨和生长周期限值来自 FAO EcoCrop 数据库。只有 {priced} 种有初始产量、价格和成本，均为示例值。"
+    "about": "共 {count} 种作物。温度、降雨和生长周期限值来自 FAO EcoCrop 数据库。只有 {priced} 种有初始产量、价格和成本，均为示例值。",
+    "soilBest": "最适宜的土壤",
+    "soilTolerated": "可耐受的土壤",
+    "fertility": "作物养分（不提供用量）",
+    "addSeason": "作为新的一季添加",
+    "zonesShow": "在地图上显示适宜区域",
+    "zonesHide": "隐藏地图上的区域"
   },
   "soil": {
     "title": "土壤质地",
@@ -326,6 +354,78 @@
       "high": "水流失很快，存不住多少。常见风险是干旱：优先选择耐旱作物，把秸秆留作覆盖，如果灌溉，要少量多次。"
     },
     "note": "这是按质地给出的一般性指导，不会改变你的分数：只有土壤检测（酸碱度、有机质、质地）才能提高可信度。",
-    "source": "来源"
+    "source": "来源",
+    "suited": "在{group}土壤上表现最好的作物（FAO EcoCrop）",
+    "suitedCount": "{best} 种作物在这种质地上表现最好；另有 {tolerated} 种可以耐受。",
+    "addToPlan": "加入我的计划",
+    "group": {
+      "light": "轻质（沙性）",
+      "medium": "中等（壤性）",
+      "heavy": "黏重（黏性）",
+      "organic": "有机质（泥炭）"
+    }
+  },
+  "fertility": {
+    "soilTest": "先做土壤检测。施多少取决于检测结果、预期产量和上一季作物留下的养分。",
+    "legume": "豆类作物在有合适根瘤菌时，大部分氮靠根瘤自己固定，因此很少需要氮肥。磷和钾仍然重要。",
+    "nitrogen": "谷类和禾草通常对氮反应最大。按生长阶段分几次施用可以减少损失。",
+    "potassium": "根茎和块茎作物吸收大量钾：请在土壤检测中加测钾。",
+    "sulfur": "十字花科作物（甘蓝类、油菜、芥菜）需要充足的硫。",
+    "calcium": "果实类作物需要稳定的钙供应和均匀浇水：番茄和辣椒的脐腐病是果实缺钙。",
+    "organic": "堆肥、粪肥、作物残茬和豆类覆盖作物能增加有机质，并缓慢释放养分。它们的养分含量不一，所以土壤检测仍然有用。",
+    "fourR": "遵循 4R 原则：正确的肥源、正确的用量、正确的时间、正确的位置。",
+    "noDose": "FieldShift 不提供产品名称或用量。请带着土壤检测结果咨询当地农艺师或农技推广人员。"
+  },
+  "suggest": {
+    "title": "适合此地的作物",
+    "note": "作物库中所有作物，按 FAO EcoCrop 限值对比此地的 NASA POWER 月份排序（雨养）：取温度分和降雨分中较低的一个。这是起点，不是建议。",
+    "noteIrrigated": "作物库中所有作物，按 FAO EcoCrop 温度限值对比此地的 NASA POWER 月份排序。有灌溉，不计降雨。这是起点，不是建议。",
+    "level": {
+      "good": "适宜",
+      "possible": "可能",
+      "poor": "不太适宜"
+    },
+    "plantIn": "最佳播种月：{month}",
+    "zones": "在地图上显示区域",
+    "zonesFor": "在地图上显示{crop}的区域",
+    "add": "加入我的计划",
+    "addFor": "把{crop}加入我的计划",
+    "inPlan": "已在你的计划中",
+    "planFull": "你的计划已满。"
+  },
+  "zones": {
+    "title": "适宜区域",
+    "loading": "正在读取此地周围的 NASA 气候数据…",
+    "failed": "无法加载区域。请一分钟后再试。",
+    "hide": "隐藏区域",
+    "good": "适宜（{min} 分及以上）",
+    "possible": "可能（{min}–{max} 分）",
+    "poor": "不太适宜（{max} 分及以下）",
+    "note": "每个方格是 NASA POWER 网格中的一格（0.5° × 0.625°，约 50–70 公里），根据其 2001–2025 年月平均值按 FAO EcoCrop 限值评分（雨养）。方格内的田块可能不同。",
+    "noteIrrigated": "每个方格是 NASA POWER 网格中的一格（0.5° × 0.625°，约 50–70 公里），根据其 2001–2025 年月平均值按 FAO EcoCrop 温度限值评分。有灌溉，不计降雨。"
+  },
+  "weather": {
+    "now": "当前天气",
+    "updated": "当地时间 {time} 更新",
+    "feels": "体感温度",
+    "humidity": "湿度",
+    "wind": "风",
+    "gusts": "阵风",
+    "rain": "降水（过去 15 分钟）",
+    "clouds": "云量",
+    "from": "来自 {deg}°",
+    "source": "当前天气：Open-Meteo.com（CC BY 4.0），每 15 分钟更新",
+    "unavailable": "目前无法获取当前天气。",
+    "kind": {
+      "clear": "晴",
+      "mostlyClear": "大部晴朗",
+      "partlyCloudy": "局部多云",
+      "overcast": "阴",
+      "fog": "雾",
+      "drizzle": "毛毛雨",
+      "rain": "雨",
+      "snow": "雪",
+      "thunder": "雷暴"
+    }
   }
 }

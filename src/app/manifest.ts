@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "FieldShift: crop rotations with NASA data",
     short_name: "FieldShift",
-    description: "A free decision aid for farmers: compare three-year crop rotations for soil, water and income with NASA Earth observations.",
+    description: "A free decision aid for farmers: compare crop rotations of one to five seasons for soil, water and income with NASA Earth observations.",
     start_url: "/",
     display: "standalone",
     background_color: "#0e0d0b",

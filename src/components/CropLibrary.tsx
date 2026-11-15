@@ -2,10 +2,13 @@
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CROPS, cropName } from "@/data/crops";
+import { TEXTURE_GROUP_SOURCE } from "@/data/reference";
 import { climatology } from "@/lib/climatology";
+import { FERTILITY_SOURCE, fertilityNotes } from "@/lib/fertility";
 import { plantingWindow, type Fit } from "@/lib/farm";
 import { hasEconomics, placeFit, type PlaceFit } from "@/lib/rotation/engine";
 import type { ClimateSeries, Crop } from "@/lib/rotation/types";
+import { CropIcon } from "./ui/CropIcon";
 import { Icon } from "./ui/Icon";
 import { Segmented } from "./ui/Segmented";
 
@@ -32,11 +35,18 @@ function FitMeter({ score, label }: { score: number; label: string }) {
  * The crop library: search, filter by family, sort by how well each crop fits the picked place,
  * open a crop to read its FAO EcoCrop requirements, and put it into the plan.
  */
-export function CropLibrary({ plan, onUse, money, climate, irrigated }: {
+export function CropLibrary({ plan, onUse, onAdd, onZones, zoneCrop, money, climate, irrigated }: {
   plan: string[]; onUse: (slot: number, id: string) => void; money: (usd: number) => string; climate: ClimateSeries | null; irrigated: boolean;
+  /** Adds the crop as a new season; absent when the plan is full. */
+  onAdd?: (id: string) => void;
+  /** Shows the crop's suitability zones on the map; absent until a place is picked. */
+  onZones?: (id: string) => void;
+  zoneCrop: string | null;
 }) {
   const t = useTranslations("crops");
   const fam = useTranslations("family");
+  const ft = useTranslations("fertility");
+  const st = useTranslations("soil");
   const locale = useLocale();
   const [q, setQ] = useState("");
   const [family, setFamily] = useState<string>("all");
@@ -57,7 +67,7 @@ export function CropLibrary({ plan, onUse, money, climate, irrigated }: {
     return fits && sort === "fit" ? list.sort((a, b) => (fits.get(b.id)?.score ?? -1) - (fits.get(a.id)?.score ?? -1) || byName(a, b)) : list.sort(byName);
   }, [q, family, locale, fits, sort, collator]);
   const n = (v: number, d = 1) => new Intl.NumberFormat(locale, { maximumFractionDigits: d }).format(v);
-  const monthName = (m: number, style: "long" | "narrow" = "long") => new Intl.DateTimeFormat(locale, { month: style }).format(new Date(2026, m, 1));
+  const monthName = (m: number, style: "long" | "narrow" = "long") => new Intl.DateTimeFormat(locale, { calendar: "gregory", month: style }).format(new Date(2026, m, 1));
 
   return (
     <div className="mt-5 text-sm">
@@ -89,12 +99,15 @@ export function CropLibrary({ plan, onUse, money, climate, irrigated }: {
           return (
             <li key={c.id}>
               <button type="button" aria-expanded={isOpen} aria-controls={`crop-${c.id}`} onClick={() => setOpen(isOpen ? null : c.id)} className="flex min-h-[56px] w-full items-center justify-between gap-3 py-2 text-start">
-                <span className="min-w-0">
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-9 w-9 shrink-0 place-content-center rounded-md border border-line bg-paper text-gold-text"><CropIcon icon={c.icon} size={20} /></span>
+                  <span className="min-w-0">
                   <span className="flex flex-wrap items-center gap-x-2">
                     <span className="font-serif text-base">{cropName(c.id, locale)}</span>
                     {c.nFixing && <span className="fs-chip text-muted">{t("nfixShort")}</span>}
                   </span>
                   <span className="block truncate text-xs italic text-muted" lang="la">{c.scientific}</span>
+                  </span>
                 </span>
                 <span className="flex shrink-0 items-center gap-3">
                   {fit && fitLabel && <FitMeter score={fit.score} label={fitLabel} />}
@@ -140,6 +153,8 @@ export function CropLibrary({ plan, onUse, money, climate, irrigated }: {
                       [t("kill"), c.killC === null ? t("na") : t("killV", { t: n(c.killC) })],
                       [t("residue"), t(`level.${c.residue}`)], [t("nfix"), c.nFixing ? t("yes") : t("no")],
                       [t("family"), fam(c.family)], [t("scientific"), c.scientific],
+                      [t("soilBest"), c.soil.best.length ? c.soil.best.map((g) => st(`group.${g}`)).join(", ") : t("na")],
+                      [t("soilTolerated"), c.soil.tolerated.length ? c.soil.tolerated.map((g) => st(`group.${g}`)).join(", ") : t("na")],
                     ] as const).map(([k, v]) => (
                       <div key={k} className="min-w-0"><dt className="text-xs text-muted">{k}</dt><dd className="mt-0.5 font-mono text-sm" dir="auto">{v}</dd></div>
                     ))}
@@ -156,20 +171,35 @@ export function CropLibrary({ plan, onUse, money, climate, irrigated }: {
                     ) : <p className="mt-1 text-sm">{t("econNa")}</p>}
                   </div>
 
+                  <div className="mt-4 border-t border-line pt-3">
+                    <p className="text-xs text-muted">{t("fertility")}</p>
+                    <ul className="mt-1 list-disc space-y-1 ps-5 text-sm marker:text-line-strong">
+                      {fertilityNotes(c).map((k) => <li key={k} className={k === "noDose" ? "font-medium" : ""}>{ft(k)}</li>)}
+                    </ul>
+                    <p className="mt-1 text-[11px] leading-snug text-muted" dir="ltr">{FERTILITY_SOURCE}</p>
+                  </div>
+
                   <details className="mt-3 text-xs text-muted">
                     <summary className="fs-tap select-none gap-1.5"><Icon name="info" size={16} />{t("source")}</summary>
                     {/* the catalogue's own source notes, kept in their original wording */}
                     <p className="mt-1 leading-relaxed" dir="ltr">{c.source}</p>
                     {c.economicsSource && <p className="mt-1 leading-relaxed" dir="ltr">{c.economicsSource}</p>}
+                    <p className="mt-1 leading-relaxed" dir="ltr">{TEXTURE_GROUP_SOURCE}</p>
                   </details>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <span className="text-xs text-muted">{t("use")}</span>
-                    {[0, 1, 2].map((i) => (
+                    {plan.map((_, i) => (
                       <button key={i} type="button" onClick={() => onUse(i, c.id)} aria-pressed={plan[i] === c.id} aria-label={`${t("use")} ${i + 1}`}
                         className={`fs-btn min-w-11 px-3 ${plan[i] === c.id ? "fs-btn-primary" : "fs-btn-quiet"}`}>{plan[i] === c.id && <Icon name="check" size={16} />}{i + 1}</button>
                     ))}
+                    {onAdd && <button type="button" onClick={() => onAdd(c.id)} className="fs-btn fs-btn-quiet px-3"><Icon name="plus" size={16} />{t("addSeason")}</button>}
                   </div>
+                  {onZones && (
+                    <button type="button" onClick={() => onZones(c.id)} aria-pressed={zoneCrop === c.id} className={`fs-btn mt-2 px-3 ${zoneCrop === c.id ? "fs-btn-primary" : "fs-btn-quiet"}`}>
+                      <Icon name="map" size={16} />{zoneCrop === c.id ? t("zonesHide") : t("zonesShow")}
+                    </button>
+                  )}
                 </div>
               )}
             </li>

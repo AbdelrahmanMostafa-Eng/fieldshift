@@ -1,7 +1,9 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { TEXTURE_CLASSES, type Level3 } from "@/data/reference";
+import { CROPS, cropName } from "@/data/crops";
+import { TEXTURE_CLASSES, TEXTURE_GROUP, TEXTURE_GROUP_SOURCE, type Level3 } from "@/data/reference";
+import { CropIcon } from "./ui/CropIcon";
 import { textureClass } from "@/lib/farm";
 import { Range } from "./ui/Range";
 
@@ -27,7 +29,7 @@ function Meter({ label, level, word }: { label: string; level: Level3; word: str
  * The 12 USDA texture classes on a tappable texture triangle, with sliders for the same two numbers.
  * General guidance only. It never changes the scores: a self-reported class is not a soil test.
  */
-export function SoilExplorer() {
+export function SoilExplorer({ onUse }: { onUse?: (id: string) => void }) {
   const t = useTranslations("soil");
   const locale = useLocale();
   const [mix, setMix] = useState({ sand: 40, clay: 20 });
@@ -41,6 +43,10 @@ export function SoilExplorer() {
     return out;
   }, []);
   const here = point(mix.sand, mix.clay);
+  const group = TEXTURE_GROUP[id] ?? "medium";
+  const collator = useMemo(() => new Intl.Collator(locale), [locale]);
+  const suited = useMemo(() => CROPS.filter((c) => c.soil.best.includes(group)).sort((a, b) => collator.compare(cropName(a.id, locale), cropName(b.id, locale))), [group, collator, locale]);
+  const tolerated = useMemo(() => CROPS.filter((c) => !c.soil.best.includes(group) && c.soil.tolerated.includes(group)).length, [group]);
 
   return (
     <div className="mt-5 text-sm">
@@ -76,6 +82,20 @@ export function SoilExplorer() {
           <Meter label={t("effort")} level={info.effort} word={t(`level.${info.effort}`)} />
         </dl>
         <p className="mt-4 text-sm leading-relaxed">{t(`advice.${info.drainage}`)}</p>
+        <div className="mt-5 border-t border-line pt-4">
+          <p className="fs-eyebrow">{t("suited", { group: t(`group.${group}`) })}</p>
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {suited.map((c) => (
+              <li key={c.id}>
+                <button type="button" onClick={onUse ? () => onUse(c.id) : undefined} disabled={!onUse} title={onUse ? t("addToPlan") : undefined} className="fs-chip inline-flex items-center gap-1.5 disabled:cursor-default">
+                  <CropIcon icon={c.icon} size={16} className="text-gold-text" />{cropName(c.id, locale)}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs leading-relaxed text-muted">{t("suitedCount", { best: suited.length, tolerated })}</p>
+          <p className="mt-1 text-xs leading-relaxed text-muted">{TEXTURE_GROUP_SOURCE}</p>
+        </div>
         <p className="mt-3 text-xs leading-relaxed text-muted">{t("note")}</p>
         {/* the source note stays in its original wording */}
         <p className="mt-2 text-xs leading-relaxed text-muted" dir="auto"><span className="fs-tag">{t("source")}</span> {info.source}</p>

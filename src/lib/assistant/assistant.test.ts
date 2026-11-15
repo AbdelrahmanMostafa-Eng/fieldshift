@@ -244,3 +244,22 @@ describe("assistant v2", () => {
     expect(answer("How much urea per hectare?", ctx()).suggestions.length).toBe(3);
   });
 });
+
+describe("fertiliser questions", () => {
+  it("answers with the crop's notes and no doses", () => {
+    const r = answer("Which fertilizer for potato?", ctx());
+    expect(r.intent).toBe("fertility");
+    expect(r.text).toMatch(/potassium/i);
+    expect(r.text).toMatch(/no product names or doses/i);
+    expect(r.text).not.toMatch(/\d+\s*(kg|g|lb|units)/i);
+  });
+  it("tells legumes they make their own nitrogen, in Arabic too", () => {
+    expect(answer("fertilizer for chickpea", ctx()).text).toMatch(/own nitrogen/i);
+    const ar = answer("ما السماد المناسب للحمص؟", { ...ctx(), lang: "ar" });
+    expect(ar.intent).toBe("fertility");
+    expect(ar.text).toMatch(/[؀-ۿ]/);
+  });
+  it("still declines a dose question", () => {
+    expect(answer("How much fertilizer per hectare for wheat?", ctx()).intent).toBe("dosing");
+  });
+});

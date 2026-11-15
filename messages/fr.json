@@ -38,7 +38,18 @@
     "ndviNote": "Composite sur 8 jours, réédité chaque jour : il change donc lentement.",
     "date": "Date de l'image",
     "dateHint": "D'hier jusqu'à il y a {days} jours. Dates en UTC.",
-    "base": "Vue rapprochée : couleurs réelles VIIRS (NOAA-20), une image par jour. Vue large : Blue Marble."
+    "base": "Vue rapprochée : couleurs réelles VIIRS (NOAA-20), une image par jour. Vue large : Blue Marble.",
+    "airTemp": "Température de l'air (2 m)",
+    "wind": "Vitesse du vent en surface",
+    "humidity": "Humidité relative",
+    "rain": "Intensité de pluie",
+    "soilWater": "Eau du sol dans la zone racinaire",
+    "windUnit": "Mètres par seconde.",
+    "humidityUnit": "Pourcentage, près du sol.",
+    "rainUnit": "Millimètres par heure, d'après l'estimation satellitaire des pluies IMERG de la NASA.",
+    "soilWaterUnit": "Volume d'eau par volume de sol dans la zone racinaire (modèle MERRA-2).",
+    "monthlyNote": "Moyenne mensuelle : elle montre le mois le plus récent publié par la NASA, en général il y a quelques mois, et non la date d'image ci-dessous.",
+    "lagNote": "Quotidien, avec environ {days} jours de retard : les dates les plus récentes montrent le dernier jour disponible."
   },
   "globe": {
     "label": "Terre interactive. Faites glisser pour la tourner, défilez ou pincez pour zoomer, cliquez ou touchez pour choisir un lieu.",
@@ -68,18 +79,20 @@
     "forage": "Fourrage",
     "allium": "Alliacées",
     "mallow": "Malvacées",
-    "amaranth": "Amaranthacées"
+    "amaranth": "Amaranthacées",
+    "umbel": "Apiacées",
+    "daisy": "Astéracées",
+    "other": "Autres familles"
   },
   "plan": {
     "field": "Votre parcelle",
-    "history": "Trois dernières cultures",
-    "current": "Trois prochaines cultures prévues",
+    "history": "Cultures précédentes (la plus ancienne d'abord)",
+    "current": "Votre plan, saison par saison",
     "searchCrop": "Chercher une culture",
     "noCrop": "Aucune culture ne correspond.",
     "startMonth": "Mois de semis",
     "irrigated": "Je peux irriguer",
     "priorities": "Ce qui compte le plus",
-    "importance": "{value} sur 10",
     "soil": "Santé du sol",
     "water": "Eau",
     "climate": "Accord avec le climat",
@@ -90,7 +103,11 @@
     "pickHint": "Touchez le globe, cherchez une ville ou utilisez votre position.",
     "loading": "Lecture de 24 saisons de données climatiques de la NASA…",
     "failed": "Impossible de charger les données climatiques. Réessayez dans une minute.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "seasonsOf": "{count} sur {max}",
+    "addSeason": "Ajouter une saison",
+    "removeSeason": "Retirer la saison {n}",
+    "noHistory": "Aucune culture précédente saisie."
   },
   "climate": {
     "title": "Climat de ce lieu",
@@ -118,7 +135,7 @@
     "evidence": "Éléments de preuve",
     "gaps": "Ce que nous ignorons",
     "risks": "À vérifier sur place",
-    "net": "Résultat net, 3 ans",
+    "net": "Revenu net, {count} saisons",
     "perHa": "par hectare",
     "illustrative": "indicatif",
     "range": "Plage probable sur les saisons passées",
@@ -134,7 +151,10 @@
   },
   "money": {
     "currency": "Devise",
-    "ratesFrom": "Taux de change : ExchangeRate-API, mis à jour chaque jour"
+    "ratesFrom": "Taux de change : ExchangeRate-API, mis à jour chaque jour",
+    "search": "Rechercher une devise",
+    "count": "{count} devises avec un taux quotidien",
+    "none": "Aucune devise ne correspond."
   },
   "atlas": {
     "title": "Demander à Atlas",
@@ -200,7 +220,7 @@
     "sensNote": "Résultat net pour votre surface quand le rendement et le prix baissent ou montent de 20 %.",
     "yieldRow": "Rendement",
     "priceCol": "Prix",
-    "three": "Les trois saisons ensemble",
+    "three": "Toutes les saisons ensemble",
     "missing": "Le catalogue n'a ni rendement ni prix pour cette culture. Saisissez vos rendement, prix et coûts pour voir sa rentabilité.",
     "illustrative": "Valeurs de départ indicatives"
   },
@@ -216,6 +236,8 @@
     "frost": "Nuits de gel",
     "frostV": "{month} ({count} ans sur {years})",
     "frostRule": "Gel signifie que la température de l'air la plus basse du mois (NASA POWER T2M_MIN, à 2 m) est passée sous {t} °C. La gelée au sol peut survenir par des nuits un peu plus douces.",
+    "solar": "Ensoleillement au sol",
+    "solarNote": "Année médiane, en MJ par m² et par jour, d'après le rayonnement de courte longueur d'onde en surface tous ciels de NASA POWER (ALLSKY_SFC_SW_DWN).",
     "windows": "Fenêtres de semis selon la température",
     "plantIn": "{crop}, par mois de semis",
     "good": "Dans la plage optimale",
@@ -285,7 +307,13 @@
     "econ": "Économie par hectare",
     "econNa": "Non disponible dans le catalogue. Saisissez vos propres chiffres dans l'onglet Coûts.",
     "illustrative": "indicatif",
-    "about": "{count} cultures. Les limites de température, de pluie et de cycle viennent de la base FAO EcoCrop. Des rendements, prix et coûts de départ existent pour {priced} d'entre elles et sont indicatifs."
+    "about": "{count} cultures. Les limites de température, de pluie et de cycle viennent de la base FAO EcoCrop. Des rendements, prix et coûts de départ existent pour {priced} d'entre elles et sont indicatifs.",
+    "soilBest": "Sol où elle réussit le mieux",
+    "soilTolerated": "Sol qu'elle tolère",
+    "fertility": "Nourrir la culture (sans doses)",
+    "addSeason": "Ajouter comme nouvelle saison",
+    "zonesShow": "Voir sur la carte où elle convient",
+    "zonesHide": "Masquer les zones de la carte"
   },
   "soil": {
     "title": "Texture du sol",
@@ -326,6 +354,78 @@
       "high": "L'eau s'écoule vite et le sol en garde peu. Le risque habituel est la sécheresse : préférez des cultures tolérantes, gardez les résidus en paillis et arrosez peu mais souvent si vous irriguez."
     },
     "note": "Ce sont des repères généraux selon la texture. Ils ne changent pas vos scores : seule une analyse de sol (pH, matière organique, texture) peut relever la confiance.",
-    "source": "Source"
+    "source": "Source",
+    "suited": "Cultures qui réussissent le mieux en sols {group} (FAO EcoCrop)",
+    "suitedCount": "{best} cultures réussissent le mieux dans cette texture ; {tolerated} autres la tolèrent.",
+    "addToPlan": "Ajouter à mon plan",
+    "group": {
+      "light": "légers (sableux)",
+      "medium": "moyens (limoneux)",
+      "heavy": "lourds (argileux)",
+      "organic": "organiques (tourbeux)"
+    }
+  },
+  "fertility": {
+    "soilTest": "Analysez d'abord le sol. La quantité à apporter dépend de l'analyse, du rendement visé et de ce qu'a laissé la culture précédente.",
+    "legume": "Les légumineuses fabriquent l'essentiel de leur azote grâce aux nodosités des racines quand les bonnes bactéries (rhizobiums) sont présentes : elles ont rarement besoin d'engrais azoté. Le phosphore et le potassium restent importants.",
+    "nitrogen": "Les céréales et les graminées répondent en général surtout à l'azote. Le fractionner en plusieurs apports, selon la croissance, réduit les pertes.",
+    "potassium": "Les cultures à racines et à tubercules prélèvent beaucoup de potassium : demandez-le dans l'analyse de sol.",
+    "sulfur": "Les brassicacées (la famille du chou, le colza, la moutarde) ont besoin d'un bon apport en soufre.",
+    "calcium": "Les cultures à fruits ont besoin d'un apport régulier en calcium et d'un arrosage régulier : la nécrose apicale de la tomate et du poivron est un manque de calcium dans le fruit.",
+    "organic": "Le compost, le fumier, les résidus de culture et les légumineuses en couvert augmentent la matière organique et libèrent les éléments lentement. Leur teneur varie, donc une analyse de sol reste utile.",
+    "fourR": "Appliquez la règle des 4B : la bonne source, à la bonne dose, au bon moment, au bon endroit.",
+    "noDose": "FieldShift ne donne ni noms de produits ni doses. Demandez à un agronome ou à un conseiller agricole local, votre analyse de sol en main."
+  },
+  "suggest": {
+    "title": "Cultures adaptées à ce lieu",
+    "note": "Toutes les cultures de la bibliothèque, classées selon les limites FAO EcoCrop face aux mois NASA POWER de ce lieu, en pluvial : la plus basse des notes de température et de pluie compte. Un point de départ, pas une recommandation.",
+    "noteIrrigated": "Toutes les cultures de la bibliothèque, classées selon les limites de température FAO EcoCrop face aux mois NASA POWER de ce lieu. Irrigué, la pluie n'est pas comptée. Un point de départ, pas une recommandation.",
+    "level": {
+      "good": "Bien adaptée",
+      "possible": "Possible",
+      "poor": "Peu adaptée"
+    },
+    "plantIn": "meilleur semis en {month}",
+    "zones": "Voir les zones sur la carte",
+    "zonesFor": "Voir sur la carte les zones pour {crop}",
+    "add": "Ajouter à mon plan",
+    "addFor": "Ajouter {crop} à mon plan",
+    "inPlan": "Déjà dans votre plan",
+    "planFull": "Votre plan est complet."
+  },
+  "zones": {
+    "title": "Où elle convient",
+    "loading": "Lecture du climat NASA autour de ce lieu…",
+    "failed": "Impossible de charger les zones. Réessayez dans une minute.",
+    "hide": "Masquer les zones",
+    "good": "Bien adaptée ({min} ou plus)",
+    "possible": "Possible ({min}–{max})",
+    "poor": "Peu adaptée ({max} ou moins)",
+    "note": "Chaque carré est une maille de la grille NASA POWER (0,5° sur 0,625°, environ 50 à 70 km), notée d'après ses moyennes mensuelles 2001–2025 selon les limites FAO EcoCrop, en pluvial. Les parcelles d'un même carré peuvent différer.",
+    "noteIrrigated": "Chaque carré est une maille de la grille NASA POWER (0,5° sur 0,625°, environ 50 à 70 km), notée d'après ses moyennes mensuelles 2001–2025 selon les limites de température FAO EcoCrop. Irrigué, la pluie n'est pas comptée."
+  },
+  "weather": {
+    "now": "En ce moment",
+    "updated": "Mis à jour à {time}, heure locale",
+    "feels": "Ressenti",
+    "humidity": "Humidité",
+    "wind": "Vent",
+    "gusts": "Rafales",
+    "rain": "Pluie, 15 dernières min",
+    "clouds": "Couverture nuageuse",
+    "from": "du {deg}°",
+    "source": "Conditions actuelles : Open-Meteo.com (CC BY 4.0), mises à jour toutes les 15 minutes",
+    "unavailable": "Les conditions actuelles ne sont pas disponibles pour le moment.",
+    "kind": {
+      "clear": "Ciel dégagé",
+      "mostlyClear": "Plutôt dégagé",
+      "partlyCloudy": "Partiellement nuageux",
+      "overcast": "Couvert",
+      "fog": "Brouillard",
+      "drizzle": "Bruine",
+      "rain": "Pluie",
+      "snow": "Neige",
+      "thunder": "Orage"
+    }
   }
 }

@@ -38,7 +38,18 @@
     "ndviNote": "8 günlük bileşim, her gün yeniden yayımlanır, bu yüzden yavaş değişir.",
     "date": "Görüntü tarihi",
     "dateHint": "Dünden {days} gün öncesine kadar. Tarihler UTC'dir.",
-    "base": "Yakın görüntü: VIIRS gerçek renk (NOAA-20), günde bir görüntü. Geniş görünüm: Blue Marble."
+    "base": "Yakın görüntü: VIIRS gerçek renk (NOAA-20), günde bir görüntü. Geniş görünüm: Blue Marble.",
+    "airTemp": "Hava sıcaklığı (2 m)",
+    "wind": "Yüzey rüzgâr hızı",
+    "humidity": "Bağıl nem",
+    "rain": "Yağış şiddeti",
+    "soilWater": "Kök bölgesindeki toprak suyu",
+    "windUnit": "Metre/saniye.",
+    "humidityUnit": "Yüzde, yere yakın.",
+    "rainUnit": "Saatte milimetre, NASA'nın IMERG uydu yağış tahmininden.",
+    "soilWaterUnit": "Kök bölgesinde toprak hacmi başına su hacmi (MERRA-2 modeli).",
+    "monthlyNote": "Aylık ortalama: NASA'nın yayımladığı en yeni ayı gösterir, genellikle birkaç ay öncesidir; aşağıdaki görüntü tarihini değil.",
+    "lagNote": "Günlük, yaklaşık {days} gün geriden gelir: en yeni tarihler mevcut son günü gösterir."
   },
   "globe": {
     "label": "Etkileşimli Dünya. Döndürmek için sürükleyin, yakınlaştırmak için kaydırın ya da iki parmakla sıkıştırın, bir yer seçmek için tıklayın ya da dokunun.",
@@ -68,18 +79,20 @@
     "forage": "Yem bitkisi",
     "allium": "Soğangil",
     "mallow": "Ebegümecigil",
-    "amaranth": "Horozibiğigil"
+    "amaranth": "Horozibiğigil",
+    "umbel": "Maydanozgiller",
+    "daisy": "Papatyagiller",
+    "other": "Diğer familyalar"
   },
   "plan": {
     "field": "Tarlanız",
-    "history": "Son üç ürün",
-    "current": "Planlanan sonraki üç ürün",
+    "history": "Önceki ürünler (en eskisi önce)",
+    "current": "Sezon sezon planınız",
     "searchCrop": "Ürün ara",
     "noCrop": "Eşleşen ürün yok.",
     "startMonth": "Ekim ayı",
     "irrigated": "Sulama yapabilirim",
     "priorities": "En önemli olan",
-    "importance": "10 üzerinden {value}",
     "soil": "Toprak sağlığı",
     "water": "Su",
     "climate": "İklime uyum",
@@ -90,7 +103,11 @@
     "pickHint": "Küreye dokunun, bir kasaba arayın ya da konumunuzu kullanın.",
     "loading": "NASA'nın 24 sezonluk iklim verisi okunuyor…",
     "failed": "İklim verisi yüklenemedi. Bir dakika sonra tekrar deneyin.",
-    "retry": "Tekrar dene"
+    "retry": "Tekrar dene",
+    "seasonsOf": "{max} sezonun {count} sezonu",
+    "addSeason": "Sezon ekle",
+    "removeSeason": "{n}. sezonu kaldır",
+    "noHistory": "Önceki ürün girilmedi."
   },
   "climate": {
     "title": "Bu yerin iklimi",
@@ -118,7 +135,7 @@
     "evidence": "Kanıt",
     "gaps": "Bilmediklerimiz",
     "risks": "Yerinde kontrol edin",
-    "net": "Net getiri, 3 yıl",
+    "net": "Net getiri, {count} sezon",
     "perHa": "hektar başına",
     "illustrative": "örnek",
     "range": "Geçmiş sezonlardaki olası aralık",
@@ -134,7 +151,10 @@
   },
   "money": {
     "currency": "Para birimi",
-    "ratesFrom": "Döviz kurları: ExchangeRate-API, günlük güncellenir"
+    "ratesFrom": "Döviz kurları: ExchangeRate-API, günlük güncellenir",
+    "search": "Para birimi ara",
+    "count": "Günlük kuru olan {count} para birimi",
+    "none": "Eşleşen para birimi yok."
   },
   "atlas": {
     "title": "Atlas'a sor",
@@ -200,7 +220,7 @@
     "sensNote": "Verim ve fiyat %20 düşer ya da artarsa alanınız için net getiri.",
     "yieldRow": "Verim",
     "priceCol": "Fiyat",
-    "three": "Üç sezon birlikte",
+    "three": "Tüm sezonlar birlikte",
     "missing": "Katalogda bu ürün için verim ya da fiyat yok. Getirisini görmek için kendi verim, fiyat ve maliyetlerinizi girin.",
     "illustrative": "Örnek başlangıç değerleri"
   },
@@ -216,6 +236,8 @@
     "frost": "Don geceleri",
     "frostV": "{month} ({years} yılın {count} yılında)",
     "frostRule": "Don, ayın en düşük hava sıcaklığının (NASA POWER T2M_MIN, 2 m) {t} °C'nin altına indiği anlamına gelir. Toprak donu biraz daha ılık gecelerde de olabilir.",
+    "solar": "Yüzeye ulaşan güneş ışığı",
+    "solarNote": "Ortanca yıl, günde m² başına MJ; NASA POWER'ın her gökyüzü koşulundaki yüzey kısa dalga ışınımından (ALLSKY_SFC_SW_DWN).",
     "windows": "Sıcaklığa göre ekim dönemleri",
     "plantIn": "{crop}, ekim ayına göre",
     "good": "En iyi aralıkta",
@@ -285,7 +307,13 @@
     "econ": "Hektar başına ekonomi",
     "econNa": "Katalogda yok. Kendi rakamlarınızı Maliyetler sekmesine girin.",
     "illustrative": "örnek",
-    "about": "{count} ürün. Sıcaklık, yağış ve yetişme süresi sınırları FAO EcoCrop veritabanından gelir. Başlangıç verimi, fiyatı ve maliyeti yalnızca {priced} ürün için var ve örnek niteliğindedir."
+    "about": "{count} ürün. Sıcaklık, yağış ve yetişme süresi sınırları FAO EcoCrop veritabanından gelir. Başlangıç verimi, fiyatı ve maliyeti yalnızca {priced} ürün için var ve örnek niteliğindedir.",
+    "soilBest": "En iyi olduğu toprak",
+    "soilTolerated": "Dayandığı toprak",
+    "fertility": "Ürünü beslemek (doz yok)",
+    "addSeason": "Yeni sezon olarak ekle",
+    "zonesShow": "Haritada nereye uyduğunu göster",
+    "zonesHide": "Haritadaki bölgeleri gizle"
   },
   "soil": {
     "title": "Toprak bünyesi",
@@ -326,6 +354,78 @@
       "high": "Su hızla akar ve az tutulur. Olağan risk kuraklıktır: kurağa dayanıklı ürünleri seçin, artıkları malç olarak bırakın ve sulama yapıyorsanız az ve sık sulayın."
     },
     "note": "Bu, bünyeye göre genel bir rehberdir. Puanlarınızı değiştirmez: güveni yalnızca bir toprak analizi (pH, organik madde, bünye) artırabilir.",
-    "source": "Kaynak"
+    "source": "Kaynak",
+    "suited": "{group} topraklarda en iyi olan ürünler (FAO EcoCrop)",
+    "suitedCount": "Bu bünyede {best} ürün en iyi sonucu verir; {tolerated} ürün daha buna dayanır.",
+    "addToPlan": "Planıma ekle",
+    "group": {
+      "light": "hafif (kumlu)",
+      "medium": "orta (tınlı)",
+      "heavy": "ağır (killi)",
+      "organic": "organik (turbalı)"
+    }
+  },
+  "fertility": {
+    "soilTest": "Önce toprağı analiz ettirin. Ne kadar uygulanacağı analize, beklediğiniz verime ve önceki ürünün bıraktıklarına bağlıdır.",
+    "legume": "Baklagiller, uygun rizobium bakterileri varsa azotunun çoğunu kök nodüllerinde kendisi üretir; bu yüzden nadiren azotlu gübreye ihtiyaç duyar. Fosfor ve potasyum yine önemlidir.",
+    "nitrogen": "Tahıllar ve çim bitkileri genellikle en çok azota tepki verir. Azotu büyümeye göre birden fazla uygulamaya bölmek kayıpları azaltır.",
+    "potassium": "Kök ve yumru bitkileri çok potasyum alır: toprak analizinde bunu da isteyin.",
+    "sulfur": "Turpgiller (lahana ailesi, kanola, hardal) iyi bir kükürt kaynağına ihtiyaç duyar.",
+    "calcium": "Meyve veren bitkiler düzenli kalsiyum ve dengeli sulama ister: domates ve biberdeki çiçek burnu çürüklüğü meyvede kalsiyum eksikliğidir.",
+    "organic": "Kompost, gübre (hayvan), ürün artıkları ve baklagil örtü bitkileri organik maddeyi artırır ve besinleri yavaş bırakır. İçerikleri değişkendir, bu yüzden toprak analizi yine işe yarar.",
+    "fourR": "4D kuralını uygulayın: doğru kaynak, doğru miktar, doğru zaman, doğru yer.",
+    "noDose": "FieldShift ürün adı ya da doz vermez. Toprak analiziniz elinizde, yerel bir ziraat mühendisine veya yayım uzmanına danışın."
+  },
+  "suggest": {
+    "title": "Bu yere uyan ürünler",
+    "note": "Kitaplıktaki tüm ürünler, FAO EcoCrop sınırlarının bu yerin NASA POWER aylarıyla karşılaştırılmasına göre, sulamasız sıralandı: sıcaklık ve yağış puanlarından düşük olan sayılır. Bir başlangıç noktasıdır, öneri değildir.",
+    "noteIrrigated": "Kitaplıktaki tüm ürünler, FAO EcoCrop sıcaklık sınırlarının bu yerin NASA POWER aylarıyla karşılaştırılmasına göre sıralandı. Sulamalı olduğu için yağış sayılmaz. Bir başlangıç noktasıdır, öneri değildir.",
+    "level": {
+      "good": "Uygun",
+      "possible": "Olası",
+      "poor": "Pek uygun değil"
+    },
+    "plantIn": "en iyi ekim: {month}",
+    "zones": "Bölgeleri haritada göster",
+    "zonesFor": "{crop} için bölgeleri haritada göster",
+    "add": "Planıma ekle",
+    "addFor": "{crop} ürününü planıma ekle",
+    "inPlan": "Zaten planınızda",
+    "planFull": "Planınız dolu."
+  },
+  "zones": {
+    "title": "Nereye uyar",
+    "loading": "Bu yerin çevresindeki NASA iklimi okunuyor…",
+    "failed": "Bölgeler yüklenemedi. Bir dakika sonra tekrar deneyin.",
+    "hide": "Bölgeleri gizle",
+    "good": "Uygun ({min} ve üstü)",
+    "possible": "Olası ({min}–{max})",
+    "poor": "Pek uygun değil ({max} ve altı)",
+    "note": "Her kare NASA POWER ızgarasının bir hücresidir (0,5° × 0,625°, yaklaşık 50–70 km); 2001–2025 aylık ortalamalarıyla FAO EcoCrop sınırlarına göre, sulamasız puanlanmıştır. Bir karenin içindeki tarlalar farklı olabilir.",
+    "noteIrrigated": "Her kare NASA POWER ızgarasının bir hücresidir (0,5° × 0,625°, yaklaşık 50–70 km); 2001–2025 aylık ortalamalarıyla FAO EcoCrop sıcaklık sınırlarına göre puanlanmıştır. Sulamalı olduğu için yağış sayılmaz."
+  },
+  "weather": {
+    "now": "Şu anda",
+    "updated": "Yerel saatle {time} itibarıyla güncellendi",
+    "feels": "Hissedilen",
+    "humidity": "Nem",
+    "wind": "Rüzgâr",
+    "gusts": "Hamleler",
+    "rain": "Yağış, son 15 dk",
+    "clouds": "Bulutluluk",
+    "from": "{deg}° yönünden",
+    "source": "Anlık hava: Open-Meteo.com (CC BY 4.0), 15 dakikada bir yenilenir",
+    "unavailable": "Anlık hava şu anda kullanılamıyor.",
+    "kind": {
+      "clear": "Açık",
+      "mostlyClear": "Çoğunlukla açık",
+      "partlyCloudy": "Parçalı bulutlu",
+      "overcast": "Kapalı",
+      "fog": "Sis",
+      "drizzle": "Çisenti",
+      "rain": "Yağmur",
+      "snow": "Kar",
+      "thunder": "Gök gürültülü fırtına"
+    }
   }
 }

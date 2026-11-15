@@ -38,7 +38,18 @@
     "ndviNote": "8-day composite, re-issued daily, so it changes slowly.",
     "date": "Image date",
     "dateHint": "Yesterday back to {days} days ago. Dates are UTC.",
-    "base": "Close-up imagery: VIIRS true colour (NOAA-20), one image per day. Wide view: Blue Marble."
+    "base": "Close-up imagery: VIIRS true colour (NOAA-20), one image per day. Wide view: Blue Marble.",
+    "airTemp": "Air temperature (2 m)",
+    "wind": "Surface wind speed",
+    "humidity": "Relative humidity",
+    "rain": "Rain rate",
+    "soilWater": "Root-zone soil water",
+    "windUnit": "Metres per second.",
+    "humidityUnit": "Percent, near the ground.",
+    "rainUnit": "Millimetres per hour, from NASA's IMERG satellite rain estimate.",
+    "soilWaterUnit": "Volume of water per volume of soil in the root zone (MERRA-2 model).",
+    "monthlyNote": "Monthly mean: it shows the newest month NASA has published, usually a few months back, not the image date below.",
+    "lagNote": "Daily, about {days} days behind: the newest dates show the latest day available."
   },
   "globe": {
     "label": "Interactive Earth. Drag to turn it, scroll or pinch to zoom, click or tap to choose a place.",
@@ -68,18 +79,20 @@
     "forage": "Forage",
     "allium": "Onion family",
     "mallow": "Mallow family",
-    "amaranth": "Amaranth family"
+    "amaranth": "Amaranth family",
+    "umbel": "Carrot family",
+    "daisy": "Daisy family",
+    "other": "Other families"
   },
   "plan": {
     "field": "Your field",
-    "history": "Last three crops",
-    "current": "Planned next three crops",
+    "history": "Past crops (oldest first)",
+    "current": "Your plan, season by season",
     "searchCrop": "Search crops",
     "noCrop": "No crop matches.",
     "startMonth": "Planting month",
     "irrigated": "I can irrigate",
     "priorities": "What matters most",
-    "importance": "{value} of 10",
     "soil": "Soil health",
     "water": "Water",
     "climate": "Climate fit",
@@ -90,7 +103,11 @@
     "pickHint": "Tap the globe, search for a town, or use your location.",
     "loading": "Reading 24 seasons of NASA climate data…",
     "failed": "Could not load climate data. Try again in a minute.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "seasonsOf": "{count} of {max}",
+    "addSeason": "Add season",
+    "removeSeason": "Remove season {n}",
+    "noHistory": "No past crops entered."
   },
   "climate": {
     "title": "Climate at this place",
@@ -118,7 +135,7 @@
     "evidence": "Evidence",
     "gaps": "What we don't know",
     "risks": "Check locally",
-    "net": "Net return, 3 years",
+    "net": "Net return, {count} seasons",
     "perHa": "per hectare",
     "illustrative": "illustrative",
     "range": "Likely range across past seasons",
@@ -134,7 +151,10 @@
   },
   "money": {
     "currency": "Currency",
-    "ratesFrom": "Exchange rates: ExchangeRate-API, updated daily"
+    "ratesFrom": "Exchange rates: ExchangeRate-API, updated daily",
+    "search": "Search currencies",
+    "count": "{count} currencies with a daily rate",
+    "none": "No currency matches."
   },
   "atlas": {
     "title": "Ask Atlas",
@@ -200,7 +220,7 @@
     "sensNote": "Net return for your area when yield and price move 20% down or up.",
     "yieldRow": "Yield",
     "priceCol": "Price",
-    "three": "All three seasons together",
+    "three": "All seasons together",
     "missing": "The catalogue has no yield or price for this crop. Enter your own yield, price and costs to see its return.",
     "illustrative": "Illustrative starting values"
   },
@@ -216,6 +236,8 @@
     "frost": "Frost nights",
     "frostV": "{month} ({count} of {years} years)",
     "frostRule": "Frost means the month's lowest air temperature (NASA POWER T2M_MIN, 2 m) fell below {t} °C. Ground frost can come on nights a little above that.",
+    "solar": "Sunlight at the ground",
+    "solarNote": "Middle year, in MJ per m² per day, from NASA POWER all-sky surface shortwave radiation (ALLSKY_SFC_SW_DWN).",
     "windows": "Planting windows by temperature",
     "plantIn": "{crop}, by planting month",
     "good": "Inside the best range",
@@ -285,7 +307,13 @@
     "econ": "Economics per hectare",
     "econNa": "Not available in the catalogue. Enter your own numbers in the Costs tab.",
     "illustrative": "illustrative",
-    "about": "{count} crops. Temperature, rain and crop-cycle limits come from the FAO EcoCrop database. Starter yields, prices and costs exist for {priced} of them and are illustrative."
+    "about": "{count} crops. Temperature, rain and crop-cycle limits come from the FAO EcoCrop database. Starter yields, prices and costs exist for {priced} of them and are illustrative.",
+    "soilBest": "Soil it does best on",
+    "soilTolerated": "Soil it tolerates",
+    "fertility": "Feeding the crop (no doses)",
+    "addSeason": "Add as a new season",
+    "zonesShow": "Show where it fits on the map",
+    "zonesHide": "Hide the map zones"
   },
   "soil": {
     "title": "Soil texture",
@@ -326,6 +354,78 @@
       "high": "Water drains fast and little is stored. Drought is the usual risk: favour drought-tolerant crops, keep residue as mulch, and water little and often if you irrigate."
     },
     "note": "This is general guidance by texture. It does not change your scores: only a soil test (pH, organic matter, texture) can raise confidence.",
-    "source": "Source"
+    "source": "Source",
+    "suited": "Crops that do best on {group} soils (FAO EcoCrop)",
+    "suitedCount": "{best} crops do best on this texture; {tolerated} more tolerate it.",
+    "addToPlan": "Add to my plan",
+    "group": {
+      "light": "light (sandy)",
+      "medium": "medium (loamy)",
+      "heavy": "heavy (clayey)",
+      "organic": "organic (peaty)"
+    }
+  },
+  "fertility": {
+    "soilTest": "Test the soil first. How much to apply depends on the test, the yield you expect and what the last crop left behind.",
+    "legume": "Legumes make most of their own nitrogen through root nodules once the right rhizobia bacteria are present, so they rarely need nitrogen fertiliser. Phosphorus and potassium still matter.",
+    "nitrogen": "Grain crops and grasses usually respond most to nitrogen. Splitting it into more than one application, timed to growth, cuts losses.",
+    "potassium": "Root and tuber crops take up a lot of potassium: ask for it in the soil test.",
+    "sulfur": "Brassicas (the cabbage family, canola, mustard) need a good sulfur supply.",
+    "calcium": "Fruiting crops need steady calcium and even watering: blossom-end rot on tomato and pepper is a calcium shortage in the fruit.",
+    "organic": "Compost, manure, crop residue and legume cover crops build organic matter and release nutrients slowly. Their nutrient content varies, so a soil test still helps.",
+    "fourR": "Use the 4R rule: the right source, at the right rate, at the right time, in the right place.",
+    "noDose": "FieldShift gives no product names or doses. Ask a local agronomist or extension officer, with your soil test in hand."
+  },
+  "suggest": {
+    "title": "Crops that fit this place",
+    "note": "Every crop in the library, ranked by FAO EcoCrop limits against this place's NASA POWER months, rain-fed: the lower of the temperature and rain scores counts. A starting point, not a recommendation.",
+    "noteIrrigated": "Every crop in the library, ranked by FAO EcoCrop temperature limits against this place's NASA POWER months. Irrigated, so rain is not counted. A starting point, not a recommendation.",
+    "level": {
+      "good": "Good fit",
+      "possible": "Possible",
+      "poor": "Poor fit"
+    },
+    "plantIn": "best planted in {month}",
+    "zones": "Show zones on the map",
+    "zonesFor": "Show zones on the map for {crop}",
+    "add": "Add to my plan",
+    "addFor": "Add {crop} to my plan",
+    "inPlan": "Already in your plan",
+    "planFull": "Your plan is full."
+  },
+  "zones": {
+    "title": "Where it fits",
+    "loading": "Reading NASA climate around this place…",
+    "failed": "Could not load the zones. Try again in a minute.",
+    "hide": "Hide zones",
+    "good": "Good fit ({min} or more)",
+    "possible": "Possible ({min}–{max})",
+    "poor": "Poor fit ({max} or less)",
+    "note": "Each square is one NASA POWER grid cell (0.5° by 0.625°, roughly 50–70 km), scored from its 2001–2025 monthly means by FAO EcoCrop limits, rain-fed. Fields inside a square can differ.",
+    "noteIrrigated": "Each square is one NASA POWER grid cell (0.5° by 0.625°, roughly 50–70 km), scored from its 2001–2025 monthly means by FAO EcoCrop temperature limits. Irrigated, so rain is not counted."
+  },
+  "weather": {
+    "now": "Right now",
+    "updated": "Updated {time}, local time",
+    "feels": "Feels like",
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "gusts": "Gusts",
+    "rain": "Rain, last 15 min",
+    "clouds": "Cloud cover",
+    "from": "from {deg}°",
+    "source": "Current conditions: Open-Meteo.com (CC BY 4.0), refreshed every 15 minutes",
+    "unavailable": "Current conditions are not available right now.",
+    "kind": {
+      "clear": "Clear sky",
+      "mostlyClear": "Mostly clear",
+      "partlyCloudy": "Partly cloudy",
+      "overcast": "Overcast",
+      "fog": "Fog",
+      "drizzle": "Drizzle",
+      "rain": "Rain",
+      "snow": "Snow",
+      "thunder": "Thunderstorm"
+    }
   }
 }

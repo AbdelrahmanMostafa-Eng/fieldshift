@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import type { Map as MlMap, Marker, PaddingOptions } from "maplibre-gl";
+import type { GeoJSONSource, Map as MlMap, Marker, PaddingOptions } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { BASE_LAYER, OVERLAYS, tileUrl, type GibsLayer } from "@/lib/gibs";
 import { easeOutCubic, wrapLon, zoomForGlobeDiameter } from "@/lib/geo";
+import type { Box, zonesGeoJson } from "@/lib/zones";
 import { FlatFallback } from "./globe/FlatFallback";
 import { LabelLayer } from "./globe/labels";
 import { GlobeOptics } from "./globe/optics";
@@ -17,6 +18,8 @@ import { useTheme } from "./globe/useTheme";
 
 export interface GlobeInset { top: number; bottom: number; start: number; end: number }
 export interface GlobeOverlay { layer: GibsLayer; opacity: number }
+/** Crop suitability squares to draw, the box they cover, and a key that changes when the crop or the place changes. */
+export interface GlobeZones { geojson: ReturnType<typeof zonesGeoJson>; box: Box; fitKey: string }
 
 export interface GlobeProps {
   projection: "globe" | "mercator";
@@ -33,6 +36,7 @@ export interface GlobeProps {
   controlsBottom?: number;
   /** Shows the "back to the whole globe" button (hidden during the intro, where the globe is already there). */
   homeVisible?: boolean;
+  zones?: GlobeZones | null;
   onPick?: (lat: number, lon: number) => void;
   onUserInteract?: () => void;
   /** Called once when the 3D map cannot run and the flat fallback is shown instead. */
@@ -50,6 +54,9 @@ const STARS_MAX_ZOOM = 4;         // above this the planet covers the whole view
 const FLY_MS = 2500;
 const FLATTEN_MS = 900;
 const HOME_MS = 1800;
+const ZONES = { source: "fs-zones", layer: "fs-zones-fill" } as const;
+/** Good, possible, poor: green, amber, red, readable on imagery in both themes. */
+const ZONE_COLOURS = { good: "#3f9d4a", possible: "#e3b23c", poor: "#c8483a" } as const;
 // Same family as ui/Icon: 1.5 stroke on a 20 px grid. A small globe inside a turn-back arrow.
 const HOME_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
   + '<path d="M3 10a7 7 0 1 0 2.05-4.95L3 7.1"/><path d="M3 3.2v3.9h3.9"/>'
@@ -89,7 +96,7 @@ function webglSupported(): boolean {
   }
 }
 
-export function Globe({ projection, spin, marker, overlays, date, locale, rtl, inset, controlsBottom = 0, homeVisible = true, onPick, onUserInteract, onUnsupported }: GlobeProps) {
+export function Globe({ projection, spin, marker, overlays, date, locale, rtl, inset, controlsBottom = 0, homeVisible = true, zones = null, onPick, onUserInteract, onUnsupported }: GlobeProps) {
   const t = useTranslations("globe");
   const theme = useTheme();
   const wrap = useRef<HTMLDivElement>(null);
@@ -324,7 +331,35 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
       if (!m.getLayer(id)) m.addLayer({ id, type: "raster", source: id, paint: { "raster-opacity": on.opacity, "raster-fade-duration": 300 } }, LAYER.hillshade);
       else { m.setLayoutProperty(id, "visibility", "visible"); m.setPaintProperty(id, "raster-opacity", on.opacity); }
     }
+    if (m.getLayer(ZONES.layer)) m.moveLayer(ZONES.layer, LAYER.hillshade); // zones stay above any satellite layer
   }, [overlays, ready]);
+
+  // ---- crop suitability zones: coloured grid squares, framed once per crop and place ---------------------
+  const lastZoneFit = useRef("");
+  useEffect(() => {
+    const m = map.current, box = el.current;
+    if (!ready || !m || !box) return;
+    if (!zones) {
+      if (m.getLayer(ZONES.layer)) m.setLayoutProperty(ZONES.layer, "visibility", "none");
+      lastZoneFit.current = "";
+      return;
+    }
+    const src = m.getSource(ZONES.source) as GeoJSONSource | undefined;
+    if (src) src.setData(zones.geojson);
+    else m.addSource(ZONES.source, { type: "geojson", data: zones.geojson });
+    if (!m.getLayer(ZONES.layer)) {
+      m.addLayer({
+        id: ZONES.layer, type: "fill", source: ZONES.source,
+        paint: { "fill-color": ["match", ["get", "level"], "good", ZONE_COLOURS.good, "possible", ZONE_COLOURS.possible, ZONE_COLOURS.poor], "fill-opacity": 0.5, "fill-antialias": false },
+      }, LAYER.hillshade);
+    } else m.setLayoutProperty(ZONES.layer, "visibility", "visible");
+    if (lastZoneFit.current !== zones.fitKey) {
+      lastZoneFit.current = zones.fitKey;
+      autoFit.current = false;
+      const b = zones.box, pad = toPadding(live.current.inset, live.current.rtl);
+      m.fitBounds([[b.lonMin, b.latMin], [b.lonMax, b.latMax]], { padding: { top: (pad.top ?? 0) + 24, bottom: (pad.bottom ?? 0) + 24, left: (pad.left ?? 0) + 24, right: (pad.right ?? 0) + 24 }, duration: prefersReducedMotion() ? 0 : 1600, essential: true });
+    }
+  }, [zones, ready]);
 
   // ---- date: swap the tile addresses of every dated source ---------------------------------------
   useEffect(() => {

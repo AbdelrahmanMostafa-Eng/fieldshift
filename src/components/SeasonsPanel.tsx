@@ -5,30 +5,49 @@ import { CROP_BY_ID, cropName } from "@/data/crops";
 import { SEASON_RULES } from "@/data/reference";
 import { climatology } from "@/lib/climatology";
 import { frostMonths, plantingWindow, seasons, type Fit } from "@/lib/farm";
-import type { ForecastDay } from "@/lib/openmeteo";
+import type { CurrentWeather, ForecastDay } from "@/lib/openmeteo";
 import type { ClimateSeries } from "@/lib/rotation/types";
 import { ClimateChart } from "./ClimateChart";
+import { NowCard } from "./NowWeather";
 
 const FIT_CLASS: Record<Fit, string> = { good: "bg-gold", possible: "bg-gold/35", no: "bg-line", unknown: "border border-dashed border-line-strong" };
 
-/** Seasons for the picked place: the climate chart, the year in plain words, planting windows by temperature, and the 7-day forecast. */
-export function SeasonsPanel({ climate, forecast, plan }: { climate: ClimateSeries; forecast: ForecastDay[] | null; plan: string[] }) {
+/** Seasons for the picked place: current conditions, the climate chart with monthly sunlight, the year in plain words, planting windows by temperature, and the 7-day forecast. */
+export function SeasonsPanel({ climate, forecast, plan, now }: { climate: ClimateSeries; forecast: ForecastDay[] | null; plan: string[]; now: CurrentWeather | null }) {
   const t = useTranslations("seasons");
   const locale = useLocale();
   const stats = useMemo(() => climatology(climate), [climate]);
   const year = useMemo(() => seasons(stats), [stats]);
+  const sunTop = Math.max(0, ...stats.map((s) => s.solar ?? 0));
   const frost = useMemo(() => (climate.T2M_MIN ? frostMonths(climate) : null), [climate]);
   const n = (v: number, d = 0) => new Intl.NumberFormat(locale, { maximumFractionDigits: d }).format(v);
-  const monthName = (m: number, style: "short" | "narrow" | "long" = "short") => new Intl.DateTimeFormat(locale, { month: style }).format(new Date(2026, m, 1));
+  const monthName = (m: number, style: "short" | "narrow" | "long" = "short") => new Intl.DateTimeFormat(locale, { calendar: "gregory", month: style }).format(new Date(2026, m, 1));
   const list = (months: number[]) => (months.length ? new Intl.ListFormat(locale, { style: "narrow", type: "unit" }).format(months.map((m) => monthName(m))) : t("none"));
   const crops = [...new Set(plan)].map((id) => CROP_BY_ID.get(id)).filter((c) => !!c);
   const day = (iso: string) => new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
 
   return (
     <div className="mt-5 space-y-6 text-sm">
-      <section>
+      <NowCard now={now} />
+      <section className="border-t border-line pt-5">
         <p className="fs-eyebrow mb-3">{t("title")}</p>
         <ClimateChart climate={climate} />
+        {sunTop > 0 && (
+          <div className="mt-4">
+            <p className="text-xs text-muted">{t("solar")}</p>
+            {/* Same month grid as the planting windows: January first, drawn left to right in every language. */}
+            <div className="mt-1.5 grid grid-cols-12 gap-1 text-center" dir="ltr">
+              {stats.map((s) => (
+                <div key={s.month} title={`${monthName(s.month, "long")}: ${s.solar === null ? "–" : n(s.solar, 1)} MJ/m²`}>
+                  <span className="block h-5 rounded-[3px] bg-gold" style={{ opacity: s.solar === null ? 0.08 : 0.15 + 0.85 * (s.solar / sunTop) }} />
+                  <span className="mt-1 block font-mono text-[10px] text-muted">{s.solar === null ? "–" : n(s.solar)}</span>
+                  <span className="block text-[10px] text-muted">{monthName(s.month, "narrow")}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-muted">{t("solarNote")}</p>
+          </div>
+        )}
       </section>
 
       <section className="border-t border-line pt-5">

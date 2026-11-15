@@ -38,7 +38,18 @@
     "ndviNote": "Komposit 8 hari, diterbitkan ulang setiap hari, jadi berubah perlahan.",
     "date": "Tanggal citra",
     "dateHint": "Dari kemarin sampai {days} hari lalu. Tanggal dalam UTC.",
-    "base": "Citra dekat: warna asli VIIRS (NOAA-20), satu citra per hari. Tampilan luas: Blue Marble."
+    "base": "Citra dekat: warna asli VIIRS (NOAA-20), satu citra per hari. Tampilan luas: Blue Marble.",
+    "airTemp": "Suhu udara (2 m)",
+    "wind": "Kecepatan angin permukaan",
+    "humidity": "Kelembapan relatif",
+    "rain": "Laju hujan",
+    "soilWater": "Air tanah di zona akar",
+    "windUnit": "Meter per detik.",
+    "humidityUnit": "Persen, dekat permukaan tanah.",
+    "rainUnit": "Milimeter per jam, dari perkiraan hujan satelit IMERG milik NASA.",
+    "soilWaterUnit": "Volume air per volume tanah di zona akar (model MERRA-2).",
+    "monthlyNote": "Rata-rata bulanan: menampilkan bulan terbaru yang diterbitkan NASA, biasanya beberapa bulan lalu, bukan tanggal citra di bawah.",
+    "lagNote": "Harian, terlambat sekitar {days} hari: tanggal terbaru menampilkan hari terakhir yang tersedia."
   },
   "globe": {
     "label": "Bumi interaktif. Seret untuk memutar, gulir atau cubit untuk memperbesar, klik atau ketuk untuk memilih tempat.",
@@ -68,18 +79,20 @@
     "forage": "Pakan ternak",
     "allium": "Bawang-bawangan",
     "mallow": "Kapas-kapasan",
-    "amaranth": "Bayam-bayaman"
+    "amaranth": "Bayam-bayaman",
+    "umbel": "Suku seledri",
+    "daisy": "Suku kenikir",
+    "other": "Famili lain"
   },
   "plan": {
     "field": "Lahan Anda",
-    "history": "Tiga tanaman terakhir",
-    "current": "Tiga tanaman berikutnya yang direncanakan",
+    "history": "Tanaman sebelumnya (yang paling lama dulu)",
+    "current": "Rencana Anda, musim demi musim",
     "searchCrop": "Cari tanaman",
     "noCrop": "Tidak ada tanaman yang cocok.",
     "startMonth": "Bulan tanam",
     "irrigated": "Saya bisa mengairi",
     "priorities": "Yang paling penting",
-    "importance": "{value} dari 10",
     "soil": "Kesehatan tanah",
     "water": "Air",
     "climate": "Kecocokan iklim",
@@ -90,7 +103,11 @@
     "pickHint": "Ketuk globe, cari kota, atau gunakan lokasi Anda.",
     "loading": "Membaca 24 musim data iklim NASA…",
     "failed": "Data iklim tidak bisa dimuat. Coba lagi dalam semenit.",
-    "retry": "Coba lagi"
+    "retry": "Coba lagi",
+    "seasonsOf": "{count} dari {max}",
+    "addSeason": "Tambah musim",
+    "removeSeason": "Hapus musim {n}",
+    "noHistory": "Belum ada tanaman sebelumnya."
   },
   "climate": {
     "title": "Iklim di tempat ini",
@@ -118,7 +135,7 @@
     "evidence": "Bukti",
     "gaps": "Yang belum kami ketahui",
     "risks": "Periksa di lapangan",
-    "net": "Hasil bersih, 3 tahun",
+    "net": "Hasil bersih, {count} musim",
     "perHa": "per hektare",
     "illustrative": "ilustrasi",
     "range": "Kisaran yang mungkin dari musim-musim lalu",
@@ -134,7 +151,10 @@
   },
   "money": {
     "currency": "Mata uang",
-    "ratesFrom": "Kurs: ExchangeRate-API, diperbarui harian"
+    "ratesFrom": "Kurs: ExchangeRate-API, diperbarui harian",
+    "search": "Cari mata uang",
+    "count": "{count} mata uang dengan kurs harian",
+    "none": "Tidak ada mata uang yang cocok."
   },
   "atlas": {
     "title": "Tanya Atlas",
@@ -200,7 +220,7 @@
     "sensNote": "Hasil bersih untuk luas lahan Anda saat hasil panen dan harga turun atau naik 20%.",
     "yieldRow": "Hasil panen",
     "priceCol": "Harga",
-    "three": "Ketiga musim sekaligus",
+    "three": "Semua musim sekaligus",
     "missing": "Katalog tidak punya hasil panen atau harga untuk tanaman ini. Isi hasil panen, harga, dan biaya Anda sendiri untuk melihat hasilnya.",
     "illustrative": "Nilai awal ilustrasi"
   },
@@ -216,6 +236,8 @@
     "frost": "Malam beku",
     "frostV": "{month} ({count} dari {years} tahun)",
     "frostRule": "Beku berarti suhu udara terendah bulan itu (NASA POWER T2M_MIN, 2 m) turun di bawah {t} °C. Embun beku di tanah bisa terjadi pada malam yang sedikit lebih hangat.",
+    "solar": "Sinar matahari di permukaan tanah",
+    "solarNote": "Tahun tengah, dalam MJ per m² per hari, dari radiasi gelombang pendek permukaan pada semua kondisi langit NASA POWER (ALLSKY_SFC_SW_DWN).",
     "windows": "Jendela tanam menurut suhu",
     "plantIn": "{crop}, menurut bulan tanam",
     "good": "Di dalam kisaran terbaik",
@@ -285,7 +307,13 @@
     "econ": "Ekonomi per hektare",
     "econNa": "Tidak tersedia di katalog. Isi angka Anda sendiri di tab Biaya.",
     "illustrative": "ilustrasi",
-    "about": "{count} tanaman. Batas suhu, hujan, dan siklus tanaman berasal dari basis data FAO EcoCrop. Hasil panen, harga, dan biaya awal hanya ada untuk {priced} tanaman dan bersifat ilustrasi."
+    "about": "{count} tanaman. Batas suhu, hujan, dan siklus tanaman berasal dari basis data FAO EcoCrop. Hasil panen, harga, dan biaya awal hanya ada untuk {priced} tanaman dan bersifat ilustrasi.",
+    "soilBest": "Tanah yang paling cocok",
+    "soilTolerated": "Tanah yang ditoleransi",
+    "fertility": "Memberi makan tanaman (tanpa dosis)",
+    "addSeason": "Tambah sebagai musim baru",
+    "zonesShow": "Tampilkan di peta di mana cocoknya",
+    "zonesHide": "Sembunyikan zona di peta"
   },
   "soil": {
     "title": "Tekstur tanah",
@@ -326,6 +354,78 @@
       "high": "Air cepat terbuang dan sedikit yang tersimpan. Risiko yang biasa adalah kekeringan: pilih tanaman tahan kering, biarkan sisa tanaman sebagai mulsa, dan beri air sedikit tapi sering jika Anda mengairi."
     },
     "note": "Ini panduan umum menurut tekstur. Tidak mengubah skor Anda: hanya uji tanah (pH, bahan organik, tekstur) yang bisa menaikkan keyakinan.",
-    "source": "Sumber"
+    "source": "Sumber",
+    "suited": "Tanaman yang paling cocok di tanah {group} (FAO EcoCrop)",
+    "suitedCount": "{best} tanaman paling cocok di tekstur ini; {tolerated} lagi masih menoleransinya.",
+    "addToPlan": "Tambah ke rencana saya",
+    "group": {
+      "light": "ringan (berpasir)",
+      "medium": "sedang (lempung)",
+      "heavy": "berat (liat)",
+      "organic": "organik (gambut)"
+    }
+  },
+  "fertility": {
+    "soilTest": "Uji tanah dulu. Berapa banyak yang diberikan bergantung pada hasil uji, hasil panen yang diharapkan, dan sisa dari tanaman sebelumnya.",
+    "legume": "Kacang-kacangan membuat sebagian besar nitrogennya sendiri lewat bintil akar bila bakteri rizobium yang tepat ada, jadi jarang butuh pupuk nitrogen. Fosfor dan kalium tetap penting.",
+    "nitrogen": "Serealia dan rumput biasanya paling merespons nitrogen. Membaginya menjadi lebih dari satu kali pemberian sesuai pertumbuhan mengurangi kehilangan.",
+    "potassium": "Tanaman umbi dan akar menyerap banyak kalium: mintalah pengukurannya dalam uji tanah.",
+    "sulfur": "Kubis-kubisan (keluarga kubis, kanola, sawi) butuh pasokan belerang yang cukup.",
+    "calcium": "Tanaman buah butuh kalsium yang stabil dan penyiraman yang merata: busuk ujung buah pada tomat dan cabai adalah kekurangan kalsium di buah.",
+    "organic": "Kompos, pupuk kandang, sisa tanaman, dan kacang-kacangan penutup tanah menambah bahan organik dan melepas hara perlahan. Kandungannya beragam, jadi uji tanah tetap membantu.",
+    "fourR": "Gunakan prinsip 4T: tepat sumber, tepat dosis, tepat waktu, tepat tempat.",
+    "noDose": "FieldShift tidak memberi nama produk atau dosis. Tanyakan kepada agronom atau penyuluh setempat dengan membawa hasil uji tanah."
+  },
+  "suggest": {
+    "title": "Tanaman yang cocok di tempat ini",
+    "note": "Semua tanaman di pustaka, diurutkan menurut batas FAO EcoCrop dibandingkan bulan-bulan NASA POWER di tempat ini, tadah hujan: yang dihitung adalah skor terendah antara suhu dan hujan. Titik awal, bukan rekomendasi.",
+    "noteIrrigated": "Semua tanaman di pustaka, diurutkan menurut batas suhu FAO EcoCrop dibandingkan bulan-bulan NASA POWER di tempat ini. Dengan irigasi, hujan tidak dihitung. Titik awal, bukan rekomendasi.",
+    "level": {
+      "good": "Cocok",
+      "possible": "Mungkin",
+      "poor": "Kurang cocok"
+    },
+    "plantIn": "paling baik ditanam pada {month}",
+    "zones": "Tampilkan zona di peta",
+    "zonesFor": "Tampilkan zona {crop} di peta",
+    "add": "Tambah ke rencana saya",
+    "addFor": "Tambah {crop} ke rencana saya",
+    "inPlan": "Sudah ada di rencana Anda",
+    "planFull": "Rencana Anda sudah penuh."
+  },
+  "zones": {
+    "title": "Di mana cocoknya",
+    "loading": "Membaca iklim NASA di sekitar tempat ini…",
+    "failed": "Zona tidak bisa dimuat. Coba lagi dalam semenit.",
+    "hide": "Sembunyikan zona",
+    "good": "Cocok ({min} atau lebih)",
+    "possible": "Mungkin ({min}–{max})",
+    "poor": "Kurang cocok ({max} atau kurang)",
+    "note": "Setiap kotak adalah satu sel grid NASA POWER (0,5° kali 0,625°, sekitar 50–70 km), dinilai dari rata-rata bulanan 2001–2025 dengan batas FAO EcoCrop, tadah hujan. Lahan di dalam satu kotak bisa berbeda.",
+    "noteIrrigated": "Setiap kotak adalah satu sel grid NASA POWER (0,5° kali 0,625°, sekitar 50–70 km), dinilai dari rata-rata bulanan 2001–2025 dengan batas suhu FAO EcoCrop. Dengan irigasi, hujan tidak dihitung."
+  },
+  "weather": {
+    "now": "Saat ini",
+    "updated": "Diperbarui pukul {time}, waktu setempat",
+    "feels": "Terasa seperti",
+    "humidity": "Kelembapan",
+    "wind": "Angin",
+    "gusts": "Embusan",
+    "rain": "Hujan, 15 menit terakhir",
+    "clouds": "Tutupan awan",
+    "from": "dari {deg}°",
+    "source": "Cuaca saat ini: Open-Meteo.com (CC BY 4.0), diperbarui setiap 15 menit",
+    "unavailable": "Cuaca saat ini sedang tidak tersedia.",
+    "kind": {
+      "clear": "Cerah",
+      "mostlyClear": "Sebagian besar cerah",
+      "partlyCloudy": "Berawan sebagian",
+      "overcast": "Mendung",
+      "fog": "Kabut",
+      "drizzle": "Gerimis",
+      "rain": "Hujan",
+      "snow": "Salju",
+      "thunder": "Badai petir"
+    }
   }
 }

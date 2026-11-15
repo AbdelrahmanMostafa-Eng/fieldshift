@@ -6,7 +6,7 @@ import { budgetReady, budgetResult, defaultBudget, frostMonths, plantingWindow, 
 
 const wheat = CROPS.find((c) => c.id === "wheat")!;
 const month = (m: number, tempC: number | null, rainMm: number | null): MonthStat =>
-  ({ month: m, tempC, tempLow: tempC, tempHigh: tempC, rainMm, rainLow: rainMm, rainHigh: rainMm, years: 24 });
+  ({ month: m, tempC, tempLow: tempC, tempHigh: tempC, rainMm, rainLow: rainMm, rainHigh: rainMm, solar: null, years: 24 });
 
 describe("budgets", () => {
   it("starts from the catalogue total without inventing a breakdown", () => {

@@ -30,18 +30,19 @@ function Legend({ layer, rtl }: { layer: GibsLayer; rtl: boolean }) {
   const locale = useLocale();
   const legend = layer.legend;
   if (!legend) return null;
-  const n = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+  const n = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
   const kelvin = legend.unit === "K";
-  const lo = kelvin ? `${n.format(kelvinToCelsius(legend.min))} °C` : n.format(legend.min);
-  const hi = kelvin ? `${n.format(kelvinToCelsius(legend.max))} °C` : n.format(legend.max);
+  // Units are symbols (°C, m/s, %, mm/h, m³/m³), written the same in every language.
+  const fmt = (v: number) => (kelvin ? `${n.format(kelvinToCelsius(v))} °C` : legend.unit === "index" ? n.format(v) : `${n.format(v)} ${legend.unit}`);
+  const unitText = kelvin ? t("lstUnit", { min: n.format(legend.min), max: n.format(legend.max) })
+    : layer.key === "ndvi" ? t("ndviUnit")
+    : t(`${layer.key as "wind" | "humidity" | "rain" | "soilWater"}Unit`);
+  const note = layer.cadence === "rolling8" ? t("ndviNote") : layer.cadence === "monthly" ? t("monthlyNote") : layer.lagDays ? t("lagNote", { days: layer.lagDays }) : "";
   return (
     <div className="mt-1">
       <div className="h-2 rounded-full border border-line" style={{ background: legendGradient(legend, rtl ? "to left" : "to right") }} />
-      <div className="mt-1 flex justify-between font-mono text-[11px] text-muted"><span dir="ltr">{lo}</span><span dir="ltr">{hi}</span></div>
-      <p className="mt-0.5 text-[11px] leading-snug text-muted">
-        {kelvin ? t("lstUnit", { min: n.format(legend.min), max: n.format(legend.max) }) : t("ndviUnit")}
-        {layer.cadence === "rolling8" ? ` ${t("ndviNote")}` : ""}
-      </p>
+      <div className="mt-1 flex justify-between font-mono text-[11px] text-muted"><span dir="ltr">{fmt(legend.min)}</span><span dir="ltr">{fmt(legend.max)}</span></div>
+      <p className="mt-0.5 text-[11px] leading-snug text-muted">{unitText}{note ? ` ${note}` : ""}</p>
     </div>
   );
 }
@@ -54,7 +55,7 @@ export function LayersPanel({ state, onChange, daysBack, onDaysBack, rtl, onOpen
   const box = useRef<HTMLDivElement>(null);
   const id = useId();
   const active = OVERLAYS.filter((o) => state[o.id]?.on).length;
-  const dateLabel = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${gibsDate(daysBack)}T00:00:00Z`));
+  const dateLabel = new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${gibsDate(daysBack)}T00:00:00Z`));
   const close = useCallback(() => setOpen(false), []);
   useDismiss(box, open, close);
 
