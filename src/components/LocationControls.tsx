@@ -95,12 +95,12 @@ export function PlaceSearch({ onPick, onLocated, grow = false }: { onPick: (lat:
 
   return (
     <div ref={box} className={`relative ${grow ? "min-w-0 flex-1" : "w-60"}`}>
-      <Icon name={status === "searching" ? "spinner" : "search"} size={18} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted" />
+      <Icon name={status === "searching" ? "spinner" : "search"} size={18} className="pointer-events-none absolute start-3 top-1/2 z-[1] -translate-y-1/2 text-muted" />
       <input value={q} onChange={(e) => setQ(e.target.value)} onFocus={() => setOpen(true)} onKeyDown={key}
         role="combobox" aria-expanded={showList} aria-controls={id} aria-autocomplete="list" aria-activedescendant={showList && hits[active] ? `${id}-${active}` : undefined}
         placeholder={t("search")} aria-label={t("search")} enterKeyHint="search" autoComplete="off"
         className={`fs-field w-full ps-10 text-sm ${onLocated ? "pe-11" : ""}`} />
-      {onLocated && <span className="absolute end-1 top-1/2 -translate-y-1/2"><LocateButton onLocated={onLocated} variant="inline" /></span>}
+      {onLocated && <span className="absolute end-1 top-1/2 z-[1] -translate-y-1/2"><LocateButton onLocated={onLocated} variant="inline" /></span>}
       {showList && (
         <ul id={id} role="listbox" aria-label={t("search")} className="fs-pop absolute start-0 top-full z-40 mt-2 w-[min(20rem,calc(100vw-1.5rem))] p-1">
           {hits.map((h, i) => (

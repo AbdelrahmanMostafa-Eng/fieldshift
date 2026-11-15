@@ -1,5 +1,6 @@
 import type { ExpressionSpecification, RasterSourceSpecification, SkySpecification, StyleSpecification } from "maplibre-gl";
 import { BASE_LAYER, BLUE_MARBLE, GIBS_CREDIT, TERRAIN, tileUrl, type GibsLayer } from "@/lib/gibs";
+import { sunLightPosition } from "./optics";
 
 export type Theme = "light" | "dark";
 
@@ -79,7 +80,16 @@ export function buildStyle(date: string, theme: Theme): StyleSpecification {
       // No background for space: the canvas stays transparent there so the star field shows through.
       // This fill only colours the sphere itself while imagery is still loading.
       { id: LAYER.ground, type: "background", paint: { "background-color": PALETTE[theme].ground } },
-      { id: LAYER.blueMarble, type: "raster", source: "bluemarble", paint: { "raster-fade-duration": 350 } },
+      {
+        // The composite is a touch too vivid for a planet seen through air: slightly less colour, slightly more depth.
+        // Back to the untouched picture by field scale, where colour is information.
+        id: LAYER.blueMarble, type: "raster", source: "bluemarble",
+        paint: {
+          "raster-fade-duration": 350,
+          "raster-saturation": ["interpolate", ["linear"], ["zoom"], 2.5, -0.1, 4.5, 0],
+          "raster-contrast": ["interpolate", ["linear"], ["zoom"], 2.5, 0.04, 4.5, 0],
+        },
+      },
       {
         // Daily imagery has clouds and swath gaps, so it only fades in once the user moves closer.
         id: LAYER.daily, type: "raster", source: "viirs", minzoom: 2.4,
@@ -98,5 +108,7 @@ export function buildStyle(date: string, theme: Theme): StyleSpecification {
       },
     ],
     sky: skyFor(theme),
+    // Only MapLibre's atmosphere reads this: it puts the sun where globe/optics.ts lights the sphere from.
+    light: { anchor: "viewport", position: sunLightPosition(), intensity: 0.5 },
   };
 }

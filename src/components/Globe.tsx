@@ -7,7 +7,8 @@ import { BASE_LAYER, OVERLAYS, tileUrl, type GibsLayer } from "@/lib/gibs";
 import { easeOutCubic, wrapLon, zoomForGlobeDiameter } from "@/lib/geo";
 import { FlatFallback } from "./globe/FlatFallback";
 import { LabelLayer } from "./globe/labels";
-import { StarField } from "./globe/StarField";
+import { GlobeOptics } from "./globe/optics";
+import { StarField, type StarFieldHandle } from "./globe/StarField";
 import {
   FLAT_STATE, LAYER, PALETTE, TERRAIN_EXAGGERATION, TERRAIN_OFF_ZOOM, TERRAIN_ON_ZOOM,
   buildStyle, overlayId, rasterSource, skyFor, type Theme,
@@ -94,6 +95,8 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
   const map = useRef<MlMap | null>(null);
   const pin = useRef<Marker | null>(null);
   const labels = useRef<LabelLayer | null>(null);
+  const optics = useRef<GlobeOptics | null>(null);
+  const stars = useRef<StarFieldHandle>(null);
   const flatness = useRef(0);                 // 0 = globe, 1 = flat map, in between while animating
   const lastMarker = useRef<GlobeProps["marker"]>(null);
   const dolly = useRef({ from: 0, to: 0, t0: 0 });
@@ -225,9 +228,13 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
           else if (terrainOn && z < TERRAIN_OFF_ZOOM) { terrainOn = false; m.setTerrain(null); }
         };
         m.on("zoom", syncTerrain);
+        // The sky behind turns with the camera, a little, which is what gives the scene its depth.
+        m.on("move", () => { if (m) { const c = m.getCenter(); stars.current?.turn(c.lng + m.getBearing(), c.lat); } });
 
         m.once("load", async () => {
           if (cancelled || !m || !el.current) return;
+          optics.current = new GlobeOptics(m, live.current.theme);
+          optics.current.flatness = flatness.current;
           setStatus("ready");
           startSpin();
           try {
@@ -258,6 +265,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
       root?.removeEventListener("keydown", touched);
       document.removeEventListener("visibilitychange", onVisibility);
       labels.current?.destroy(); labels.current = null;
+      optics.current?.destroy(); optics.current = null;
       pin.current?.remove(); pin.current = null;
       homeCtrl.current = null;
       m?.remove(); map.current = null;
@@ -278,6 +286,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
       flatness.current = f;
       m.setGlobalStateProperty(FLAT_STATE, f); // the projection and the limb glow both read this (see globe/style.ts)
       if (labels.current) labels.current.flat = f >= 0.5;
+      if (optics.current) optics.current.flatness = f;
     };
     if (from === to) return;
     if (prefersReducedMotion()) { apply(to); return; }
@@ -296,6 +305,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
     if (!ready || !m) return;
     m.setSky(skyFor(theme as Theme));
     m.setPaintProperty(LAYER.ground, "background-color", PALETTE[theme].ground);
+    optics.current?.setTheme(theme);
   }, [theme, ready]);
 
   // ---- overlays: added on first use, then only shown, hidden or re-tinted -----------------------
@@ -381,7 +391,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
 
   return (
     <div ref={wrap} className="fs-globe absolute inset-0" data-ready={ready} style={{ ["--fs-ctrl-bottom" as string]: `${controlsBottom}px` }}>
-      <StarField strength={PALETTE[theme].stars} />
+      <StarField ref={stars} strength={PALETTE[theme].stars} />
       {status === "unsupported" ? (
         <FlatFallback marker={marker} message={t("noWebgl")} label={t("flatLabel")} inset={inset} onPick={(lat, lon) => { onUserInteract?.(); onPick?.(lat, lon); }} />
       ) : (
