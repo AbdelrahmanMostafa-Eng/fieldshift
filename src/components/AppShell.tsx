@@ -30,8 +30,6 @@ import { Icon } from "./ui/Icon";
 import { Segmented } from "./ui/Segmented";
 
 import { useDismiss, useOnline, useThumb } from "./ui/hooks";
-
-import { useDismiss, useOnline } from "./ui/hooks";
 import { ZoneLegend } from "./ZoneLegend";
 
 type Loc = { lat: number; lon: number };
