@@ -373,7 +373,7 @@ export function AppShell() {
       )}
       {/* Last in the DOM so the tab order reaches the intro, search and results before the map's own buttons. Overlays stack above it by z-index. */}
       <Globe projection={flat ? "mercator" : "globe"} spin={spin} marker={loc} date={date} overlays={activeOverlays}
-        locale={locale} rtl={rtl} inset={inset} controlsBottom={!intro && !wide ? sheetPx : 0} onPick={pick} onUserInteract={stopSpin} onUnsupported={globeUnsupported} />
+        locale={locale} rtl={rtl} inset={inset} controlsBottom={!intro && !wide ? sheetPx : 0} homeVisible={!intro} onPick={pick} onUserInteract={stopSpin} onUnsupported={globeUnsupported} />
 
       {!online && (
         <p role="status" className="fs-pop pointer-events-none absolute inset-x-3 z-50 mx-auto flex max-w-md items-start gap-2 px-4 py-3 text-sm" style={{ top: intro ? 64 : headerPx + 8 }}>

@@ -48,7 +48,8 @@
     "zoomIn": "Aproximar",
     "zoomOut": "Afastar",
     "north": "Apontar para o norte",
-    "credits": "Ver créditos das imagens"
+    "credits": "Ver créditos das imagens",
+    "home": "Voltar ao globo inteiro"
   },
   "place": {
     "n": "N",

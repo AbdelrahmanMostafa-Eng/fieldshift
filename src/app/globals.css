@@ -234,6 +234,12 @@ details[open] > summary .fs-caret { transform: rotate(180deg); }
 .fs-globe .maplibregl-ctrl-group { border-radius: var(--r-2); overflow: hidden; box-shadow: var(--shadow-1); background: var(--raised); }
 .fs-globe .maplibregl-ctrl-group button { width: 36px; height: 36px; background-color: var(--raised); }
 .fs-globe .maplibregl-ctrl-group button + button { border-top: 1px solid var(--line); }
+/* "Back to the whole globe": a drawn icon in the ink colour, so it needs no invert in dark mode. 44 px on touch screens. */
+.fs-globe .fs-home-ctrl[hidden] { display: none; }
+.fs-globe .fs-home { display: grid; place-items: center; color: var(--ink); cursor: pointer; transition: color var(--t-1) var(--ease); }
+.fs-globe .fs-home:hover { color: var(--gold-text); }
+.fs-globe .fs-home:focus-visible { outline: 2px solid var(--gold); outline-offset: -3px; }
+@media (pointer: coarse) { .fs-globe .maplibregl-ctrl-group .fs-home { width: 44px; height: 44px; } }
 :root[data-theme="dark"] .fs-globe .maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(1) brightness(.9); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .fs-globe .maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(1) brightness(.9); } }
 

@@ -48,7 +48,8 @@
     "zoomIn": "放大",
     "zoomOut": "缩小",
     "north": "朝向正北",
-    "credits": "显示影像来源"
+    "credits": "显示影像来源",
+    "home": "回到完整地球"
   },
   "place": {
     "n": "北",

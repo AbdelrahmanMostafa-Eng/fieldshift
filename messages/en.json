@@ -48,7 +48,8 @@
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "north": "Point north",
-    "credits": "Show image credits"
+    "credits": "Show image credits",
+    "home": "Back to the whole globe"
   },
   "place": {
     "n": "N",

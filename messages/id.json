@@ -48,7 +48,8 @@
     "zoomIn": "Perbesar",
     "zoomOut": "Perkecil",
     "north": "Arahkan ke utara",
-    "credits": "Tampilkan kredit citra"
+    "credits": "Tampilkan kredit citra",
+    "home": "Kembali ke seluruh globe"
   },
   "place": {
     "n": "LU",

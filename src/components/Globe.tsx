@@ -30,6 +30,8 @@ export interface GlobeProps {
   inset: GlobeInset;
   /** Lifts the map's corner controls above a bottom sheet. */
   controlsBottom?: number;
+  /** Shows the "back to the whole globe" button (hidden during the intro, where the globe is already there). */
+  homeVisible?: boolean;
   onPick?: (lat: number, lon: number) => void;
   onUserInteract?: () => void;
   /** Called once when the 3D map cannot run and the flat fallback is shown instead. */
@@ -44,6 +46,11 @@ const GLOBE_FILL = 0.84;         // share of the free space the globe fills
 const PICK_ZOOM = 8;             // closest view the daily imagery still supports sharply
 const FLY_MS = 2500;
 const FLATTEN_MS = 900;
+const HOME_MS = 1800;
+// Same family as ui/Icon: 1.5 stroke on a 20 px grid. A small globe inside a turn-back arrow.
+const HOME_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+  + '<path d="M3 10a7 7 0 1 0 2.05-4.95L3 7.1"/><path d="M3 3.2v3.9h3.9"/>'
+  + '<circle cx="10" cy="10" r="3.4"/><ellipse cx="10" cy="10" rx="1.4" ry="3.4"/><path d="M6.6 10h6.8"/></svg>';
 const MIN_ZOOM = 0.4, MAX_ZOOM = 10.5;
 
 const toPadding = (i: GlobeInset, rtl: boolean): PaddingOptions => ({ top: i.top, bottom: i.bottom, left: rtl ? i.end : i.start, right: rtl ? i.start : i.end });
@@ -79,7 +86,7 @@ function webglSupported(): boolean {
   }
 }
 
-export function Globe({ projection, spin, marker, overlays, date, locale, rtl, inset, controlsBottom = 0, onPick, onUserInteract, onUnsupported }: GlobeProps) {
+export function Globe({ projection, spin, marker, overlays, date, locale, rtl, inset, controlsBottom = 0, homeVisible = true, onPick, onUserInteract, onUnsupported }: GlobeProps) {
   const t = useTranslations("globe");
   const theme = useTheme();
   const wrap = useRef<HTMLDivElement>(null);
@@ -94,6 +101,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
   const lib = useRef<typeof import("maplibre-gl") | null>(null);
   const autoFit = useRef(true);               // true until the user moves the globe or picks a place
   const restartSpin = useRef<() => void>(() => {});
+  const homeCtrl = useRef<HTMLDivElement | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "unsupported">("loading");
   const ready = status === "ready";
   useEffect(() => { if (status === "unsupported") onUnsupported?.(); }, [status, onUnsupported]);
@@ -163,6 +171,32 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
         m.addControl(new ml.AttributionControl({ compact: true }), corner);
         if (finePointer) m.addControl(new ml.NavigationControl({ visualizePitch: true }), corner);
 
+        // "Back to the whole globe": undoes any zoom, turn or tilt, on every device (phones have no other map buttons).
+        // Added last, so it sits on top of the corner stack.
+        const homeBox = document.createElement("div");
+        homeBox.className = "maplibregl-ctrl maplibregl-ctrl-group fs-home-ctrl";
+        homeBox.hidden = true;
+        const homeBtn = document.createElement("button");
+        homeBtn.type = "button";
+        homeBtn.className = "fs-home";
+        homeBtn.setAttribute("aria-label", live.current.t("home"));
+        homeBtn.title = live.current.t("home");
+        homeBtn.innerHTML = HOME_ICON;
+        homeBtn.addEventListener("click", () => {
+          const mm = map.current, box = el.current;
+          if (!mm || !box) return;
+          const pad = toPadding(live.current.inset, live.current.rtl);
+          // With a place picked, the whole globe turns to face it, so the pin stays in sight.
+          const c = lastMarker.current ?? START;
+          flight.current = null;
+          autoFit.current = true; // from here on the globe keeps fitting the free space again
+          mm.stop();
+          mm.flyTo({ center: [c.lon, c.lat], zoom: fitZoom(box, pad, c.lat), bearing: 0, pitch: 0, padding: pad, curve: 1.2, easing: easeInOut, duration: prefersReducedMotion() ? 0 : HOME_MS, essential: true });
+        });
+        homeBox.appendChild(homeBtn);
+        m.addControl({ onAdd: () => homeBox, onRemove: () => homeBox.remove() }, corner);
+        homeCtrl.current = homeBox;
+
         // A missing or failed tile (GIBS answers 500 for some tiles with no data) is not worth an error:
         // the map simply keeps what it has. Anything else is still reported.
         m.on("error", (e) => {
@@ -225,6 +259,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
       document.removeEventListener("visibilitychange", onVisibility);
       labels.current?.destroy(); labels.current = null;
       pin.current?.remove(); pin.current = null;
+      homeCtrl.current = null;
       m?.remove(); map.current = null;
       lastMarker.current = null;
       flatness.current = 0;
@@ -330,6 +365,9 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
       m.easeTo({ padding: pad, ...zoom, duration: reduce ? 0 : 600, essential: true });
     }
   }, [marker, top, bottom, start, end, rtl, ready]);
+
+  // ---- the home button shows once the intro is over ---------------------------------------------
+  useEffect(() => { if (ready && homeCtrl.current) homeCtrl.current.hidden = !homeVisible; }, [homeVisible, ready]);
 
   // ---- map corner controls sit at the reading-end side -------------------------------------------
   useEffect(() => {

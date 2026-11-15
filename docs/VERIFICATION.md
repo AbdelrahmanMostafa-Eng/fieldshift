@@ -35,6 +35,8 @@ Measured with the Playwright and Chromium already on the machine (Lighthouse its
 | Failed climate request | Clear message and a working "Try again". |
 | Reduced motion | The globe does not spin on its own (two frames 2 s apart are identical). |
 | Dead code | Two unused translation keys removed from all 12 languages. |
+| "Back to the whole globe" button | Hidden during the intro, shown after it on every device (44 px on touch screens, where it is the only map button). After zooming in, turning the globe about 45° and tilting it about 17° with the keyboard, one press returns to north up, no tilt, whole globe sized to the free space (compass reads 0° and 0°). Works with Enter from the keyboard; label in the page language; on the reading-end side in Arabic. With a place picked, the globe turns to face it so the pin stays in view. |
+| Build cache | Two builds with Turbopack's build cache warm shipped a stale `globals.css` (new rules missing). The build cache is now off in `next.config.ts`, because Vercel restores `.next/cache` between deploys; a CSS change was confirmed to land with the old cache folder still present. |
 
 ## Checks run on the code
 - `npm run typecheck`, `npm test` (166 tests), `npx eslint src` and `npm run build` pass.

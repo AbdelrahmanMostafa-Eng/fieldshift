@@ -48,7 +48,8 @@
     "zoomIn": "Zoom avant",
     "zoomOut": "Zoom arrière",
     "north": "Orienter vers le nord",
-    "credits": "Voir les crédits d'image"
+    "credits": "Voir les crédits d'image",
+    "home": "Revenir au globe entier"
   },
   "place": {
     "n": "N",
