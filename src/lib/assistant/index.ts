@@ -42,7 +42,8 @@ function monthMean(m: Monthly, month: number): number | null {
   const v = m.map((row) => row[month]).filter((x): x is number => x !== null);
   return v.length ? mean(v) : null;
 }
-const monthName = (ctx: AssistantContext, m: number) => new Intl.DateTimeFormat(ctx.lang, { calendar: "gregory", month: "long" }).format(new Date(2026, m, 1));
+/** Month names in the answer's own language: Atlas answers in English or Arabic, whatever the page language is. */
+const monthName = (ctx: AssistantContext, m: number) => new Intl.DateTimeFormat(ar(ctx) ? "ar" : "en", { calendar: "gregory", month: "long" }).format(new Date(2026, m, 1));
 
 // ---------- crop detection ----------
 /** Drop the Arabic definite article so "الذرة الرفيعة" matches the alias "ذرة رفيعة". */
@@ -251,19 +252,21 @@ function forecastAnswer(ctx: AssistantContext): Reply {
 }
 
 function rankingAnswer(ctx: AssistantContext): Reply {
-  if (!ctx.strategies.length) return needPlace(ctx, "ranking");
+  if (!ctx.strategies.length) return ctx.location ? climateLoading(ctx, "ranking") : needPlace(ctx, "ranking");
   const top = [...ctx.strategies].sort((a, b) => b.scores.overall - a.scores.overall)[0];
   const seq = top.sequence.map(cropLabel).join(" → ");
   const conf = { low: { en: "low", ar: "منخفضة" }, medium: { en: "medium", ar: "متوسطة" }, high: { en: "high", ar: "مرتفعة" } }[top.confidence];
   // Same names as the strategy entries show (messages/ar.json results.strategy).
   const labelAr: Record<Strategy["id"], string> = { current: "خطتك الحالية", soil: "باني التربة", water: "موفّر المياه", income: "دخل متنوع", balanced: "متوازنة (أولوياتك)" };
   const bare = (s: string | undefined) => s?.replace(/\.\s*$/, "");
+  const n = top.sequence.length;
+  const span = { en: n === 1 ? "One-season net" : `Net over ${n} seasons`, ar: n === 1 ? "صافي موسم واحد" : n === 2 ? "صافي موسمين" : `صافي ${n} مواسم` };
   const net = top.netUsdHa === null
-    ? { en: "Three-year net: not available (a crop in it has no catalogue yield or price).", ar: "صافي ثلاث سنوات: غير متاح (أحد محاصيلها بلا إنتاج أو سعر في الكتالوج)." }
-    : { en: `Three-year net about ${ctx.money(top.netUsdHa)} per hectare (illustrative).`, ar: `صافي ثلاث سنوات نحو ${ctx.money(top.netUsdHa)} للهكتار (توضيحي).` };
+    ? { en: `${span.en}: not available (a crop in it has no catalogue yield or price).`, ar: `${span.ar}: غير متاح (أحد محاصيلها بلا إنتاج أو سعر في الكتالوج).` }
+    : { en: `${span.en}: about ${ctx.money(top.netUsdHa)} per hectare (illustrative).`, ar: `${span.ar}: نحو ${ctx.money(top.netUsdHa)} للهكتار (توضيحي).` };
   return reply(ctx, "ranking", {
-    en: `With your current priorities, "${top.label}" scores highest overall (${r0(top.scores.overall)}/100): ${seq}. ${net.en} Confidence: ${conf.en}. Why: ${bare(top.why[0]) ?? "see the card"}. A gap to remember: ${bare(top.gaps[0]) ?? "no local soil test yet"}. Move the priority sliders to see the ranking change.`,
-    ar: `بحسب أولوياتك الحالية، تحصل استراتيجية «${labelAr[top.id]}» على أعلى درجة إجمالية (${r0(top.scores.overall)}/100): ${seq}. ${net.ar} الثقة: ${conf.ar}. السبب (بالإنجليزية): ${bare(top.why[0]) ?? "راجع البطاقة"}. ثغرة يجب تذكّرها (بالإنجليزية): ${bare(top.gaps[0]) ?? "لا يوجد تحليل تربة محلي بعد"}. حرّك مؤشرات الأولويات لترى التصنيف يتغيّر.`,
+    en: `With your current priorities, "${top.label}" scores highest overall (${r0(top.scores.overall)}/100): ${seq}. ${net.en} Confidence: ${conf.en}. Why: ${bare(top.why[0]) ?? "see the card"}. A gap to remember: ${bare(top.gaps[0]) ?? "no local soil test yet"}. Change what matters most (Low, Medium, High) to see the ranking change.`,
+    ar: `بحسب أولوياتك الحالية، تحصل استراتيجية «${labelAr[top.id]}» على أعلى درجة إجمالية (${r0(top.scores.overall)}/100): ${seq}. ${net.ar} الثقة: ${conf.ar}. السبب (بالإنجليزية): ${bare(top.why[0]) ?? "راجع البطاقة"}. ثغرة يجب تذكّرها (بالإنجليزية): ${bare(top.gaps[0]) ?? "لا يوجد تحليل تربة محلي بعد"}. غيّر ما يهمك أكثر (منخفض، متوسط، مرتفع) لترى التصنيف يتغيّر.`,
   }, [SRC.engine, SRC.catalog, SRC.econ]);
 }
 
@@ -352,8 +355,8 @@ export function answer(question: string, ctx: AssistantContext): Reply {
       }, []);
     case "howto":
       return reply(ctx, "howto", {
-        en: "1) Search a place, tap Find my location, or tap the globe. 2) In Rotations, set your last three crops and your plan. 3) Move the sliders for what matters most. 4) Compare the strategy cards: scores, likely range, cost and ROI in your currency. 5) Switch the 3D globe to a 2D map or add a NASA layer from the top bar.",
-        ar: "١) ابحث عن مكان أو اضغط «حدّد موقعي» أو المس الكرة. ٢) في تبويب الدورات حدّد آخر ثلاثة محاصيل وخطتك. ٣) حرّك المؤشرات لما يهمك أكثر. ٤) قارن بطاقات الاستراتيجيات: الدرجات والنطاق المحتمل والتكلفة والعائد بعملتك. ٥) بدّل الكرة ثلاثية الأبعاد إلى خريطة ثنائية أو أضف طبقة ناسا من الشريط العلوي.",
+        en: "1) Search a place, tap Find my location, or tap the globe. 2) In Rotations, set your past crops and your plan (one to five seasons). 3) Set what matters most: Low, Medium or High. 4) Compare the strategy cards: scores, likely range, cost and ROI in your currency. 5) Switch the 3D globe to a 2D map or add a NASA layer from the top bar.",
+        ar: "١) ابحث عن مكان أو اضغط «حدّد موقعي» أو المس الكرة. ٢) في تبويب الدورات حدّد محاصيلك السابقة وخطتك (من موسم إلى خمسة مواسم). ٣) حدّد ما يهمك أكثر: منخفض أو متوسط أو مرتفع. ٤) قارن بطاقات الاستراتيجيات: الدرجات والنطاق المحتمل والتكلفة والعائد بعملتك. ٥) بدّل الكرة ثلاثية الأبعاد إلى خريطة ثنائية أو أضف طبقة ناسا من الشريط العلوي.",
       }, []);
   }
 

@@ -54,7 +54,15 @@ describe("parsing a real POWER regional response (extract saved 15 Nov 2026)", (
 describe("scoring zones", () => {
   const cells = mergeCells(parseRegional(live.T2M, "T2M"), parseRegional(live.PRECTOTCORR, "PRECTOTCORR"));
   it("uses the library's bands", () => {
-    expect(zoneLevel(70)).toBe("good"); expect(zoneLevel(69.9)).toBe("possible"); expect(zoneLevel(40)).toBe("possible"); expect(zoneLevel(39.9)).toBe("poor");
+    expect(zoneLevel(70)).toBe("good"); expect(zoneLevel(69.4)).toBe("possible"); expect(zoneLevel(40)).toBe("possible"); expect(zoneLevel(39.4)).toBe("poor");
+  });
+  it("bands the score as it is shown (whole numbers), so the colour always matches the legend", () => {
+    // 69.6 is shown as "70/100": the legend says 70 or more is good. 39.6 is shown as "40/100": possible.
+    expect(zoneLevel(69.6)).toBe("good"); expect(zoneLevel(39.6)).toBe("possible");
+    for (let s = 0; s <= 100; s += 0.1) {
+      const shown = Math.round(s);
+      expect(zoneLevel(s)).toBe(shown >= 70 ? "good" : shown >= 40 ? "possible" : "poor");
+    }
   });
   it("finds rain-fed rice poor around Riyadh and better with irrigation", () => {
     const dry = scoreZones(crop("rice"), cells, false), wet = scoreZones(crop("rice"), cells, true);

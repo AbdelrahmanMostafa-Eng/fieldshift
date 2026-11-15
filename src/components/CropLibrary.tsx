@@ -8,14 +8,14 @@ import { FERTILITY_SOURCE, fertilityNotes } from "@/lib/fertility";
 import { plantingWindow, type Fit } from "@/lib/farm";
 import { hasEconomics, placeFit, type PlaceFit } from "@/lib/rotation/engine";
 import type { ClimateSeries, Crop } from "@/lib/rotation/types";
+import { zoneLevel, type ZoneLevel } from "@/lib/zones";
 import { CropIcon } from "./ui/CropIcon";
 import { Icon } from "./ui/Icon";
 import { Segmented } from "./ui/Segmented";
 
-type Level = "good" | "possible" | "poor";
-/** Display bands for the fit score. A reading aid, stated on screen; not an agronomic standard. */
-const level = (score: number): Level => (score >= 70 ? "good" : score >= 40 ? "possible" : "poor");
-const LEVEL_BARS: Record<Level, number> = { good: 3, possible: 2, poor: 1 };
+// Display bands for the fit score, shared with the suggestions and the map zones (a reading aid, not an agronomic standard).
+const level = zoneLevel;
+const LEVEL_BARS: Record<ZoneLevel, number> = { good: 3, possible: 2, poor: 1 };
 const FIT_CLASS: Record<Fit, string> = { good: "bg-gold", possible: "bg-gold/35", no: "bg-line", unknown: "border border-dashed border-line-strong" };
 const PRICED = CROPS.filter(hasEconomics).length;
 

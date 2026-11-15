@@ -46,6 +46,31 @@ export function parsePowerMonthly(json: unknown, meta: { lat: number; lon: numbe
   };
 }
 
+const complete = (row: (number | null)[] | undefined) => !!row && row.length === 12 && row.every((v) => v !== null);
+
+/**
+ * The newest `keep` years that have all twelve months of temperature and rain.
+ * POWER publishes a year month by month and fills the months it has not reached with -999 (checked live, 15 Nov 2026:
+ * 2026 ended in September for T2M and July for sunlight). Asking for "last year" early in a new year therefore returns a
+ * half-empty year, and the engine reads a missing month as no rain, which would look like a drought. Such years at the
+ * end of the series are dropped. A series with no complete year is returned unchanged.
+ */
+export function keepCompleteYears(s: ClimateSeries, keep: number): ClimateSeries {
+  let end = s.years.length;
+  while (end > 0 && !(complete(s.T2M[end - 1]) && complete(s.PRECTOTCORR[end - 1]))) end--;
+  if (end === 0) return s;
+  const from = Math.max(0, end - keep);
+  const cut = (m: Monthly) => m.slice(from, end);
+  return {
+    ...s,
+    years: s.years.slice(from, end),
+    T2M: cut(s.T2M),
+    ...(s.T2M_MIN ? { T2M_MIN: cut(s.T2M_MIN) } : {}),
+    PRECTOTCORR: cut(s.PRECTOTCORR),
+    ALLSKY_SFC_SW_DWN: cut(s.ALLSKY_SFC_SW_DWN),
+  };
+}
+
 /** Round to a 0.25° cell so nearby farms share one cache row. */
 export function cellKey(lat: number, lon: number, startYear: number, endYear: number) {
   const r = (v: number) => (Math.round(v * 4) / 4).toFixed(2);

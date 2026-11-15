@@ -2,7 +2,7 @@
 import { useCallback, useId, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Icon } from "./Icon";
-import { useDismiss, useTouchFirst } from "./hooks";
+import { useDismiss, useTouchFirst, revealActive, stepActive } from "./hooks";
 
 export interface CurrencyItem { code: string; name: string }
 
@@ -21,6 +21,7 @@ export function CurrencyCombobox({ value, onChange, currencies }: { value: strin
   const id = useId();
   const close = useCallback(() => { setOpen(false); setQ(""); }, []);
   useDismiss(box, open, close);
+  const list = useRef<HTMLUListElement>(null);
 
   const items = useMemo(() => {
     const collator = new Intl.Collator(locale);
@@ -48,15 +49,15 @@ export function CurrencyCombobox({ value, onChange, currencies }: { value: strin
 
   const choose = (code: string) => { onChange(code); close(); };
   const key = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(hits.length - 1, a + 1)); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(0, a - 1)); }
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => stepActive(a, 1, hits.length)); revealActive(list); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => stepActive(a, -1, hits.length)); revealActive(list); }
     else if (e.key === "Enter") { e.preventDefault(); if (hits[active]) choose(hits[active].code); }
   };
 
   return (
     <div ref={box} className="relative min-w-0 flex-1">
       <button type="button" aria-haspopup="listbox" aria-expanded={open} aria-label={`${t("currency")}: ${current?.name ?? value}`}
-        onClick={() => { setOpen((o) => !o); setActive(Math.max(0, items.findIndex((c) => c.code === value))); }}
+        onClick={() => { setOpen((o) => !o); setActive(Math.max(0, items.findIndex((c) => c.code === value))); revealActive(list); }}
         className="fs-field flex w-full items-center justify-between gap-2 text-start">
         <span className="truncate">{current ? `${current.name} · ${current.code}` : value}</span>
         <Icon name="chevron" size={16} className="text-muted" />
@@ -65,12 +66,12 @@ export function CurrencyCombobox({ value, onChange, currencies }: { value: strin
         <div className="fs-pop absolute inset-x-0 top-full z-30 mt-1 p-2">
           <label className="relative block">
             <Icon name="search" size={16} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input autoFocus value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }} onKeyDown={key}
+            <input autoFocus value={q} onChange={(e) => { setQ(e.target.value); setActive(0); revealActive(list); }} onKeyDown={key}
               role="combobox" aria-expanded="true" aria-controls={id} aria-autocomplete="list" aria-activedescendant={hits[active] ? `${id}-${hits[active].code}` : undefined}
               aria-label={t("search")} placeholder={t("search")} className="fs-field w-full ps-9 text-sm" />
           </label>
           <p className="mt-1 px-1 text-[11px] text-muted">{t("count", { count: items.length })}</p>
-          <ul id={id} role="listbox" aria-label={t("currency")} className="mt-1 max-h-64 overflow-y-auto overscroll-contain">
+          <ul ref={list} id={id} role="listbox" aria-label={t("currency")} className="mt-1 max-h-64 overflow-y-auto overscroll-contain">
             {hits.map((c, i) => (
               <li key={c.code} id={`${id}-${c.code}`} role="option" aria-selected={c.code === value}>
                 <button type="button" tabIndex={-1} data-active={i === active} data-selected={c.code === value} onMouseEnter={() => setActive(i)} onClick={() => choose(c.code)} className="fs-option justify-between">

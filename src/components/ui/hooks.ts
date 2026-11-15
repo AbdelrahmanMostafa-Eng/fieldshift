@@ -13,6 +13,26 @@ export function useDismiss(ref: RefObject<HTMLElement | null>, open: boolean, cl
   }, [ref, open, close]);
 }
 
+/**
+ * Scrolls an open list just enough to show its highlighted option ([data-active="true"]), once React has drawn it.
+ * Called when the list opens (the current choice) and on each arrow key, never on hover, so the list never moves under a resting pointer.
+ * Only the list itself scrolls, not the panel around it.
+ */
+export function revealActive(list: RefObject<HTMLElement | null>) {
+  requestAnimationFrame(() => {
+    const ul = list.current, el = ul?.querySelector<HTMLElement>('[data-active="true"]');
+    if (!ul || !el) return;
+    const r = el.getBoundingClientRect(), box = ul.getBoundingClientRect();
+    // Pop-ups open with a small scale animation (.fs-pop): turn on-screen pixels back into the list's own pixels.
+    const k = box.height > 0 ? ul.offsetHeight / box.height : 1;
+    if (r.top < box.top) ul.scrollBy(0, (r.top - box.top) * k);
+    else if (r.bottom > box.bottom) ul.scrollBy(0, (r.bottom - box.bottom) * k);
+  });
+}
+
+/** Next highlighted index for ArrowDown / ArrowUp in a list of `count` options; stays at 0 for an empty list. */
+export const stepActive = (active: number, delta: 1 | -1, count: number): number => Math.max(0, Math.min(count - 1, active + delta));
+
 /** Follows a CSS media query. False on the server and on the first client render. */
 export function useMedia(query: string): boolean {
   return useSyncExternalStore(

@@ -49,7 +49,10 @@
     "rainUnit": "Milimeter sejam, daripada anggaran hujan satelit IMERG NASA.",
     "soilWaterUnit": "Isi padu air bagi setiap isi padu tanah di zon akar (model MERRA-2).",
     "monthlyNote": "Purata bulanan: ia menunjukkan bulan terbaru yang diterbitkan NASA, biasanya beberapa bulan lalu, bukan tarikh imej di bawah.",
-    "lagNote": "Harian, lewat kira-kira {days} hari: tarikh terbaru menunjukkan hari terkini yang tersedia."
+    "lagNote": "Harian, lewat kira-kira {days} hari: tarikh terbaru menunjukkan hari terkini yang tersedia.",
+    "rainShort": "Hujan",
+    "snow": "Salji",
+    "sharp": "Paparan terdekat: mozek Landsat 30 m, dibuat daripada imej sekitar tahun 2000. Ladang, jalan dan pekan mungkin telah berubah sejak itu."
   },
   "globe": {
     "label": "Bumi interaktif. Seret untuk memusingkannya, tatal atau cubit untuk mengezum, klik atau ketik untuk memilih tempat.",

@@ -6,13 +6,15 @@ import { Icon } from "./ui/Icon";
 
 type Ctx = Omit<AssistantContext, "lang">;
 interface Msg { role: "user" | "assistant"; text: string; sources?: string[] }
+/** The conversation so far. Kept by the page, so it survives switching tabs (this panel unmounts). */
+export interface AtlasLog { msgs: Msg[]; suggestions: string[] | null }
+export const EMPTY_LOG: AtlasLog = { msgs: [], suggestions: null };
 
 /** Free rule-based helper: runs entirely in the browser, no model, no network, no key. */
-export function AssistantChat(props: Ctx) {
+export function AssistantChat({ log, onLog, ...props }: Ctx & { log: AtlasLog; onLog: (update: (l: AtlasLog) => AtlasLog) => void }) {
   const t = useTranslations("atlas");
   const lang = useLocale();
-  const [msgs, setMsgs] = useState<Msg[]>([]);
-  const [suggestions, setSuggestions] = useState<string[] | null>(null);
+  const { msgs, suggestions } = log;
   const [input, setInput] = useState("");
   const [copied, setCopied] = useState<number | null>(null);
   const copy = (i: number, text: string) => { navigator.clipboard?.writeText(text).then(() => { setCopied(i); setTimeout(() => setCopied(null), 1600); }).catch(() => {}); };
@@ -22,8 +24,7 @@ export function AssistantChat(props: Ctx) {
     const text = q.trim();
     if (!text) return;
     const r: Reply = answer(text, { ...props, lang });
-    setMsgs((m) => [...m, { role: "user", text }, { role: "assistant", text: r.text, sources: r.sources }]);
-    setSuggestions(r.suggestions);
+    onLog((l) => ({ msgs: [...l.msgs, { role: "user", text }, { role: "assistant", text: r.text, sources: r.sources }], suggestions: r.suggestions }));
     setInput("");
   };
 

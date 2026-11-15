@@ -263,3 +263,25 @@ describe("fertiliser questions", () => {
     expect(answer("How much fertilizer per hectare for wheat?", ctx()).intent).toBe("dosing");
   });
 });
+
+describe("plan length, loading and language", () => {
+  const strategiesFor = (current: string[]) =>
+    recommend({ climate: climate(20, 2), catalog: CROPS, history: ["wheat"], current, startMonth: 9, irrigated: false, hasLocalSoil: false, weights: { soil: 3, water: 3, climate: 3, economics: 3, risk: 3 } });
+  it("names the real number of seasons in the net return, not always three", () => {
+    const five = answer("Which rotation is best?", withClimate({ strategies: strategiesFor(["wheat", "chickpea", "maize", "barley", "lentil"]) }));
+    expect(five.text).toMatch(/over 5 seasons/);
+    expect(five.text).not.toMatch(/three/i);
+    const one = answer("Which rotation is best?", withClimate({ strategies: strategiesFor(["wheat"]) }));
+    expect(one.text).toMatch(/One-season net/);
+  });
+  it("says the data is loading, not 'pick a place', when a place is already chosen", () => {
+    const r = answer("Which rotation is best?", ctx({ location: { lat: 24.7, lon: 46.7 } }));
+    expect(r.text).toMatch(/still loading/);
+    expect(r.text).not.toMatch(/Pick a place/);
+  });
+  it("uses English month names in English answers, whatever the page language", () => {
+    const r = answer("Summarise the climate here", withClimate({ lang: "fr", climate: { ...climate(20, 1), T2M: years.map(() => Array.from({ length: 12 }, (_, m) => 10 + m)) } }));
+    expect(r.text).toMatch(/warmest month December/);
+    expect(r.text).not.toMatch(/décembre/i);
+  });
+});

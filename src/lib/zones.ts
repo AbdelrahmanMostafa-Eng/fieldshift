@@ -15,7 +15,11 @@ export const POWER_GRID = { dLat: 0.5, dLon: 0.625, source: "NASA POWER climatol
 /** Display bands, the same as the crop library: a reading aid stated on screen, not an agronomic standard. */
 export const ZONE_BANDS = { good: 70, possible: 40 } as const;
 export type ZoneLevel = "good" | "possible" | "poor";
-export const zoneLevel = (score: number): ZoneLevel => (score >= ZONE_BANDS.good ? "good" : score >= ZONE_BANDS.possible ? "possible" : "poor");
+/** Banded on the whole number the screen shows, so a score shown as "70/100" is never coloured as "possible". */
+export const zoneLevel = (score: number): ZoneLevel => {
+  const shown = Math.round(score);
+  return shown >= ZONE_BANDS.good ? "good" : shown >= ZONE_BANDS.possible ? "possible" : "poor";
+};
 
 export interface Box { latMin: number; latMax: number; lonMin: number; lonMax: number }
 export interface ZoneCell { lat: number; lon: number; t: (number | null)[]; p: (number | null)[] }

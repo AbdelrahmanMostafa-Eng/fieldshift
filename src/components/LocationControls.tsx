@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Icon } from "./ui/Icon";
-import { useDismiss } from "./ui/hooks";
+import { useDismiss, stepActive } from "./ui/hooks";
 
 interface Hit { label: string; lat: number; lon: number }
 type LocateState = "idle" | "busy" | "denied" | "error";
@@ -10,6 +10,7 @@ type LocateState = "idle" | "busy" | "denied" | "error";
 /** Asks the browser for the device position. Reports "denied" and "error" so the caller can show them in words. */
 function useLocate(onLocated: (lat: number, lon: number) => void) {
   const [state, setState] = useState<LocateState>("idle");
+  const reset = useCallback(() => setState("idle"), []);
   const locate = () => {
     if (!("geolocation" in navigator)) return setState("error");
     setState("busy");
@@ -19,7 +20,7 @@ function useLocate(onLocated: (lat: number, lon: number) => void) {
       { timeout: 10_000, maximumAge: 600_000 },
     );
   };
-  return { state, locate };
+  return { state, locate, reset };
 }
 
 /**
@@ -28,13 +29,16 @@ function useLocate(onLocated: (lat: number, lon: number) => void) {
  */
 export function LocateButton({ onLocated, variant = "primary" }: { onLocated: (lat: number, lon: number) => void; variant?: "primary" | "icon" | "inline" }) {
   const t = useTranslations("nav");
-  const { state, locate } = useLocate(onLocated);
+  const { state, locate, reset } = useLocate(onLocated);
   const busy = state === "busy";
   const problem = state === "denied" ? t("locateDenied") : state === "error" ? t("locateError") : "";
+  // The note says why nothing happened; a press anywhere else or Escape puts it away again.
+  const wrap = useRef<HTMLSpanElement>(null);
+  useDismiss(wrap, !!problem, reset);
   const cls = variant === "primary" ? "fs-btn fs-btn-primary" : variant === "icon" ? "fs-btn fs-btn-primary fs-btn-icon"
     : "grid h-9 w-9 place-content-center rounded-sm text-muted transition-colors hover:text-ink";
   return (
-    <span className="relative inline-flex">
+    <span ref={wrap} className="relative inline-flex">
       <button type="button" onClick={locate} disabled={busy} aria-busy={busy} aria-label={variant === "primary" ? undefined : t("locate")} title={variant === "primary" ? undefined : t("locate")} className={cls}>
         <Icon name={busy ? "spinner" : "locate"} />
         {variant === "primary" && <span>{t("locate")}</span>}
@@ -87,8 +91,8 @@ export function PlaceSearch({ onPick, onLocated, grow = false }: { onPick: (lat:
 
   const choose = (h: Hit) => { chosen.current = h.label; setQ(h.label); setHits([]); setOpen(false); onPick(h.lat, h.lon, h.label); };
   const key = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((a) => Math.min(hits.length - 1, a + 1)); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(0, a - 1)); }
+    if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((a) => stepActive(a, 1, hits.length)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => stepActive(a, -1, hits.length)); }
     else if (e.key === "Enter" && open && hits[active]) { e.preventDefault(); choose(hits[active]); }
   };
   const showList = open && (hits.length > 0 || status === "empty" || status === "failed");

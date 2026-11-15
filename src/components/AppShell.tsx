@@ -9,7 +9,7 @@ import { MAX_SEASONS, recommend, weightsFrom, type Importance } from "@/lib/rota
 import { scoreZones, zoneBox, zonesGeoJson, type Box, type ZoneCell } from "@/lib/zones";
 import type { ClimateSeries, Weights } from "@/lib/rotation/types";
 import { CURRENT_REFRESH_MS, type CurrentWeather, type ForecastDay } from "@/lib/openmeteo";
-import { AssistantChat } from "./AssistantChat";
+import { AssistantChat, EMPTY_LOG, type AtlasLog } from "./AssistantChat";
 import { CostTracker } from "./CostTracker";
 import { CropLibrary } from "./CropLibrary";
 import { CursorRing } from "./CursorRing";
@@ -105,6 +105,7 @@ export function AppShell() {
   const [zoneFailed, setZoneFailed] = useState<string | null>(null);
   const [currency, setCurrency] = useState("USD");
   const [rates, setRates] = useState<Rates>({});
+  const [atlasLog, setAtlasLog] = useState<AtlasLog>(EMPTY_LOG);
   const rtl = dirFor(locale) === "rtl";
   const online = useOnline();
   const weights = useMemo(() => weightsFrom(priority), [priority]);
@@ -206,6 +207,8 @@ export function AppShell() {
   useEffect(() => {
     if (!loc || !zoneCrop || !zoneKey || zoneData?.key === zoneKey) return;
     const ctl = new AbortController();
+    // A new try (the zones shown again after a failure) reads "loading", not the old failure.
+    Promise.resolve().then(() => setZoneFailed((f) => (f === zoneKey ? null : f)));
     fetch(`/api/zones?lat=${loc.lat}&lon=${loc.lon}`, { signal: ctl.signal })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((j: { box: Box; cells: ZoneCell[] }) => { setZoneData({ key: zoneKey, box: j.box, cells: j.cells }); setZoneFailed(null); })
@@ -364,7 +367,7 @@ export function AppShell() {
             <div id="fs-tabpanel" role="tabpanel" aria-labelledby={`fs-tab-${tab}`}>
             <div key={tab} className="fs-swap">
 
-            {tab === "atlas" && <div className="mt-4 h-[55dvh]"><AssistantChat location={loc} climate={climate} forecast={forecast} strategies={strategies} startMonth={startMonth} money={money} /></div>}
+            {tab === "atlas" && <div className="mt-4 h-[55dvh]"><AssistantChat log={atlasLog} onLog={setAtlasLog} location={loc} climate={climate} forecast={forecast} strategies={strategies} startMonth={startMonth} money={money} /></div>}
             {tab === "seasons" && (climate ? <SeasonsPanel climate={climate} forecast={forecast} plan={current} now={now} /> : stateBlock)}
             {tab === "costs" && <CostTracker plan={current} currency={currency} rates={rates} money={money} />}
             {tab === "crops" && <CropLibrary plan={current} onUse={(i, id) => setAt(current, setCurrent, i, id)} onAdd={canAdd ? addCrop : undefined} onZones={loc ? showZones : undefined} zoneCrop={zoneCrop} money={money} climate={climate} irrigated={irrigated} />}

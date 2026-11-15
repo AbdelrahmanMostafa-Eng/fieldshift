@@ -8,6 +8,18 @@ export function wrapLon(lon: number): number {
 
 export const clampLat = (lat: number): number => Math.max(-85, Math.min(85, lat));
 
+/**
+ * Reads `lat` and `lon` from a query string; null when either is missing, empty, not a number or off the globe.
+ * Checked as text first: Number(null) and Number("") are both 0, which would quietly answer for 0° N 0° E, open sea.
+ */
+export function parseLatLon(params: URLSearchParams): { lat: number; lon: number } | null {
+  const rawLat = params.get("lat")?.trim(), rawLon = params.get("lon")?.trim();
+  if (!rawLat || !rawLon) return null;
+  const lat = Number(rawLat), lon = Number(rawLon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+  return { lat, lon };
+}
+
 /** Web Mercator: fraction of the map height (0 = top, 1 = bottom) to latitude in degrees. */
 export function mercatorYToLat(y: number): number {
   return (Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) * 180) / Math.PI;

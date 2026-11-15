@@ -49,7 +49,10 @@
     "rainUnit": "Millimetriä tunnissa, NASAn IMERG-satelliittisadearviosta.",
     "soilWaterUnit": "Veden tilavuus maan tilavuutta kohden juurivyöhykkeessä (MERRA-2-malli).",
     "monthlyNote": "Kuukausikeskiarvo: näyttää uusimman NASAn julkaiseman kuukauden, yleensä muutaman kuukauden takaa, ei alla olevaa kuvan päivämäärää.",
-    "lagNote": "Päivittäinen, noin {days} päivää jäljessä: uusimmat päivämäärät näyttävät viimeisimmän saatavilla olevan päivän."
+    "lagNote": "Päivittäinen, noin {days} päivää jäljessä: uusimmat päivämäärät näyttävät viimeisimmän saatavilla olevan päivän.",
+    "rainShort": "Sade",
+    "snow": "Lumi",
+    "sharp": "Lähin näkymä: 30 metrin Landsat-mosaiikki, koottu noin vuoden 2000 kuvista. Pellot, tiet ja taajamat ovat voineet muuttua sen jälkeen."
   },
   "globe": {
     "label": "Vuorovaikutteinen maapallo. Käännä vetämällä, zoomaa vierittämällä tai nipistämällä, valitse paikka napsauttamalla tai napauttamalla.",

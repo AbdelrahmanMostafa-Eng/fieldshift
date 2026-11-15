@@ -53,7 +53,7 @@ Note for anyone repeating this in a sandbox: Node's built-in `fetch` ignores `HT
 | First-pass translations, key parity test, honest note that Atlas answers in English and Arabic only | Done for 18 languages besides English and Arabic (Finnish and Malay added last, with all 81 crop names). |
 
 ## Checks run on the code
-- `npm run typecheck`, `npm test` (235 tests), `npx eslint src` and `npm run build` pass.
+- `npm run typecheck`, `npm test` (252 tests), `npx eslint src` and `npm run build` pass.
 - The assistant's evaluation prompts are unit tests in `src/lib/assistant/assistant.test.ts`. The assistant contains no AI model and makes no network call.
 - Logic with its own tests: rotation engine (1 to 5 seasons, Low/Medium/High weights, crops without economics, per-place fit), suitability zones (including the land mask, on a real POWER extract), climatology (including sunlight), costs and return, seasons, frost months, planting windows, texture classes, fertiliser notes, NASA POWER and Open-Meteo parsers (including current conditions), GIBS addresses and time handling, the crop library against its EcoCrop records, the CSV import, and translation key parity across 20 languages.
 

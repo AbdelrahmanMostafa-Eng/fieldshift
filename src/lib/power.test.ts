@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPowerMonthlyUrl, cellKey, parsePowerMonthly } from "./power";
+import { buildPowerMonthlyUrl, cellKey, keepCompleteYears, parsePowerMonthly } from "./power";
 
 const fixture = {
   properties: {
@@ -36,6 +36,32 @@ describe("urls and cache keys", () => {
   });
   it("rounds nearby points into one cache cell", () => {
     expect(cellKey(24.71, 46.66, 2001, 2024).key).toBe(cellKey(24.8, 46.7, 2001, 2024).key);
+  });
+});
+
+describe("keepCompleteYears", () => {
+  const row = (v: number) => Array.from({ length: 12 }, () => v);
+  const partial = (v: number) => Array.from({ length: 12 }, (_, m) => (m < 9 ? v : null)); // POWER: Oct to Dec not published yet
+  const series = (years: number[], last: (number | null)[]) => ({
+    years,
+    T2M: [...years.slice(0, -1).map(() => row(20)), last],
+    T2M_MIN: years.map(() => row(5)),
+    PRECTOTCORR: years.map(() => row(1)),
+    ALLSKY_SFC_SW_DWN: years.map(() => row(15)),
+    meta: { lat: 0, lon: 0, source: "test", fetchedAt: "" },
+  });
+  it("drops a half-published last year, so it never reads as a drought", () => {
+    const s = keepCompleteYears(series([2023, 2024, 2025, 2026], partial(20)), 24);
+    expect(s.years).toEqual([2023, 2024, 2025]);
+    for (const k of ["T2M", "T2M_MIN", "PRECTOTCORR", "ALLSKY_SFC_SW_DWN"] as const) expect(s[k]).toHaveLength(3);
+  });
+  it("keeps the newest complete years only", () => {
+    expect(keepCompleteYears(series([2022, 2023, 2024, 2025], row(20)), 2).years).toEqual([2024, 2025]);
+    expect(keepCompleteYears(series([2022, 2023, 2024, 2025, 2026], partial(20)), 2).years).toEqual([2024, 2025]);
+  });
+  it("leaves a series without any complete year as it is", () => {
+    const s = series([2026], partial(20));
+    expect(keepCompleteYears(s, 24)).toBe(s);
   });
 });
 
