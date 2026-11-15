@@ -28,10 +28,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { CurrencyCombobox } from "./ui/CurrencyCombobox";
 import { Icon } from "./ui/Icon";
 import { Segmented } from "./ui/Segmented";
-
 import { useDismiss, useOnline, useThumb } from "./ui/hooks";
-
-import { useDismiss, useOnline } from "./ui/hooks";
 import { ZoneLegend } from "./ZoneLegend";
 
 type Loc = { lat: number; lon: number };
@@ -432,7 +429,7 @@ export function AppShell() {
 
       {!intro && loc && zoneCrop && (
         <ZoneLegend cropId={zoneCrop} status={zoneStatus} irrigated={irrigated} onClose={() => setZoneCrop(null)}
-          style={{ top: headerPx + 8, insetInlineStart: wide ? PANEL_WIDTH + 12 : 12 }} />
+          style={{ top: headerPx + 4, insetInlineStart: wide ? PANEL_WIDTH + ISLAND_GAP * 2 : 12 }} />
       )}
       {!online && (
         <p role="status" className="fs-pop pointer-events-none absolute inset-x-3 z-50 mx-auto flex max-w-md items-start gap-2 px-4 py-3 text-sm" style={{ top: intro ? 64 : headerPx + 8 }}>

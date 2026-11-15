@@ -420,6 +420,6 @@ details[open] > summary .fs-caret { transform: rotate(180deg); }
 .fs-pin-flat { position: absolute; transform: translate(-50%, -50%); pointer-events: none; }
 
 /* Wells inside the island let the glass through. */
-.fs-island .bg-paper { background-color: var(--fill); }
+.fs-island .bg-paper, .fs-pop .bg-paper { background-color: var(--fill); }
 
 @media (prefers-reduced-motion: reduce) { * { animation-duration: .001ms !important; animation-delay: 0ms !important; transition-duration: .001ms !important; } }
