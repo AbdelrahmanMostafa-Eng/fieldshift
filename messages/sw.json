@@ -44,7 +44,11 @@
     "label": "Dunia shirikishi. Buruta kuizungusha, sogeza au bana kukuza, bofya au gusa kuchagua mahali.",
     "loading": "Inapakia dunia…",
     "noWebgl": "Kifaa hiki hakiwezi kuchora dunia ya 3D, kwa hiyo hii ni ramani bapa badala yake. Igusa, au tumia utafutaji, kuchagua mahali.",
-    "flatLabel": "Ramani bapa ya dunia. Gusa kuchagua mahali."
+    "flatLabel": "Ramani bapa ya dunia. Gusa kuchagua mahali.",
+    "zoomIn": "Kuza",
+    "zoomOut": "Punguza",
+    "north": "Elekeza kaskazini",
+    "credits": "Onyesha vyanzo vya picha"
   },
   "place": {
     "n": "Kaskazini",
@@ -67,7 +71,6 @@
   },
   "plan": {
     "field": "Shamba lako",
-    "title": "Mzunguko wako",
     "history": "Mazao matatu ya mwisho",
     "current": "Mazao matatu yanayopangwa",
     "searchCrop": "Tafuta mazao",
@@ -202,7 +205,6 @@
   },
   "seasons": {
     "title": "Hali ya hewa mahali hapa",
-    "pick": "Chagua mahali kuona misimu yake na utabiri.",
     "year": "Mwaka kwa maneno rahisi",
     "warm": "Miezi ya joto",
     "cool": "Miezi ya baridi",

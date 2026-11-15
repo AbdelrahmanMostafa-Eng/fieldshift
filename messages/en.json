@@ -44,7 +44,11 @@
     "label": "Interactive Earth. Drag to turn it, scroll or pinch to zoom, click or tap to choose a place.",
     "loading": "Loading the globe…",
     "noWebgl": "This device cannot draw the 3D globe, so here is a flat map instead. Tap it, or use the search, to choose a place.",
-    "flatLabel": "Flat world map. Tap to choose a place."
+    "flatLabel": "Flat world map. Tap to choose a place.",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "north": "Point north",
+    "credits": "Show image credits"
   },
   "place": {
     "n": "N",
@@ -67,7 +71,6 @@
   },
   "plan": {
     "field": "Your field",
-    "title": "Your rotation",
     "history": "Last three crops",
     "current": "Planned next three crops",
     "searchCrop": "Search crops",
@@ -202,7 +205,6 @@
   },
   "seasons": {
     "title": "Climate at this place",
-    "pick": "Pick a place to see its seasons and forecast.",
     "year": "The year in plain words",
     "warm": "Warm months",
     "cool": "Cool months",

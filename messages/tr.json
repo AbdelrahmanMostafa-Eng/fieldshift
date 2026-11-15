@@ -44,7 +44,11 @@
     "label": "Etkileşimli Dünya. Döndürmek için sürükleyin, yakınlaştırmak için kaydırın ya da iki parmakla sıkıştırın, bir yer seçmek için tıklayın ya da dokunun.",
     "loading": "Küre yükleniyor…",
     "noWebgl": "Bu cihaz 3D küreyi çizemiyor, bu yüzden yerine düz bir harita var. Bir yer seçmek için haritaya dokunun ya da aramayı kullanın.",
-    "flatLabel": "Düz dünya haritası. Bir yer seçmek için dokunun."
+    "flatLabel": "Düz dünya haritası. Bir yer seçmek için dokunun.",
+    "zoomIn": "Yakınlaştır",
+    "zoomOut": "Uzaklaştır",
+    "north": "Kuzeye çevir",
+    "credits": "Görüntü kaynaklarını göster"
   },
   "place": {
     "n": "K",
@@ -67,7 +71,6 @@
   },
   "plan": {
     "field": "Tarlanız",
-    "title": "Ürün nöbetiniz",
     "history": "Son üç ürün",
     "current": "Planlanan sonraki üç ürün",
     "searchCrop": "Ürün ara",
@@ -202,7 +205,6 @@
   },
   "seasons": {
     "title": "Bu yerin iklimi",
-    "pick": "Mevsimlerini ve tahminini görmek için bir yer seçin.",
     "year": "Sade sözlerle yıl",
     "warm": "Sıcak aylar",
     "cool": "Serin aylar",

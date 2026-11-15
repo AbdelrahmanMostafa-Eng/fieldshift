@@ -99,8 +99,8 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
   useEffect(() => { if (status === "unsupported") onUnsupported?.(); }, [status, onUnsupported]);
 
   // Latest props for the long-lived map callbacks, without re-creating the map.
-  const live = useRef({ spin, onPick, onUserInteract, date, theme, inset, rtl, locale });
-  useEffect(() => { live.current = { spin, onPick, onUserInteract, date, theme, inset, rtl, locale }; });
+  const live = useRef({ spin, onPick, onUserInteract, date, theme, inset, rtl, locale, t });
+  useEffect(() => { live.current = { spin, onPick, onUserInteract, date, theme, inset, rtl, locale, t }; });
 
   // ---- create the map once -------------------------------------------------------------------
   useEffect(() => {
@@ -150,6 +150,11 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
           minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM, maxPitch: 70,
           pixelRatio: Math.min(window.devicePixelRatio || 1, 2), // sharp enough, and far cheaper on 3x phones
           attributionControl: false,
+          // MapLibre's own control and canvas labels, in the page language (Map.Title names the canvas for screen readers).
+          locale: {
+            "Map.Title": live.current.t("label"), "NavigationControl.ZoomIn": live.current.t("zoomIn"), "NavigationControl.ZoomOut": live.current.t("zoomOut"),
+            "NavigationControl.ResetBearing": live.current.t("north"), "AttributionControl.ToggleAttribution": live.current.t("credits"),
+          },
           dragPan: { linearity: 0.2, deceleration: 2200, maxSpeed: 1600 }, // a little heavier than the default: the globe glides, then settles
         });
         map.current = m;

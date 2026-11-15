@@ -44,7 +44,11 @@
     "label": "Terre interactive. Faites glisser pour la tourner, défilez ou pincez pour zoomer, cliquez ou touchez pour choisir un lieu.",
     "loading": "Chargement du globe…",
     "noWebgl": "Cet appareil ne peut pas afficher le globe 3D : voici une carte à plat. Touchez-la ou utilisez la recherche pour choisir un lieu.",
-    "flatLabel": "Carte du monde à plat. Touchez pour choisir un lieu."
+    "flatLabel": "Carte du monde à plat. Touchez pour choisir un lieu.",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "north": "Orienter vers le nord",
+    "credits": "Voir les crédits d'image"
   },
   "place": {
     "n": "N",
@@ -67,7 +71,6 @@
   },
   "plan": {
     "field": "Votre parcelle",
-    "title": "Votre rotation",
     "history": "Trois dernières cultures",
     "current": "Trois prochaines cultures prévues",
     "searchCrop": "Chercher une culture",
@@ -202,7 +205,6 @@
   },
   "seasons": {
     "title": "Climat de ce lieu",
-    "pick": "Choisissez un lieu pour voir ses saisons et la prévision.",
     "year": "L'année en mots simples",
     "warm": "Mois chauds",
     "cool": "Mois frais",

@@ -124,6 +124,16 @@ export function AppShell() {
     return () => ro.disconnect();
   }, [intro]);
 
+  // Leaving the intro removes the button that had focus: hand it to the place search so keyboard users carry on from there.
+  useEffect(() => {
+    // Not on touch screens: focusing a text box there would pop up the on-screen keyboard.
+    if (intro || !window.matchMedia("(pointer: fine)").matches) return;
+    const id = requestAnimationFrame(() => {
+      if (document.activeElement === document.body) header.current?.querySelector<HTMLElement>("[role=combobox]")?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [intro]);
+
   // The date slider moves freely; the map only reloads tiles 250 ms after it settles.
   useEffect(() => {
     const id = setTimeout(() => setDate(gibsDate(daysBack)), 250);
@@ -203,6 +213,16 @@ export function AppShell() {
     : "";
   const viewOptions = [{ value: "globe" as const, label: t("nav.globe"), icon: "globe" as const }, { value: "flat" as const, label: t("nav.flat"), icon: "map" as const }];
   const setViewMode = (v: ViewMode) => setFlat(v === "flat");
+  // Tabs pattern: arrow keys move along the row (mirrored right to left), Home and End jump to the ends.
+  const tabKeys = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const i = TABS.indexOf(tab), last = TABS.length - 1;
+    const step = e.key === "ArrowRight" ? (rtl ? -1 : 1) : e.key === "ArrowLeft" ? (rtl ? 1 : -1) : 0;
+    const next = e.key === "Home" ? 0 : e.key === "End" ? last : step ? (i + step + TABS.length) % TABS.length : -1;
+    if (next < 0) return;
+    e.preventDefault();
+    setTab(TABS[next]);
+    document.getElementById(`fs-tab-${TABS[next]}`)?.focus();
+  };
 
   const summary = (
     <div className="flex items-center gap-3">
@@ -245,9 +265,6 @@ export function AppShell() {
 
   return (
     <main className="fs-space relative h-dvh w-full overflow-hidden">
-      <Globe projection={flat ? "mercator" : "globe"} spin={spin} marker={loc} date={date} overlays={activeOverlays}
-        locale={locale} rtl={rtl} inset={inset} controlsBottom={!intro && !wide ? sheetPx : 0} onPick={pick} onUserInteract={stopSpin} onUnsupported={globeUnsupported} />
-
       {intro && (
         // The veil and the text let touches through, so the globe behind stays draggable; only the controls catch them.
         <div className="fs-intro-veil pointer-events-none absolute inset-0 z-30 flex flex-col text-[#f1ece0]">
@@ -286,9 +303,12 @@ export function AppShell() {
           </header>
 
           <ResultsSheet title={t("results.title")} summary={summary} onVisibleChange={setSheetPx}>
-            <div role="tablist" className="fs-seg fs-tabs">
-              {TABS.map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{t(`tabs.${k}`)}</button>)}
+            <div role="tablist" aria-label={t("results.title")} className="fs-seg fs-tabs" onKeyDown={tabKeys}>
+              {TABS.map((k) => (
+                <button key={k} id={`fs-tab-${k}`} type="button" role="tab" aria-selected={tab === k} aria-controls="fs-tabpanel" tabIndex={tab === k ? 0 : -1} onClick={() => setTab(k)}>{t(`tabs.${k}`)}</button>
+              ))}
             </div>
+            <div id="fs-tabpanel" role="tabpanel" aria-labelledby={`fs-tab-${tab}`}>
 
             {tab === "atlas" && <div className="mt-4 h-[55dvh]"><AssistantChat location={loc} climate={climate} forecast={forecast} strategies={strategies} startMonth={startMonth} money={money} /></div>}
             {tab === "seasons" && (climate ? <SeasonsPanel climate={climate} forecast={forecast} plan={current} /> : stateBlock)}
@@ -340,6 +360,7 @@ export function AppShell() {
                 {Object.keys(rates).length > 0 && <p className="mt-2 text-xs text-muted">{t("money.ratesFrom")}</p>}
               </>
             )}
+            </div>
             <footer className="mt-6 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
               <p>{t("footer.credit")} {GIBS_CREDIT}. {BASE_LAYER.label}.</p>
               <p className="mt-1">{t("footer.crops")}</p>
@@ -350,6 +371,10 @@ export function AppShell() {
           </ResultsSheet>
         </>
       )}
+      {/* Last in the DOM so the tab order reaches the intro, search and results before the map's own buttons. Overlays stack above it by z-index. */}
+      <Globe projection={flat ? "mercator" : "globe"} spin={spin} marker={loc} date={date} overlays={activeOverlays}
+        locale={locale} rtl={rtl} inset={inset} controlsBottom={!intro && !wide ? sheetPx : 0} onPick={pick} onUserInteract={stopSpin} onUnsupported={globeUnsupported} />
+
       {!online && (
         <p role="status" className="fs-pop pointer-events-none absolute inset-x-3 z-50 mx-auto flex max-w-md items-start gap-2 px-4 py-3 text-sm" style={{ top: intro ? 64 : headerPx + 8 }}>
           <Icon name="alert" size={18} className="mt-0.5 text-gold-text" />{t("nav.offline")}

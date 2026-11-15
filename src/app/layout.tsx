@@ -23,9 +23,14 @@ const bengali = Noto_Sans_Bengali({ variable: "--font-bengali", subsets: ["benga
 const cyrSans = Noto_Sans({ variable: "--font-cyr-sans", subsets: ["cyrillic"], preload: false });
 const cyrSerif = Literata({ variable: "--font-cyr-serif", subsets: ["cyrillic"], preload: false });
 
+const DESCRIPTION = "A free decision aid for farmers: compare three-year crop rotations for soil, water and income with NASA Earth observations, in 12 languages.";
 export const metadata: Metadata = {
   title: "FieldShift",
-  description: "Explore crop rotations with NASA Earth observations.",
+  description: DESCRIPTION,
+  applicationName: "FieldShift",
+  openGraph: { title: "FieldShift", description: DESCRIPTION, type: "website", siteName: "FieldShift" },
+  twitter: { card: "summary_large_image", title: "FieldShift", description: DESCRIPTION },
+  appleWebApp: { title: "FieldShift", statusBarStyle: "black-translucent" },
 };
 export const viewport: Viewport = { themeColor: "#0e0d0b", viewportFit: "cover" };
 

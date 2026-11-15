@@ -44,7 +44,11 @@
     "label": "Terra interativa. Arraste para girar, role ou pince para dar zoom, clique ou toque para escolher um lugar.",
     "loading": "Carregando o globo…",
     "noWebgl": "Este dispositivo não consegue desenhar o globo 3D, então aqui está um mapa plano. Toque nele ou use a busca para escolher um lugar.",
-    "flatLabel": "Mapa-múndi plano. Toque para escolher um lugar."
+    "flatLabel": "Mapa-múndi plano. Toque para escolher um lugar.",
+    "zoomIn": "Aproximar",
+    "zoomOut": "Afastar",
+    "north": "Apontar para o norte",
+    "credits": "Ver créditos das imagens"
   },
   "place": {
     "n": "N",
@@ -67,7 +71,6 @@
   },
   "plan": {
     "field": "Sua lavoura",
-    "title": "Sua rotação",
     "history": "Últimas três culturas",
     "current": "Próximas três culturas planejadas",
     "searchCrop": "Buscar culturas",
@@ -202,7 +205,6 @@
   },
   "seasons": {
     "title": "Clima neste lugar",
-    "pick": "Escolha um lugar para ver suas estações e a previsão.",
     "year": "O ano em palavras simples",
     "warm": "Meses quentes",
     "cool": "Meses frescos",

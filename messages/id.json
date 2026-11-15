@@ -44,7 +44,11 @@
     "label": "Bumi interaktif. Seret untuk memutar, gulir atau cubit untuk memperbesar, klik atau ketuk untuk memilih tempat.",
     "loading": "Memuat globe…",
     "noWebgl": "Perangkat ini tidak bisa menggambar globe 3D, jadi ini peta datar sebagai gantinya. Ketuk peta, atau pakai pencarian, untuk memilih tempat.",
-    "flatLabel": "Peta dunia datar. Ketuk untuk memilih tempat."
+    "flatLabel": "Peta dunia datar. Ketuk untuk memilih tempat.",
+    "zoomIn": "Perbesar",
+    "zoomOut": "Perkecil",
+    "north": "Arahkan ke utara",
+    "credits": "Tampilkan kredit citra"
   },
   "place": {
     "n": "LU",
@@ -67,7 +71,6 @@
   },
   "plan": {
     "field": "Lahan Anda",
-    "title": "Rotasi Anda",
     "history": "Tiga tanaman terakhir",
     "current": "Tiga tanaman berikutnya yang direncanakan",
     "searchCrop": "Cari tanaman",
@@ -202,7 +205,6 @@
   },
   "seasons": {
     "title": "Iklim di tempat ini",
-    "pick": "Pilih tempat untuk melihat musim dan prakiraannya.",
     "year": "Setahun dalam kata-kata sederhana",
     "warm": "Bulan hangat",
     "cool": "Bulan sejuk",

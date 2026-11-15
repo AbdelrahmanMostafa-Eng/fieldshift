@@ -44,7 +44,11 @@
     "label": "Tierra interactiva. Arrastra para girarla, desplaza o pellizca para acercar, haz clic o toca para elegir un lugar.",
     "loading": "Cargando el globo…",
     "noWebgl": "Este dispositivo no puede dibujar el globo 3D, así que aquí tienes un mapa plano. Tócalo o usa la búsqueda para elegir un lugar.",
-    "flatLabel": "Mapa plano del mundo. Toca para elegir un lugar."
+    "flatLabel": "Mapa plano del mundo. Toca para elegir un lugar.",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "north": "Orientar al norte",
+    "credits": "Ver créditos de imagen"
   },
   "place": {
     "n": "N",
@@ -67,7 +71,6 @@
   },
   "plan": {
     "field": "Tu parcela",
-    "title": "Tu rotación",
     "history": "Últimos tres cultivos",
     "current": "Próximos tres cultivos previstos",
     "searchCrop": "Buscar cultivos",
@@ -202,7 +205,6 @@
   },
   "seasons": {
     "title": "Clima de este lugar",
-    "pick": "Elige un lugar para ver sus estaciones y el pronóstico.",
     "year": "El año en palabras sencillas",
     "warm": "Meses cálidos",
     "cool": "Meses frescos",
