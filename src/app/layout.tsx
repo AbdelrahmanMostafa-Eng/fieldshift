@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import {
   Fraunces, Hanken_Grotesk, JetBrains_Mono, Literata,
-  Noto_Naskh_Arabic, Noto_Sans, Noto_Sans_Arabic, Noto_Sans_Bengali, Noto_Sans_Devanagari,
+  Noto_Naskh_Arabic, Noto_Sans, Noto_Sans_Arabic, Noto_Sans_Bengali, Noto_Sans_Devanagari, Noto_Sans_Thai,
 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -19,11 +19,12 @@ const arabic = Noto_Sans_Arabic({ variable: "--font-arabic", subsets: ["arabic"]
 const naskh = Noto_Naskh_Arabic({ variable: "--font-naskh", subsets: ["arabic"], preload: false });
 const devanagari = Noto_Sans_Devanagari({ variable: "--font-deva", subsets: ["devanagari"], preload: false });
 const bengali = Noto_Sans_Bengali({ variable: "--font-bengali", subsets: ["bengali"], preload: false });
+const thai = Noto_Sans_Thai({ variable: "--font-thai", subsets: ["thai"], preload: false });
 // Russian: Hanken Grotesk and Fraunces have no basic Cyrillic, so these step in for those letters only.
 const cyrSans = Noto_Sans({ variable: "--font-cyr-sans", subsets: ["cyrillic"], preload: false });
 const cyrSerif = Literata({ variable: "--font-cyr-serif", subsets: ["cyrillic"], preload: false });
 
-const DESCRIPTION = "A free decision aid for farmers: compare three-year crop rotations for soil, water and income with NASA Earth observations, in 12 languages.";
+const DESCRIPTION = "A free decision aid for farmers: compare crop rotations of one to five seasons for soil, water and income with NASA Earth observations, in 18 languages.";
 export const metadata: Metadata = {
   title: "FieldShift",
   description: DESCRIPTION,
@@ -40,7 +41,7 @@ const themeScript = `try{var t=localStorage.getItem('theme');if(t==='light'||t==
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   const messages = await getMessages();
-  const fonts = [serif, grotesk, mono, arabic, naskh, devanagari, bengali, cyrSans, cyrSerif].map((f) => f.variable).join(" ");
+  const fonts = [serif, grotesk, mono, arabic, naskh, devanagari, bengali, thai, cyrSans, cyrSerif].map((f) => f.variable).join(" ");
   return (
     <html lang={locale} dir={dirFor(locale)} suppressHydrationWarning className={fonts}>
       <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>

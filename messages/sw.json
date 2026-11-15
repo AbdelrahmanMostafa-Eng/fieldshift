@@ -38,7 +38,18 @@
     "ndviNote": "Mchanganyiko wa siku 8, hutolewa upya kila siku, hivyo hubadilika polepole.",
     "date": "Tarehe ya picha",
     "dateHint": "Kuanzia jana hadi siku {days} zilizopita. Tarehe ni za UTC.",
-    "base": "Picha ya karibu: rangi halisi ya VIIRS (NOAA-20), picha moja kwa siku. Mwonekano mpana: Blue Marble."
+    "base": "Picha ya karibu: rangi halisi ya VIIRS (NOAA-20), picha moja kwa siku. Mwonekano mpana: Blue Marble.",
+    "airTemp": "Joto la hewa (m 2)",
+    "wind": "Kasi ya upepo juu ya ardhi",
+    "humidity": "Unyevu wa hewa",
+    "rain": "Kiwango cha mvua",
+    "soilWater": "Maji ya udongo eneo la mizizi",
+    "windUnit": "Mita kwa sekunde.",
+    "humidityUnit": "Asilimia, karibu na ardhi.",
+    "rainUnit": "Milimita kwa saa, kutoka makadirio ya mvua ya setilaiti ya NASA (IMERG).",
+    "soilWaterUnit": "Ujazo wa maji kwa ujazo wa udongo katika eneo la mizizi (modeli ya MERRA-2).",
+    "monthlyNote": "Wastani wa mwezi: inaonyesha mwezi wa karibuni zaidi uliotolewa na NASA, kwa kawaida miezi michache iliyopita, si tarehe ya picha hapa chini.",
+    "lagNote": "Kila siku, nyuma kwa takriban siku {days}: tarehe za karibuni zinaonyesha siku ya mwisho iliyopo."
   },
   "globe": {
     "label": "Dunia shirikishi. Buruta kuizungusha, sogeza au bana kukuza, bofya au gusa kuchagua mahali.",
@@ -68,18 +79,20 @@
     "forage": "Malisho",
     "allium": "Jamii ya vitunguu",
     "mallow": "Jamii ya pamba",
-    "amaranth": "Jamii ya mchicha"
+    "amaranth": "Jamii ya mchicha",
+    "umbel": "Jamii ya karoti",
+    "daisy": "Jamii ya alizeti",
+    "other": "Jamii nyingine"
   },
   "plan": {
     "field": "Shamba lako",
-    "history": "Mazao matatu ya mwisho",
-    "current": "Mazao matatu yanayopangwa",
+    "history": "Mazao ya awali (la zamani kwanza)",
+    "current": "Mpango wako, msimu kwa msimu",
     "searchCrop": "Tafuta mazao",
     "noCrop": "Hakuna zao linalolingana.",
     "startMonth": "Mwezi wa kupanda",
     "irrigated": "Ninaweza kumwagilia",
     "priorities": "Kinachojalisha zaidi",
-    "importance": "{value} kati ya 10",
     "soil": "Afya ya udongo",
     "water": "Maji",
     "climate": "Kufaa kwa hali ya hewa",
@@ -90,7 +103,11 @@
     "pickHint": "Gusa dunia, tafuta mji, au tumia mahali ulipo.",
     "loading": "Inasoma misimu 24 ya data ya hali ya hewa ya NASA…",
     "failed": "Imeshindwa kupakia data ya hali ya hewa. Jaribu tena baada ya dakika moja.",
-    "retry": "Jaribu tena"
+    "retry": "Jaribu tena",
+    "seasonsOf": "{count} kati ya {max}",
+    "addSeason": "Ongeza msimu",
+    "removeSeason": "Ondoa msimu wa {n}",
+    "noHistory": "Hakuna mazao ya awali yaliyoingizwa."
   },
   "climate": {
     "title": "Hali ya hewa mahali hapa",
@@ -118,7 +135,7 @@
     "evidence": "Ushahidi",
     "gaps": "Tusichojua",
     "risks": "Hakiki eneo lako",
-    "net": "Faida halisi, miaka 3",
+    "net": "Faida halisi, misimu {count}",
     "perHa": "kwa hekta",
     "illustrative": "kielelezo",
     "range": "Kiwango kinachowezekana katika misimu iliyopita",
@@ -134,7 +151,10 @@
   },
   "money": {
     "currency": "Sarafu",
-    "ratesFrom": "Viwango vya ubadilishaji: ExchangeRate-API, husasishwa kila siku"
+    "ratesFrom": "Viwango vya ubadilishaji: ExchangeRate-API, husasishwa kila siku",
+    "search": "Tafuta sarafu",
+    "count": "Sarafu {count} zenye kiwango cha kila siku",
+    "none": "Hakuna sarafu inayolingana."
   },
   "atlas": {
     "title": "Uliza Atlas",
@@ -200,7 +220,7 @@
     "sensNote": "Faida halisi ya eneo lako mavuno na bei vikishuka au kupanda kwa 20%.",
     "yieldRow": "Mavuno",
     "priceCol": "Bei",
-    "three": "Misimu yote mitatu pamoja",
+    "three": "Misimu yote pamoja",
     "missing": "Orodha haina mavuno wala bei ya zao hili. Ingiza mavuno, bei na gharama zako kuona faida yake.",
     "illustrative": "Thamani za mwanzo za kielelezo"
   },
@@ -216,6 +236,8 @@
     "frost": "Usiku wa baridi kali",
     "frostV": "{month} (miaka {count} kati ya {years})",
     "frostRule": "Baridi kali ina maana joto la chini kabisa la hewa la mwezi (NASA POWER T2M_MIN, m 2) lilishuka chini ya {t} °C. Barafu ya ardhini inaweza kutokea usiku wenye joto kidogo zaidi.",
+    "solar": "Mwanga wa jua ardhini",
+    "solarNote": "Mwaka wa kati, kwa MJ kwa m² kwa siku, kutoka mionzi ya mawimbi mafupi kwenye uso katika hali zote za anga ya NASA POWER (ALLSKY_SFC_SW_DWN).",
     "windows": "Nyakati za kupanda kwa joto",
     "plantIn": "{crop}, kwa mwezi wa kupanda",
     "good": "Ndani ya kiwango bora",
@@ -285,7 +307,13 @@
     "econ": "Uchumi kwa hekta",
     "econNa": "Haipatikani kwenye orodha. Ingiza namba zako kwenye kichupo cha Gharama.",
     "illustrative": "kielelezo",
-    "about": "Mazao {count}. Mipaka ya joto, mvua na mzunguko wa zao inatoka kwenye hifadhidata ya FAO EcoCrop. Mavuno, bei na gharama za mwanzo zipo kwa mazao {priced} tu na ni za kielelezo."
+    "about": "Mazao {count}. Mipaka ya joto, mvua na mzunguko wa zao inatoka kwenye hifadhidata ya FAO EcoCrop. Mavuno, bei na gharama za mwanzo zipo kwa mazao {priced} tu na ni za kielelezo.",
+    "soilBest": "Udongo unaofaa zaidi",
+    "soilTolerated": "Udongo unaovumilia",
+    "fertility": "Kulisha zao (bila vipimo)",
+    "addSeason": "Ongeza kama msimu mpya",
+    "zonesShow": "Onyesha kwenye ramani linapofaa",
+    "zonesHide": "Ficha maeneo ya ramani"
   },
   "soil": {
     "title": "Umbile la udongo",
@@ -326,6 +354,78 @@
       "high": "Maji hupotea haraka na kidogo huhifadhiwa. Hatari ya kawaida ni ukame: chagua mazao yanayostahimili ukame, acha mabaki kama matandazo, na mwagilia kidogo mara kwa mara ukimwagilia."
     },
     "note": "Huu ni mwongozo wa jumla kwa umbile. Haubadilishi alama zako: kipimo cha udongo pekee (pH, viumbe hai, umbile) kinaweza kuongeza uhakika.",
-    "source": "Chanzo"
+    "source": "Chanzo",
+    "suited": "Mazao yanayofanya vizuri zaidi kwenye udongo {group} (FAO EcoCrop)",
+    "suitedCount": "Mazao {best} hufanya vizuri zaidi kwenye umbile hili; mengine {tolerated} hulivumilia.",
+    "addToPlan": "Ongeza kwenye mpango wangu",
+    "group": {
+      "light": "mwepesi (wa mchanga)",
+      "medium": "wa kati (tifutifu)",
+      "heavy": "mzito (wa mfinyanzi)",
+      "organic": "wa viumbe hai (wa mboji)"
+    }
+  },
+  "fertility": {
+    "soilTest": "Pima udongo kwanza. Kiasi cha kuweka kinategemea kipimo, mavuno unayotarajia na kile zao lililopita liliacha.",
+    "legume": "Mikunde hutengeneza sehemu kubwa ya naitrojeni yake kupitia vinundu vya mizizi pale bakteria sahihi wa rhizobia wapo, kwa hiyo mara chache huhitaji mbolea ya naitrojeni. Fosforasi na potasiamu bado ni muhimu.",
+    "nitrogen": "Nafaka na nyasi kwa kawaida huitikia naitrojeni zaidi. Kuigawa katika mara zaidi ya moja kulingana na ukuaji hupunguza upotevu.",
+    "potassium": "Mazao ya mizizi na viazi huchukua potasiamu nyingi: omba ipimwe katika kipimo cha udongo.",
+    "sulfur": "Jamii ya kabichi (kabichi, kanola, haradali) inahitaji salfa ya kutosha.",
+    "calcium": "Mazao ya matunda yanahitaji kalsiamu ya kudumu na umwagiliaji sawa: kuoza kwa ncha ya tunda la nyanya na pilipili ni upungufu wa kalsiamu ndani ya tunda.",
+    "organic": "Mboji, samadi, mabaki ya mazao na mikunde ya kufunika udongo huongeza viumbe hai na hutoa virutubisho polepole. Kiwango chake hutofautiana, kwa hiyo kipimo cha udongo bado husaidia.",
+    "fourR": "Tumia kanuni ya 4R: chanzo sahihi, kiasi sahihi, wakati sahihi, mahali sahihi.",
+    "noDose": "FieldShift haitoi majina ya bidhaa wala vipimo. Uliza mtaalamu wa kilimo au afisa ugani wa eneo lako ukiwa na kipimo cha udongo."
+  },
+  "suggest": {
+    "title": "Mazao yanayofaa mahali hapa",
+    "note": "Mazao yote ya maktaba, yamepangwa kwa mipaka ya FAO EcoCrop dhidi ya miezi ya NASA POWER ya mahali hapa, bila umwagiliaji: alama ya chini kati ya joto na mvua ndiyo inayohesabiwa. Mwanzo wa kufikiri, si pendekezo.",
+    "noteIrrigated": "Mazao yote ya maktaba, yamepangwa kwa mipaka ya joto ya FAO EcoCrop dhidi ya miezi ya NASA POWER ya mahali hapa. Kwa umwagiliaji, mvua haihesabiwi. Mwanzo wa kufikiri, si pendekezo.",
+    "level": {
+      "good": "Linafaa",
+      "possible": "Linawezekana",
+      "poor": "Halifai sana"
+    },
+    "plantIn": "bora kupandwa {month}",
+    "zones": "Onyesha maeneo kwenye ramani",
+    "zonesFor": "Onyesha maeneo ya {crop} kwenye ramani",
+    "add": "Ongeza kwenye mpango wangu",
+    "addFor": "Ongeza {crop} kwenye mpango wangu",
+    "inPlan": "Tayari limo kwenye mpango wako",
+    "planFull": "Mpango wako umejaa."
+  },
+  "zones": {
+    "title": "Linapofaa",
+    "loading": "Inasoma hali ya hewa ya NASA kuzunguka mahali hapa…",
+    "failed": "Imeshindwa kupakia maeneo. Jaribu tena baada ya dakika moja.",
+    "hide": "Ficha maeneo",
+    "good": "Linafaa ({min} au zaidi)",
+    "possible": "Linawezekana ({min}–{max})",
+    "poor": "Halifai sana ({max} au chini)",
+    "note": "Kila mraba ni seli moja ya gridi ya NASA POWER (0.5° kwa 0.625°, takriban km 50–70), imepimwa kwa wastani wake wa kila mwezi 2001–2025 kwa mipaka ya FAO EcoCrop, bila umwagiliaji. Mashamba ndani ya mraba yanaweza kutofautiana.",
+    "noteIrrigated": "Kila mraba ni seli moja ya gridi ya NASA POWER (0.5° kwa 0.625°, takriban km 50–70), imepimwa kwa wastani wake wa kila mwezi 2001–2025 kwa mipaka ya joto ya FAO EcoCrop. Kwa umwagiliaji, mvua haihesabiwi."
+  },
+  "weather": {
+    "now": "Sasa hivi",
+    "updated": "Imesasishwa saa {time}, saa za huko",
+    "feels": "Inahisika kama",
+    "humidity": "Unyevu",
+    "wind": "Upepo",
+    "gusts": "Upepo wa ghafla",
+    "rain": "Mvua, dakika 15 zilizopita",
+    "clouds": "Mawingu",
+    "from": "kutoka {deg}°",
+    "source": "Hali ya sasa: Open-Meteo.com (CC BY 4.0), husasishwa kila dakika 15",
+    "unavailable": "Hali ya sasa haipatikani kwa sasa.",
+    "kind": {
+      "clear": "Anga safi",
+      "mostlyClear": "Kwa kiasi kikubwa safi",
+      "partlyCloudy": "Mawingu kiasi",
+      "overcast": "Mawingu mazito",
+      "fog": "Ukungu",
+      "drizzle": "Manyunyu",
+      "rain": "Mvua",
+      "snow": "Theluji",
+      "thunder": "Radi na ngurumo"
+    }
   }
 }

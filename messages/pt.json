@@ -38,7 +38,18 @@
     "ndviNote": "Composição de 8 dias, reemitida diariamente, por isso muda devagar.",
     "date": "Data da imagem",
     "dateHint": "De ontem até {days} dias atrás. Datas em UTC.",
-    "base": "Imagem de perto: cor verdadeira VIIRS (NOAA-20), uma imagem por dia. Visão ampla: Blue Marble."
+    "base": "Imagem de perto: cor verdadeira VIIRS (NOAA-20), uma imagem por dia. Visão ampla: Blue Marble.",
+    "airTemp": "Temperatura do ar (2 m)",
+    "wind": "Velocidade do vento na superfície",
+    "humidity": "Umidade relativa",
+    "rain": "Intensidade da chuva",
+    "soilWater": "Água do solo na zona das raízes",
+    "windUnit": "Metros por segundo.",
+    "humidityUnit": "Percentual, perto do solo.",
+    "rainUnit": "Milímetros por hora, da estimativa de chuva por satélite IMERG da NASA.",
+    "soilWaterUnit": "Volume de água por volume de solo na zona das raízes (modelo MERRA-2).",
+    "monthlyNote": "Média mensal: mostra o mês mais recente publicado pela NASA, em geral de alguns meses atrás, e não a data da imagem abaixo.",
+    "lagNote": "Diário, com cerca de {days} dias de atraso: as datas mais novas mostram o último dia disponível."
   },
   "globe": {
     "label": "Terra interativa. Arraste para girar, role ou pince para dar zoom, clique ou toque para escolher um lugar.",
@@ -68,18 +79,20 @@
     "forage": "Forrageira",
     "allium": "Aliácea",
     "mallow": "Malvácea",
-    "amaranth": "Amarantácea"
+    "amaranth": "Amarantácea",
+    "umbel": "Apiáceas",
+    "daisy": "Asteráceas",
+    "other": "Outras famílias"
   },
   "plan": {
     "field": "Sua lavoura",
-    "history": "Últimas três culturas",
-    "current": "Próximas três culturas planejadas",
+    "history": "Culturas anteriores (a mais antiga primeiro)",
+    "current": "Seu plano, safra por safra",
     "searchCrop": "Buscar culturas",
     "noCrop": "Nenhuma cultura encontrada.",
     "startMonth": "Mês de plantio",
     "irrigated": "Posso irrigar",
     "priorities": "O que mais importa",
-    "importance": "{value} de 10",
     "soil": "Saúde do solo",
     "water": "Água",
     "climate": "Adequação ao clima",
@@ -90,7 +103,11 @@
     "pickHint": "Toque no globo, busque uma cidade ou use sua localização.",
     "loading": "Lendo 24 safras de dados climáticos da NASA…",
     "failed": "Não foi possível carregar os dados climáticos. Tente de novo em um minuto.",
-    "retry": "Tentar de novo"
+    "retry": "Tentar de novo",
+    "seasonsOf": "{count} de {max}",
+    "addSeason": "Adicionar safra",
+    "removeSeason": "Remover a safra {n}",
+    "noHistory": "Nenhuma cultura anterior informada."
   },
   "climate": {
     "title": "Clima neste lugar",
@@ -118,7 +135,7 @@
     "evidence": "Evidências",
     "gaps": "O que não sabemos",
     "risks": "Verifique localmente",
-    "net": "Retorno líquido, 3 anos",
+    "net": "Retorno líquido, {count} safras",
     "perHa": "por hectare",
     "illustrative": "ilustrativo",
     "range": "Faixa provável nas safras passadas",
@@ -134,7 +151,10 @@
   },
   "money": {
     "currency": "Moeda",
-    "ratesFrom": "Câmbio: ExchangeRate-API, atualizado diariamente"
+    "ratesFrom": "Câmbio: ExchangeRate-API, atualizado diariamente",
+    "search": "Buscar moedas",
+    "count": "{count} moedas com cotação diária",
+    "none": "Nenhuma moeda encontrada."
   },
   "atlas": {
     "title": "Pergunte ao Atlas",
@@ -200,7 +220,7 @@
     "sensNote": "Retorno líquido da sua área quando produtividade e preço variam 20% para baixo ou para cima.",
     "yieldRow": "Produtividade",
     "priceCol": "Preço",
-    "three": "As três safras juntas",
+    "three": "Todas as safras juntas",
     "missing": "O catálogo não tem produtividade nem preço para esta cultura. Informe sua produtividade, preço e custos para ver o retorno.",
     "illustrative": "Valores iniciais ilustrativos"
   },
@@ -216,6 +236,8 @@
     "frost": "Noites de geada",
     "frostV": "{month} ({count} de {years} anos)",
     "frostRule": "Geada significa que a menor temperatura do ar no mês (NASA POWER T2M_MIN, a 2 m) ficou abaixo de {t} °C. A geada no solo pode ocorrer em noites um pouco mais quentes.",
+    "solar": "Luz solar no solo",
+    "solarNote": "Ano mediano, em MJ por m² por dia, da radiação de onda curta na superfície com qualquer céu do NASA POWER (ALLSKY_SFC_SW_DWN).",
     "windows": "Janelas de plantio pela temperatura",
     "plantIn": "{crop}, por mês de plantio",
     "good": "Dentro da faixa ideal",
@@ -285,7 +307,13 @@
     "econ": "Economia por hectare",
     "econNa": "Não disponível no catálogo. Informe seus próprios números na aba Custos.",
     "illustrative": "ilustrativo",
-    "about": "{count} culturas. Os limites de temperatura, chuva e ciclo vêm da base de dados FAO EcoCrop. Produtividade, preço e custo iniciais existem para {priced} delas e são ilustrativos."
+    "about": "{count} culturas. Os limites de temperatura, chuva e ciclo vêm da base de dados FAO EcoCrop. Produtividade, preço e custo iniciais existem para {priced} delas e são ilustrativos.",
+    "soilBest": "Solo em que rende melhor",
+    "soilTolerated": "Solo que tolera",
+    "fertility": "Nutrir a cultura (sem doses)",
+    "addSeason": "Adicionar como nova safra",
+    "zonesShow": "Ver no mapa onde se adapta",
+    "zonesHide": "Ocultar as zonas do mapa"
   },
   "soil": {
     "title": "Textura do solo",
@@ -326,6 +354,78 @@
       "high": "A água drena rápido e pouco fica guardado. O risco comum é a seca: prefira culturas tolerantes à seca, mantenha a palhada como cobertura e irrigue pouco e com frequência, se irrigar."
     },
     "note": "Esta é uma orientação geral pela textura. Não altera suas pontuações: só uma análise de solo (pH, matéria orgânica, textura) pode aumentar a confiança.",
-    "source": "Fonte"
+    "source": "Fonte",
+    "suited": "Culturas que rendem melhor em solos {group} (FAO EcoCrop)",
+    "suitedCount": "{best} culturas rendem melhor nesta textura; {tolerated} outras a toleram.",
+    "addToPlan": "Adicionar ao meu plano",
+    "group": {
+      "light": "leves (arenosos)",
+      "medium": "médios (francos)",
+      "heavy": "pesados (argilosos)",
+      "organic": "orgânicos (turfosos)"
+    }
+  },
+  "fertility": {
+    "soilTest": "Analise o solo primeiro. Quanto aplicar depende da análise, da produtividade esperada e do que a cultura anterior deixou.",
+    "legume": "As leguminosas produzem a maior parte do próprio nitrogênio nos nódulos das raízes quando as bactérias rizóbios certas estão presentes, por isso raramente precisam de adubo nitrogenado. Fósforo e potássio continuam importantes.",
+    "nitrogen": "Cereais e gramíneas costumam responder mais ao nitrogênio. Dividi-lo em mais de uma aplicação, conforme o crescimento, reduz as perdas.",
+    "potassium": "Culturas de raiz e tubérculo absorvem muito potássio: peça a análise dele no solo.",
+    "sulfur": "As brássicas (família do repolho, canola, mostarda) precisam de bom suprimento de enxofre.",
+    "calcium": "Culturas de fruto precisam de cálcio constante e irrigação regular: a podridão apical do tomate e do pimentão é falta de cálcio no fruto.",
+    "organic": "Composto, esterco, palhada e leguminosas de cobertura aumentam a matéria orgânica e liberam nutrientes devagar. O teor varia, então a análise de solo continua útil.",
+    "fourR": "Use a regra 4C: a fonte certa, na dose certa, na hora certa, no lugar certo.",
+    "noDose": "O FieldShift não indica nomes de produtos nem doses. Consulte um agrônomo ou extensionista local, com sua análise de solo em mãos."
+  },
+  "suggest": {
+    "title": "Culturas que se adaptam a este lugar",
+    "note": "Todas as culturas da biblioteca, classificadas pelos limites da FAO EcoCrop frente aos meses da NASA POWER deste lugar, em sequeiro: vale a menor das notas de temperatura e chuva. Um ponto de partida, não uma recomendação.",
+    "noteIrrigated": "Todas as culturas da biblioteca, classificadas pelos limites de temperatura da FAO EcoCrop frente aos meses da NASA POWER deste lugar. Com irrigação, a chuva não conta. Um ponto de partida, não uma recomendação.",
+    "level": {
+      "good": "Boa adequação",
+      "possible": "Possível",
+      "poor": "Pouco adequada"
+    },
+    "plantIn": "melhor plantio em {month}",
+    "zones": "Ver zonas no mapa",
+    "zonesFor": "Ver no mapa as zonas para {crop}",
+    "add": "Adicionar ao meu plano",
+    "addFor": "Adicionar {crop} ao meu plano",
+    "inPlan": "Já está no seu plano",
+    "planFull": "Seu plano está completo."
+  },
+  "zones": {
+    "title": "Onde se adapta",
+    "loading": "Lendo o clima da NASA ao redor deste lugar…",
+    "failed": "Não foi possível carregar as zonas. Tente de novo em um minuto.",
+    "hide": "Ocultar zonas",
+    "good": "Boa adequação ({min} ou mais)",
+    "possible": "Possível ({min}–{max})",
+    "poor": "Pouco adequada ({max} ou menos)",
+    "note": "Cada quadrado é uma célula da grade NASA POWER (0,5° por 0,625°, cerca de 50–70 km), avaliada pelas médias mensais de 2001–2025 segundo os limites da FAO EcoCrop, em sequeiro. Lavouras dentro de um quadrado podem diferir.",
+    "noteIrrigated": "Cada quadrado é uma célula da grade NASA POWER (0,5° por 0,625°, cerca de 50–70 km), avaliada pelas médias mensais de 2001–2025 segundo os limites de temperatura da FAO EcoCrop. Com irrigação, a chuva não conta."
+  },
+  "weather": {
+    "now": "Agora",
+    "updated": "Atualizado às {time}, hora local",
+    "feels": "Sensação térmica",
+    "humidity": "Umidade",
+    "wind": "Vento",
+    "gusts": "Rajadas",
+    "rain": "Chuva, últimos 15 min",
+    "clouds": "Nebulosidade",
+    "from": "de {deg}°",
+    "source": "Condições atuais: Open-Meteo.com (CC BY 4.0), atualizadas a cada 15 minutos",
+    "unavailable": "As condições atuais não estão disponíveis agora.",
+    "kind": {
+      "clear": "Céu limpo",
+      "mostlyClear": "Predominantemente limpo",
+      "partlyCloudy": "Parcialmente nublado",
+      "overcast": "Encoberto",
+      "fog": "Nevoeiro",
+      "drizzle": "Garoa",
+      "rain": "Chuva",
+      "snow": "Neve",
+      "thunder": "Trovoada"
+    }
   }
 }

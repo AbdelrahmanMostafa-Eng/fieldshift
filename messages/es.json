@@ -38,7 +38,18 @@
     "ndviNote": "Compuesto de 8 días, reemitido a diario, por eso cambia despacio.",
     "date": "Fecha de la imagen",
     "dateHint": "Desde ayer hasta hace {days} días. Fechas en UTC.",
-    "base": "Imagen cercana: color real VIIRS (NOAA-20), una imagen al día. Vista lejana: Blue Marble."
+    "base": "Imagen cercana: color real VIIRS (NOAA-20), una imagen al día. Vista lejana: Blue Marble.",
+    "airTemp": "Temperatura del aire (2 m)",
+    "wind": "Velocidad del viento en superficie",
+    "humidity": "Humedad relativa",
+    "rain": "Intensidad de lluvia",
+    "soilWater": "Agua del suelo en la zona de raíces",
+    "windUnit": "Metros por segundo.",
+    "humidityUnit": "Porcentaje, cerca del suelo.",
+    "rainUnit": "Milímetros por hora, de la estimación satelital de lluvia IMERG de la NASA.",
+    "soilWaterUnit": "Volumen de agua por volumen de suelo en la zona de raíces (modelo MERRA-2).",
+    "monthlyNote": "Media mensual: muestra el mes más reciente que la NASA ha publicado, normalmente de hace unos meses, no la fecha de imagen de abajo.",
+    "lagNote": "Diario, con unos {days} días de retraso: las fechas más recientes muestran el último día disponible."
   },
   "globe": {
     "label": "Tierra interactiva. Arrastra para girarla, desplaza o pellizca para acercar, haz clic o toca para elegir un lugar.",
@@ -68,18 +79,20 @@
     "forage": "Forraje",
     "allium": "Aliáceas",
     "mallow": "Malváceas",
-    "amaranth": "Amarantáceas"
+    "amaranth": "Amarantáceas",
+    "umbel": "Apiáceas",
+    "daisy": "Asteráceas",
+    "other": "Otras familias"
   },
   "plan": {
     "field": "Tu parcela",
-    "history": "Últimos tres cultivos",
-    "current": "Próximos tres cultivos previstos",
+    "history": "Cultivos anteriores (el más antiguo primero)",
+    "current": "Tu plan, temporada a temporada",
     "searchCrop": "Buscar cultivos",
     "noCrop": "Ningún cultivo coincide.",
     "startMonth": "Mes de siembra",
     "irrigated": "Puedo regar",
     "priorities": "Qué importa más",
-    "importance": "{value} de 10",
     "soil": "Salud del suelo",
     "water": "Agua",
     "climate": "Ajuste al clima",
@@ -90,7 +103,11 @@
     "pickHint": "Toca el globo, busca un pueblo o usa tu ubicación.",
     "loading": "Leyendo 24 campañas de datos climáticos de la NASA…",
     "failed": "No se pudieron cargar los datos climáticos. Inténtalo de nuevo en un minuto.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "seasonsOf": "{count} de {max}",
+    "addSeason": "Añadir temporada",
+    "removeSeason": "Quitar la temporada {n}",
+    "noHistory": "No hay cultivos anteriores."
   },
   "climate": {
     "title": "Clima de este lugar",
@@ -118,7 +135,7 @@
     "evidence": "Evidencia",
     "gaps": "Lo que no sabemos",
     "risks": "Comprueba en tu zona",
-    "net": "Rendimiento neto, 3 años",
+    "net": "Retorno neto, {count} temporadas",
     "perHa": "por hectárea",
     "illustrative": "ilustrativo",
     "range": "Rango probable en campañas pasadas",
@@ -134,7 +151,10 @@
   },
   "money": {
     "currency": "Moneda",
-    "ratesFrom": "Tipos de cambio: ExchangeRate-API, actualizados a diario"
+    "ratesFrom": "Tipos de cambio: ExchangeRate-API, actualizados a diario",
+    "search": "Buscar monedas",
+    "count": "{count} monedas con tasa diaria",
+    "none": "Ninguna moneda coincide."
   },
   "atlas": {
     "title": "Pregunta a Atlas",
@@ -200,7 +220,7 @@
     "sensNote": "Rendimiento neto para tu superficie cuando el rendimiento y el precio bajan o suben un 20%.",
     "yieldRow": "Rendimiento",
     "priceCol": "Precio",
-    "three": "Las tres campañas juntas",
+    "three": "Todas las temporadas juntas",
     "missing": "El catálogo no tiene rendimiento ni precio para este cultivo. Escribe tu rendimiento, precio y costos para ver su retorno.",
     "illustrative": "Valores iniciales ilustrativos"
   },
@@ -216,6 +236,8 @@
     "frost": "Noches de helada",
     "frostV": "{month} ({count} de {years} años)",
     "frostRule": "Helada significa que la temperatura del aire más baja del mes (NASA POWER T2M_MIN, a 2 m) bajó de {t} °C. La helada en el suelo puede llegar en noches algo más cálidas.",
+    "solar": "Luz solar en el suelo",
+    "solarNote": "Año intermedio, en MJ por m² al día, de la radiación de onda corta en superficie con cualquier cielo de NASA POWER (ALLSKY_SFC_SW_DWN).",
     "windows": "Ventanas de siembra según la temperatura",
     "plantIn": "{crop}, por mes de siembra",
     "good": "Dentro del rango óptimo",
@@ -285,7 +307,13 @@
     "econ": "Economía por hectárea",
     "econNa": "No disponible en el catálogo. Escribe tus propios números en la pestaña Costos.",
     "illustrative": "ilustrativo",
-    "about": "{count} cultivos. Los límites de temperatura, lluvia y ciclo vienen de la base de datos FAO EcoCrop. Hay rendimientos, precios y costos iniciales para {priced} de ellos, y son ilustrativos."
+    "about": "{count} cultivos. Los límites de temperatura, lluvia y ciclo vienen de la base de datos FAO EcoCrop. Hay rendimientos, precios y costos iniciales para {priced} de ellos, y son ilustrativos.",
+    "soilBest": "Suelo donde rinde mejor",
+    "soilTolerated": "Suelo que tolera",
+    "fertility": "Nutrir el cultivo (sin dosis)",
+    "addSeason": "Añadir como nueva temporada",
+    "zonesShow": "Ver en el mapa dónde encaja",
+    "zonesHide": "Ocultar las zonas del mapa"
   },
   "soil": {
     "title": "Textura del suelo",
@@ -326,6 +354,78 @@
       "high": "El agua drena rápido y se guarda poca. El riesgo habitual es la sequía: prefiere cultivos tolerantes, deja el rastrojo como acolchado y riega poco y a menudo si riegas."
     },
     "note": "Es una orientación general según la textura. No cambia tus puntuaciones: solo un análisis de suelo (pH, materia orgánica, textura) puede subir la confianza.",
-    "source": "Fuente"
+    "source": "Fuente",
+    "suited": "Cultivos que rinden mejor en suelos {group} (FAO EcoCrop)",
+    "suitedCount": "{best} cultivos rinden mejor en esta textura; {tolerated} más la toleran.",
+    "addToPlan": "Añadir a mi plan",
+    "group": {
+      "light": "ligeros (arenosos)",
+      "medium": "medios (francos)",
+      "heavy": "pesados (arcillosos)",
+      "organic": "orgánicos (turbosos)"
+    }
+  },
+  "fertility": {
+    "soilTest": "Analiza primero el suelo. Cuánto aplicar depende del análisis, del rendimiento que esperas y de lo que dejó el cultivo anterior.",
+    "legume": "Las leguminosas producen la mayor parte de su nitrógeno en los nódulos de las raíces cuando están presentes las bacterias rizobios adecuadas, así que rara vez necesitan abono nitrogenado. El fósforo y el potasio siguen importando.",
+    "nitrogen": "Los cereales y los pastos suelen responder sobre todo al nitrógeno. Repartirlo en más de una aplicación, según el crecimiento, reduce las pérdidas.",
+    "potassium": "Los cultivos de raíz y tubérculo absorben mucho potasio: pídelo en el análisis de suelo.",
+    "sulfur": "Las brásicas (la familia de la col, la colza, la mostaza) necesitan un buen aporte de azufre.",
+    "calcium": "Los cultivos de fruto necesitan calcio constante y riego regular: la podredumbre apical del tomate y del pimiento es falta de calcio en el fruto.",
+    "organic": "El compost, el estiércol, los restos de cosecha y las leguminosas de cobertura aumentan la materia orgánica y liberan nutrientes despacio. Su contenido varía, así que un análisis de suelo sigue siendo útil.",
+    "fourR": "Sigue la regla de las 4R: la fuente correcta, en la dosis correcta, en el momento correcto y en el lugar correcto.",
+    "noDose": "FieldShift no da nombres de productos ni dosis. Consulta a un agrónomo o extensionista local con tu análisis de suelo."
+  },
+  "suggest": {
+    "title": "Cultivos que encajan en este lugar",
+    "note": "Todos los cultivos de la biblioteca, ordenados por los límites de FAO EcoCrop frente a los meses de NASA POWER de este lugar, en secano: cuenta la menor de las puntuaciones de temperatura y lluvia. Un punto de partida, no una recomendación.",
+    "noteIrrigated": "Todos los cultivos de la biblioteca, ordenados por los límites de temperatura de FAO EcoCrop frente a los meses de NASA POWER de este lugar. Con riego, la lluvia no cuenta. Un punto de partida, no una recomendación.",
+    "level": {
+      "good": "Buena aptitud",
+      "possible": "Posible",
+      "poor": "Poca aptitud"
+    },
+    "plantIn": "mejor sembrado en {month}",
+    "zones": "Ver zonas en el mapa",
+    "zonesFor": "Ver en el mapa las zonas de {crop}",
+    "add": "Añadir a mi plan",
+    "addFor": "Añadir {crop} a mi plan",
+    "inPlan": "Ya está en tu plan",
+    "planFull": "Tu plan está completo."
+  },
+  "zones": {
+    "title": "Dónde encaja",
+    "loading": "Leyendo el clima de la NASA alrededor de este lugar…",
+    "failed": "No se pudieron cargar las zonas. Inténtalo en un minuto.",
+    "hide": "Ocultar zonas",
+    "good": "Buena aptitud ({min} o más)",
+    "possible": "Posible ({min}–{max})",
+    "poor": "Poca aptitud ({max} o menos)",
+    "note": "Cada cuadro es una celda de la malla de NASA POWER (0,5° por 0,625°, unos 50–70 km), puntuada con sus medias mensuales 2001–2025 según los límites de FAO EcoCrop, en secano. Los campos dentro de un cuadro pueden variar.",
+    "noteIrrigated": "Cada cuadro es una celda de la malla de NASA POWER (0,5° por 0,625°, unos 50–70 km), puntuada con sus medias mensuales 2001–2025 según los límites de temperatura de FAO EcoCrop. Con riego, la lluvia no cuenta."
+  },
+  "weather": {
+    "now": "Ahora mismo",
+    "updated": "Actualizado a las {time}, hora local",
+    "feels": "Sensación térmica",
+    "humidity": "Humedad",
+    "wind": "Viento",
+    "gusts": "Ráfagas",
+    "rain": "Lluvia, últimos 15 min",
+    "clouds": "Nubosidad",
+    "from": "del {deg}°",
+    "source": "Condiciones actuales: Open-Meteo.com (CC BY 4.0), actualizadas cada 15 minutos",
+    "unavailable": "Las condiciones actuales no están disponibles ahora.",
+    "kind": {
+      "clear": "Despejado",
+      "mostlyClear": "Mayormente despejado",
+      "partlyCloudy": "Parcialmente nublado",
+      "overcast": "Cubierto",
+      "fog": "Niebla",
+      "drizzle": "Llovizna",
+      "rain": "Lluvia",
+      "snow": "Nieve",
+      "thunder": "Tormenta"
+    }
   }
 }

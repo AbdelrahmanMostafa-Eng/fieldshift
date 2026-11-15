@@ -8,6 +8,8 @@ export interface MonthStat {
   tempC: number | null; tempLow: number | null; tempHigh: number | null;
   /** Rainfall for the whole month (mm): the middle year, and the 10th and 90th percentile years. */
   rainMm: number | null; rainLow: number | null; rainHigh: number | null;
+  /** All-sky sunlight reaching the ground (MJ/m² per day), the middle year. */
+  solar: number | null;
   /** How many years had a value for this month (the smaller of the two counts). */
   years: number;
 }
@@ -29,11 +31,13 @@ export function climatology(series: ClimateSeries): MonthStat[] {
   return Array.from({ length: 12 }, (_, month) => {
     const temps = column(series.T2M, month, (v) => v);
     const rains = column(series.PRECTOTCORR, month, (v, yi) => v * daysInMonth(series.years[yi] ?? 2001, month));
+    const sun = column(series.ALLSKY_SFC_SW_DWN ?? [], month, (v) => v);
     const pick = (xs: number[], p: number) => (xs.length ? percentile(xs, p) : null);
     return {
       month,
       tempC: pick(temps, 0.5), tempLow: pick(temps, 0.1), tempHigh: pick(temps, 0.9),
       rainMm: pick(rains, 0.5), rainLow: pick(rains, 0.1), rainHigh: pick(rains, 0.9),
+      solar: pick(sun, 0.5),
       years: Math.min(temps.length, rains.length),
     };
   });

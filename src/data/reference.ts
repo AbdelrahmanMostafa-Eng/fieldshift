@@ -48,3 +48,16 @@ export const TEXTURE_CLASSES: TextureClass[] = [
   { id: "siltyClay", tint: "#7a5a50", drainage: "low", waterHolding: "medium", effort: "high", source: TEXTURE_SOURCE },
   { id: "clay", tint: "#6e3f30", drainage: "low", waterHolding: "medium", effort: "high", source: TEXTURE_SOURCE },
 ];
+
+/**
+ * EcoCrop describes soils as light, medium or heavy (and organic). This maps each USDA class to one of those words:
+ * sandy classes are light, clayey classes (clay loam and finer) are heavy, the loams in between are medium.
+ * FieldShift's own grouping by sand and clay content, stated on screen.
+ */
+export const TEXTURE_GROUP: Record<string, "light" | "medium" | "heavy"> = {
+  sand: "light", loamySand: "light", sandyLoam: "light",
+  loam: "medium", siltLoam: "medium", silt: "medium", sandyClayLoam: "medium",
+  clayLoam: "heavy", siltyClayLoam: "heavy", sandyClay: "heavy", siltyClay: "heavy", clay: "heavy",
+};
+export const TEXTURE_GROUP_SOURCE =
+  "Crop texture preferences: FAO EcoCrop TEXT (best) and TEXTR (tolerated). Grouping of the 12 USDA classes into EcoCrop's light, medium and heavy: FieldShift's own, by sand and clay content.";

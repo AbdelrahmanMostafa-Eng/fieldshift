@@ -1,6 +1,7 @@
 /**
  * NASA GIBS layers. Every id, format, tile matrix set and date range below was read from
- * https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml on 2026-11-14.
+ * https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml on 2026-11-14 (first four)
+ * and 2026-11-15 (the five weather and soil layers, with their colour maps from gibs.earthdata.nasa.gov/colormaps/v1.3/).
  * `confirmed: true` means exactly that; never set it for a layer you have not looked up.
  */
 export interface GibsLegend {
@@ -8,8 +9,8 @@ export interface GibsLegend {
   stops: string[];
   min: number;
   max: number;
-  /** "K" = kelvin, "index" = unitless index. */
-  unit: "K" | "index";
+  /** "K" = kelvin (shown in °C), "index" = unitless index; the rest are shown as they are. */
+  unit: "K" | "index" | "m/s" | "%" | "mm/h" | "m³/m³";
   /** The GIBS colour map the stops and the range were read from. */
   source: string;
 }
@@ -17,14 +18,19 @@ export interface GibsLegend {
 export interface GibsLayer {
   id: string;
   /** Short key used for translations (`layers.<key>`). */
-  key: "trueColour" | "blueMarble" | "lst" | "ndvi";
+  key: "trueColour" | "blueMarble" | "lst" | "ndvi" | "airTemp" | "wind" | "humidity" | "rain" | "soilWater";
   label: string;
   tms: string; // WMTS tile matrix set
   ext: "jpg" | "jpeg" | "png";
   maxZoom: number;
   opacity: number;
-  /** daily = one image per day; rolling8 = 8-day composite that is re-issued every day; static = no date at all. */
-  cadence: "daily" | "rolling8" | "static";
+  /**
+   * daily = one image per day; rolling8 = 8-day composite re-issued every day; monthly = one map per month, always the
+   * newest month published (the tile address uses GIBS's "default" time); static = no date at all.
+   */
+  cadence: "daily" | "rolling8" | "monthly" | "static";
+  /** Days a daily layer runs behind. Dates newer than that use the newest image GIBS has ("default"). */
+  lagDays?: number;
   confirmed: boolean;
   legend?: GibsLegend;
 }
@@ -60,11 +66,66 @@ export const OVERLAYS: GibsLayer[] = [
       source: "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_NDVI.xml",
     },
   },
+  {
+    id: "MERRA2_2m_Air_Temperature_Monthly", key: "airTemp", label: "Air temperature (2 m, monthly, MERRA-2)",
+    tms: "GoogleMapsCompatible_Level6", ext: "png", maxZoom: 6, opacity: 0.7, cadence: "monthly", confirmed: true,
+    legend: {
+      stops: ["#5e4fa2", "#66c2a5", "#abdda4", "#e7f599", "#fefdbc", "#fddb87", "#fba55c", "#ef6644", "#9e0142"],
+      min: 220, max: 310, unit: "K",
+      source: "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MERRA2_2m_Air_Temperature_Monthly.xml",
+    },
+  },
+  {
+    id: "IMERG_Precipitation_Rate", key: "rain", label: "Rain rate (daily, IMERG)",
+    tms: "GoogleMapsCompatible_Level6", ext: "png", maxZoom: 6, opacity: 0.75, cadence: "daily", lagDays: 2, confirmed: true,
+    legend: {
+      stops: ["#00764e", "#009c14", "#45c000", "#cfe700", "#ffa00c", "#ff4233", "#da0000", "#8a0000", "#330000"],
+      min: 0.1, max: 53, unit: "mm/h",
+      source: "https://gibs.earthdata.nasa.gov/colormaps/v1.3/GPM_Precipitation_Rate.xml",
+    },
+  },
+  {
+    id: "AIRS_L3_Surface_Relative_Humidity_Monthly_Day", key: "humidity", label: "Relative humidity at the surface (monthly, AIRS)",
+    tms: "GoogleMapsCompatible_Level6", ext: "png", maxZoom: 6, opacity: 0.7, cadence: "monthly", confirmed: true,
+    legend: {
+      stops: ["#b77730", "#e4ab6b", "#f3e0be", "#e9f8df", "#ccfbe5", "#9fe9db", "#64ccd6", "#2295ae", "#002360"],
+      min: 0, max: 100, unit: "%",
+      source: "https://gibs.earthdata.nasa.gov/colormaps/v1.3/AIRS_Surface_Relative_Humidity_Monthly_Day.xml",
+    },
+  },
+  {
+    id: "MERRA2_Surface_Wind_Speed_Monthly", key: "wind", label: "Surface wind speed (monthly, MERRA-2)",
+    tms: "GoogleMapsCompatible_Level6", ext: "png", maxZoom: 6, opacity: 0.7, cadence: "monthly", confirmed: true,
+    legend: {
+      stops: ["#5e4fa2", "#66c2a5", "#abdda4", "#e6f598", "#ffffbf", "#fddd88", "#fcaa5f", "#f26a43", "#9e0142"],
+      min: 2, max: 18, unit: "m/s",
+      source: "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MERRA2_Surface_Wind_Speed_Monthly.xml",
+    },
+  },
+  {
+    id: "MERRA2_Soil_Water_Root_Zone_Monthly", key: "soilWater", label: "Root-zone soil water (monthly, MERRA-2)",
+    tms: "GoogleMapsCompatible_Level6", ext: "png", maxZoom: 6, opacity: 0.75, cadence: "monthly", confirmed: true,
+    legend: {
+      stops: ["#ffffe5", "#e1f3a8", "#c4e799", "#a0d789", "#79c679", "#4eb163", "#31964f", "#197c3f", "#004529"],
+      min: 0, max: 0.45, unit: "m³/m³",
+      source: "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MERRA2_Soil_Water_Root_Zone_Monthly.xml",
+    },
+  },
 ];
 
-export function tileUrl(l: GibsLayer, date: string): string {
+/**
+ * The time segment for a layer's tile address. Monthly layers, and dates a lagging daily layer has not reached yet,
+ * use GIBS's "default" time, which serves the newest image (checked live: a date past the newest one answers 404).
+ */
+export function timeFor(l: GibsLayer, date: string, now: Date = new Date()): string {
+  if (l.cadence === "monthly") return "default";
+  if (l.lagDays && date > gibsDate(l.lagDays, now)) return "default";
+  return date;
+}
+
+export function tileUrl(l: GibsLayer, date: string, now: Date = new Date()): string {
   // WMTS REST order is {TileMatrix}/{TileRow}/{TileCol} = {z}/{y}/{x}. Static layers have no date segment.
-  const time = l.cadence === "static" ? "" : `${date}/`;
+  const time = l.cadence === "static" ? "" : `${timeFor(l, date, now)}/`;
   return `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${l.id}/default/${time}${l.tms}/{z}/{y}/{x}.${l.ext}`;
 }
 

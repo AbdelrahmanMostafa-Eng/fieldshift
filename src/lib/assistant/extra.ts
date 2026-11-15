@@ -75,7 +75,7 @@ export const CALENDAR_NEEDS_CROP: L = {
 };
 export function calendarFor(crop: Crop, climate: ClimateSeries): L {
   const fits = plantingWindow(crop, climatology(climate));
-  const months = (lang: string, want: string) => fits.map((f, m) => (f === want ? new Intl.DateTimeFormat(lang, { month: "long" }).format(new Date(2026, m, 1)) : null)).filter(Boolean);
+  const months = (lang: string, want: string) => fits.map((f, m) => (f === want ? new Intl.DateTimeFormat(lang, { calendar: "gregory", month: "long" }).format(new Date(2026, m, 1)) : null)).filter(Boolean);
   const text = (lang: "en" | "ar"): string => {
     const good = months(lang, "good"), possible = months(lang, "possible"), sep = lang === "ar" ? "، " : ", ";
     const name = lang === "ar" ? cropName(crop.id, "ar") : crop.name;

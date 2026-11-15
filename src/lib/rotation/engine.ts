@@ -4,18 +4,23 @@ import type {
 } from "./types";
 
 const clamp = (v: number, lo = 0, hi = 100) => Math.min(hi, Math.max(lo, v));
-const mean = (a: number[]) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : NaN);
-const std = (a: number[]) => {
+const mean = (a: ArrayLike<number>) => { let s = 0; for (let i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : NaN; };
+const std = (a: ArrayLike<number>) => {
   if (a.length < 2) return 0;
   const m = mean(a);
-  return Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / (a.length - 1));
+  let s = 0; for (let i = 0; i < a.length; i++) s += (a[i] - m) ** 2;
+  return Math.sqrt(s / (a.length - 1));
 };
-export function percentile(sorted: number[], p: number): number {
+export function percentile(sorted: ArrayLike<number>, p: number): number {
   if (!sorted.length) return NaN;
   const idx = (sorted.length - 1) * p;
   const lo = Math.floor(idx), hi = Math.ceil(idx);
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
 }
+
+/** Shortest and longest plan the engine accepts, in seasons (one crop per year). */
+export const MIN_SEASONS = 1;
+export const MAX_SEASONS = 5;
 
 export const monthsFor = (startMonth: number, seasonDays: number) =>
   Array.from({ length: Math.max(1, Math.round(seasonDays / 30.4)) }, (_, i) => (startMonth + i) % 12);
@@ -24,43 +29,81 @@ function cell(series: Monthly, yearIdx: number, month: number): number | null {
   return series[yearIdx]?.[month] ?? null;
 }
 
-/** Soil score: legumes, residue and family diversity help; repeating a family hurts. */
+/**
+ * Soil score: legumes, residue and family diversity help; repeating a family hurts.
+ * The per-crop terms are scaled to a three-season plan, so plans of different lengths score on the same scale.
+ */
 export function soilScore(seq: Crop[], history: Crop[]): number {
-  let s = 50;
-  seq.forEach((c, i) => {
-    if (c.nFixing) s += 12;
-    s += c.residue === "high" ? 6 : c.residue === "medium" ? 3 : 0;
-    const prev = i === 0 ? history[history.length - 1] : seq[i - 1];
-    if (prev && prev.family === c.family) s -= 15;
-    const window = [...history.slice(-2), ...seq.slice(0, i)];
-    if (window.some((w) => w.family === c.family) && prev?.family !== c.family) s -= 5;
-  });
-  const families = new Set([...history.slice(-2), ...seq].map((c) => c.family));
+  if (!seq.length) return 50;
+  const h = history.length, h1 = history[h - 1], h2 = history[h - 2];
+  let terms = 0;
+  for (let i = 0; i < seq.length; i++) {
+    const c = seq[i];
+    if (c.nFixing) terms += 12;
+    terms += c.residue === "high" ? 6 : c.residue === "medium" ? 3 : 0;
+    const prev = i === 0 ? h1 : seq[i - 1];
+    if (prev && prev.family === c.family) { terms -= 15; continue; }
+    // the same family earlier in the window (last two past crops and this plan so far), but not right before
+    let seen = h1?.family === c.family || h2?.family === c.family;
+    for (let j = 0; j < i && !seen; j++) seen = seq[j].family === c.family;
+    if (seen) terms -= 5;
+  }
+  let s = 50 + (terms * 3) / seq.length;
+  const families = new Set<string>();
+  if (h2) families.add(h2.family);
+  if (h1) families.add(h1.family);
+  for (const c of seq) families.add(c.family);
   if (families.size >= 4) s += 8;
   return clamp(s);
 }
 
-export function waterScoreForYear(seq: Crop[], c: ClimateSeries, yi: number, start: number, irrigated: boolean): number {
-  const scores = seq.map((crop) => {
-    const rain = monthsFor(start, crop.seasonDays).reduce((s, m) => s + (cell(c.PRECTOTCORR, yi, m) ?? 0) * 30.4, 0);
-    const deficit = Math.max(0, crop.waterNeedMm - rain) / crop.waterNeedMm;
-    return 100 * (1 - (irrigated ? 0.6 : 1) * deficit);
-  });
-  return clamp(mean(scores));
+/** Value at percentile p of the first `len` numbers in `a`, by selection (reorders `a`). Same result as sorting first. */
+export function selectPercentile(a: Float64Array, len: number, p: number): number {
+  const idx = (len - 1) * p, lo = Math.floor(idx), hi = Math.ceil(idx);
+  const kth = (k: number) => {
+    let l = 0, r = len - 1;
+    while (l < r) {
+      const pivot = a[(l + r) >> 1];
+      let i = l, j = r;
+      while (i <= j) {
+        while (a[i] < pivot) i++;
+        while (a[j] > pivot) j--;
+        if (i <= j) { const t = a[i]; a[i] = a[j]; a[j] = t; i++; j--; }
+      }
+      if (k <= j) r = j; else if (k >= i) l = i; else break;
+    }
+    return a[k];
+  };
+  const vHi = kth(hi);
+  if (lo === hi) return vHi;
+  let vLo = -Infinity;
+  for (let i = 0; i < hi; i++) if (a[i] > vLo) vLo = a[i];
+  return vLo + (vHi - vLo) * (idx - lo);
 }
 
-export function climateScoreForYear(seq: Crop[], c: ClimateSeries, yi: number, start: number): number {
-  const scores = seq.map((crop) => {
-    const fit = monthsFor(start, crop.seasonDays).map((m) => {
-      const t = cell(c.T2M, yi, m);
-      if (t === null) return 0.5; // unknown: neutral, not a pass
-      if (t >= crop.tOptLow && t <= crop.tOptHigh) return 1;
-      if (t < crop.tOptLow) return clamp((t - crop.tMin) / (crop.tOptLow - crop.tMin), 0, 1);
-      return clamp((crop.tMax - t) / (crop.tMax - crop.tOptHigh), 0, 1);
-    });
-    return 100 * mean(fit);
+/** One crop's water score for one past year, before averaging and clamping (it can go below zero in a very dry year). */
+function cropWaterRaw(crop: Crop, c: ClimateSeries, yi: number, start: number, irrigated: boolean): number {
+  const rain = monthsFor(start, crop.seasonDays).reduce((s, m) => s + (cell(c.PRECTOTCORR, yi, m) ?? 0) * 30.4, 0);
+  const deficit = Math.max(0, crop.waterNeedMm - rain) / crop.waterNeedMm;
+  return 100 * (1 - (irrigated ? 0.6 : 1) * deficit);
+}
+/** One crop's temperature fit for one past year: 100 when every month of its season is in the best range. */
+function cropClimateRaw(crop: Crop, c: ClimateSeries, yi: number, start: number): number {
+  const fit = monthsFor(start, crop.seasonDays).map((m) => {
+    const t = cell(c.T2M, yi, m);
+    if (t === null) return 0.5; // unknown: neutral, not a pass
+    if (t >= crop.tOptLow && t <= crop.tOptHigh) return 1;
+    if (t < crop.tOptLow) return clamp((t - crop.tMin) / (crop.tOptLow - crop.tMin), 0, 1);
+    return clamp((crop.tMax - t) / (crop.tMax - crop.tOptHigh), 0, 1);
   });
-  return clamp(mean(scores));
+  return 100 * mean(fit);
+}
+
+export function waterScoreForYear(seq: Crop[], c: ClimateSeries, yi: number, start: number, irrigated: boolean): number {
+  return clamp(mean(seq.map((crop) => cropWaterRaw(crop, c, yi, start, irrigated))));
+}
+export function climateScoreForYear(seq: Crop[], c: ClimateSeries, yi: number, start: number): number {
+  return clamp(mean(seq.map((crop) => cropClimateRaw(crop, c, yi, start))));
 }
 
 export interface PlaceFit { month: number; climate: number; water: number; score: number }
@@ -89,12 +132,21 @@ export function placeFit(crop: Crop, climate: ClimateSeries, irrigated: boolean)
 
 type Priced = Crop & { yieldTHa: number; priceUsdPerT: number; costUsdHa: number };
 export const hasEconomics = (c: Crop): c is Priced => c.yieldTHa !== null && c.priceUsdPerT !== null && c.costUsdHa !== null;
+const cropNet = (c: Priced) => economics({ yieldTHa: c.yieldTHa, priceUsdPerT: c.priceUsdPerT, costUsdHa: c.costUsdHa }).net;
 
-/** Three-season net per hectare, or null when any crop has no yield, price or cost in the catalogue. */
+/** Net per hectare over all seasons, or null when any crop has no yield, price or cost in the catalogue. */
 export function netUsdHa(seq: Crop[]): number | null {
   if (!seq.every(hasEconomics)) return null;
-  return seq.reduce((s, c) => s + economics({ yieldTHa: c.yieldTHa, priceUsdPerT: c.priceUsdPerT, costUsdHa: c.costUsdHa }).net, 0);
+  return seq.reduce((s, c) => s + cropNet(c), 0);
 }
+
+/** "What matters most": three levels instead of a 0-10 slider. The weights are relative, so only their ratio counts. */
+export type Importance = "low" | "medium" | "high";
+export const IMPORTANCE_WEIGHT: Record<Importance, number> = { low: 1, medium: 3, high: 6 };
+export const weightsFrom = (p: Record<keyof Weights, Importance>): Weights => ({
+  soil: IMPORTANCE_WEIGHT[p.soil], water: IMPORTANCE_WEIGHT[p.water], climate: IMPORTANCE_WEIGHT[p.climate],
+  economics: IMPORTANCE_WEIGHT[p.economics], risk: IMPORTANCE_WEIGHT[p.risk],
+});
 
 const PROFILES: Record<"soil" | "water" | "income" | "balanced", Weights> = {
   soil: { soil: 0.55, water: 0.1, climate: 0.15, economics: 0.05, risk: 0.15 },
@@ -111,10 +163,30 @@ interface Evaluated {
   seq: Crop[]; soil: number; econ: number; water: number[]; climate: number[]; net: number | null;
 }
 
-function evaluate(seq: Crop[], history: Crop[], input: EngineInput, econNorm: (net: number | null) => number): Evaluated {
+/** Per-crop, per-year scores, computed once and reused by every sequence that contains the crop. */
+type CropYears = Map<string, { water: Float64Array; climate: Float64Array }>;
+function cropYears(crops: Crop[], input: EngineInput): CropYears {
   const n = input.climate.years.length;
-  const water = Array.from({ length: n }, (_, yi) => waterScoreForYear(seq, input.climate, yi, input.startMonth, input.irrigated));
-  const climate = Array.from({ length: n }, (_, yi) => climateScoreForYear(seq, input.climate, yi, input.startMonth));
+  const out: CropYears = new Map();
+  for (const crop of crops) {
+    if (out.has(crop.id)) continue;
+    const water = new Float64Array(n), climate = new Float64Array(n);
+    for (let yi = 0; yi < n; yi++) {
+      water[yi] = cropWaterRaw(crop, input.climate, yi, input.startMonth, input.irrigated);
+      climate[yi] = cropClimateRaw(crop, input.climate, yi, input.startMonth);
+    }
+    out.set(crop.id, { water, climate });
+  }
+  return out;
+}
+
+function evaluate(seq: Crop[], history: Crop[], years: CropYears, n: number, econNorm: (net: number | null) => number): Evaluated {
+  const water: number[] = [], climate: number[] = [];
+  for (let yi = 0; yi < n; yi++) {
+    let w = 0, c = 0;
+    for (const crop of seq) { const cy = years.get(crop.id)!; w += cy.water[yi]; c += cy.climate[yi]; }
+    water.push(clamp(w / seq.length)); climate.push(clamp(c / seq.length));
+  }
   const net = netUsdHa(seq);
   return { seq, soil: soilScore(seq, history), econ: econNorm(net), water, climate, net };
 }
@@ -123,9 +195,9 @@ function summarize(e: Evaluated, weights: Weights, input: EngineInput) {
   const w = normalize(weights);
   const combined = e.water.map((v, i) => (v + e.climate[i]) / 2);
   const risk = clamp(100 - 2 * std(combined)); // high = stable across seasons
-  const perYear = e.water.map((wat, i) =>
+  const perYear = Float64Array.from(e.water, (wat, i) =>
     w.soil * e.soil + w.water * wat + w.climate * e.climate[i] + w.economics * e.econ + w.risk * risk);
-  const sorted = [...perYear].sort((a, b) => a - b);
+  const sorted = perYear.sort();
   const band = { p10: percentile(sorted, 0.1), p50: percentile(sorted, 0.5), p90: percentile(sorted, 0.9) };
   const scores: Scores = {
     soil: e.soil, water: mean(e.water), climate: mean(e.climate), economics: e.econ, risk, overall: band.p50,
@@ -138,22 +210,22 @@ function summarize(e: Evaluated, weights: Weights, input: EngineInput) {
 
 function explain(e: Evaluated, history: Crop[], input: EngineInput, label: string): Pick<Strategy, "why" | "evidence" | "gaps" | "risks"> {
   const yrs = input.climate.years;
-  const rainShare = e.water.map((v) => v);
-  const medWater = percentile([...rainShare].sort((a, b) => a - b), 0.5);
-  const legumes = e.seq.filter((c) => c.nFixing).map((c) => c.name);
+  const medWater = percentile([...e.water].sort((a, b) => a - b), 0.5);
+  const legumes = [...new Set(e.seq.filter((c) => c.nFixing).map((c) => c.name))];
   const why: string[] = [];
   if (legumes.length) why.push(`Includes nitrogen-fixing ${legumes.join(", ")} (catalog flag), which supports soil nitrogen.`);
   const prev = history[history.length - 1];
   if (prev && e.seq[0].family !== prev.family) why.push(`Breaks the ${prev.family} run: ${e.seq[0].name} follows ${prev.name}.`);
   if (!why.length) why.push(`${label}: no standout soil benefit in the catalog data.`);
   const unpriced = [...new Set(e.seq.filter((c) => !hasEconomics(c)).map((c) => c.name))];
+  const span = `${e.seq.length}-season`;
   const evidence = [
     `Median water score ${medWater.toFixed(0)}/100 across ${yrs.length} seasons (${yrs[0]}–${yrs[yrs.length - 1]}) of NASA POWER monthly rain, against FAO EcoCrop rainfall needs.`,
     "Climate fit compares NASA POWER monthly temperatures with each crop's FAO EcoCrop temperature limits.",
     `Soil score ${e.soil.toFixed(0)}/100 from family diversity, residue and legume flags (heuristic, not a measurement).`,
     e.net === null
-      ? `Three-year net return not available: the catalogue has no yield or price for ${unpriced.join(", ")}.`
-      : `Three-year net return about $${Math.round(e.net).toLocaleString("en-US")}/ha at the catalog's illustrative yields and prices.`,
+      ? `${span[0].toUpperCase()}${span.slice(1)} net return not available: the catalogue has no yield or price for ${unpriced.join(", ")}.`
+      : `${span[0].toUpperCase()}${span.slice(1)} net return about $${Math.round(e.net).toLocaleString("en-US")}/ha at the catalog's illustrative yields and prices.`,
   ];
   const gaps = [
     "Monthly means hide frost and heat spikes; no daily extremes in this version.",
@@ -172,54 +244,92 @@ function explain(e: Evaluated, history: Crop[], input: EngineInput, label: strin
   return { why, evidence, gaps, risks };
 }
 
+/** Keeps the best few sequences for one weighting while scanning, without storing every candidate. */
+class TopK {
+  items: { score: number; idx: number[] }[] = [];
+  constructor(private k: number) {}
+  offer(score: number, idx: number[]) {
+    if (this.items.length === this.k && score <= this.items[this.items.length - 1].score) return;
+    this.items.push({ score, idx: [...idx] });
+    this.items.sort((a, b) => b.score - a.score);
+    if (this.items.length > this.k) this.items.pop();
+  }
+}
+
 export function recommend(input: EngineInput): Strategy[] {
   const byId = new Map(input.catalog.map((c) => [c.id, c]));
   const resolve = (ids: string[]) => ids.map((id) => byId.get(id)).filter((c): c is Crop => !!c);
   const history = resolve(input.history);
-  const current = resolve(input.current);
+  const current = resolve(input.current).slice(0, MAX_SEASONS);
+  const seasons = Math.min(MAX_SEASONS, Math.max(MIN_SEASONS, current.length || 3));
+  const n = input.climate.years.length;
 
   // Suggested strategies use only crops with a yield, price and cost, so each one has an income figure.
-  // Any crop can still be in the farmer's own plan. 10 priced crops → 1,000 sequences.
+  // Any crop can still be in the farmer's own plan.
   const pool = input.catalog.filter(hasEconomics);
-  const all: Crop[][] = [];
-  for (const a of pool) for (const b of pool) for (const c of pool) all.push([a, b, c]);
-  const nets = all.map(netUsdHa).filter((v): v is number => v !== null);
-  const lo = Math.min(...nets), hi = Math.max(...nets);
+  const years = cropYears([...pool, ...current], input);
+  // Repeating one crop gives the lowest and highest possible totals, so the income scale is known up front.
+  const nets = pool.map(cropNet);
+  const lo = seasons * Math.min(...nets), hi = seasons * Math.max(...nets);
   const econNorm = (net: number | null) => (net === null || !(hi > lo) ? 50 : clamp(((net - lo) / (hi - lo)) * 100));
-  const evaluated = all.map((seq) => evaluate(seq, history, input, econNorm));
 
   const key = (seq: Crop[]) => seq.map((c) => c.id).join(">");
   const used = new Set<string>();
   const out: Strategy[] = [];
-
   const push = (id: Strategy["id"], label: string, e: Evaluated, weights: Weights) => {
     used.add(key(e.seq));
     const s = summarize(e, weights, input);
-    out.push({ id, label, sequence: e.seq.map((c) => c.id), ...s, netUsdHa3yr: e.net, ...explain(e, history, input, label) });
+    out.push({ id, label, sequence: e.seq.map((c) => c.id), ...s, netUsdHa: e.net, ...explain(e, history, input, label) });
   };
 
-  if (current.length === 3) push("current", "Your current plan", evaluate(current, history, input, econNorm), input.weights);
+  if (current.length) push("current", "Your current plan", evaluate(current, history, years, n, econNorm), input.weights);
 
-  const best = (weights: Weights) => {
-    let top: Evaluated | undefined, topScore = -Infinity;
-    for (const e of evaluated) {
-      if (used.has(key(e.seq))) continue;
-      const sc = summarize(e, weights, input).scores.overall;
-      if (sc > topScore) { top = e; topScore = sc; }
+  // One pass over every sequence of the plan's length, keeping the top few per weighting.
+  // Suggestions follow the first rule of rotation: never the same crop two seasons in a row
+  // (10 priced crops: 10 × 9^(seasons-1) sequences; 65,610 for five seasons).
+  const profiles = [
+    ["soil", "Soil builder", PROFILES.soil],
+    ["water", "Water saver", PROFILES.water],
+    ["income", "Income diversified", PROFILES.income],
+    ["balanced", "Balanced (your priorities)", input.weights],
+  ] as const;
+  const norm = profiles.map(([, , w]) => normalize(w));
+  const tops = profiles.map(() => new TopK(profiles.length + 2));
+  const P = pool.length;
+  const cy = pool.map((c) => years.get(c.id)!);
+  const cn = pool.map(cropNet);
+  const water = new Float64Array(n), clim = new Float64Array(n), perYear = new Float64Array(n);
+  const idx = new Array<number>(seasons).fill(0);
+  const seq: Crop[] = new Array(seasons);
+  const total = P ** seasons;
+  for (let k = 0; k < total; k++) {
+    let r = k, repeat = false;
+    for (let i = seasons - 1; i >= 0; i--) { idx[i] = r % P; r = Math.floor(r / P); }
+    for (let i = 1; i < seasons && !repeat; i++) repeat = idx[i] === idx[i - 1];
+    if (repeat) continue;
+    let net = 0;
+    for (let i = 0; i < seasons; i++) { seq[i] = pool[idx[i]]; net += cn[idx[i]]; }
+    // per-year water and climate, their stability (risk), then each weighting's middle year: the same maths as summarize()
+    let cm = 0;
+    for (let yi = 0; yi < n; yi++) {
+      let w = 0, c = 0;
+      for (let i = 0; i < seasons; i++) { w += cy[idx[i]].water[yi]; c += cy[idx[i]].climate[yi]; }
+      water[yi] = clamp(w / seasons); clim[yi] = clamp(c / seasons); cm += (water[yi] + clim[yi]) / 2;
     }
-    return top;
-  };
-
-  (
-    [
-      ["soil", "Soil builder", PROFILES.soil],
-      ["water", "Water saver", PROFILES.water],
-      ["income", "Income diversified", PROFILES.income],
-      ["balanced", "Balanced (your priorities)", input.weights],
-    ] as const
-  ).forEach(([id, label, w]) => {
-    const e = best(w);
-    if (e) push(id, label, e, id === "balanced" ? input.weights : w);
+    cm /= n;
+    let ss = 0;
+    for (let yi = 0; yi < n; yi++) ss += ((water[yi] + clim[yi]) / 2 - cm) ** 2;
+    const risk = clamp(100 - 2 * (n > 1 ? Math.sqrt(ss / (n - 1)) : 0));
+    const soil = soilScore(seq, history), econ = econNorm(net);
+    for (let p = 0; p < norm.length; p++) {
+      const w = norm[p];
+      for (let yi = 0; yi < n; yi++) perYear[yi] = w.soil * soil + w.water * water[yi] + w.climate * clim[yi] + w.economics * econ + w.risk * risk;
+      tops[p].offer(selectPercentile(perYear, n, 0.5), idx);
+    }
+  }
+  profiles.forEach(([id, label, w], p) => {
+    const pick = tops[p].items.map((t) => t.idx.map((i) => pool[i])).find((seq) => !used.has(key(seq)));
+    if (pick) push(id, label, evaluate(pick, history, years, n, econNorm), id === "balanced" ? input.weights : w);
   });
   return out;
 }

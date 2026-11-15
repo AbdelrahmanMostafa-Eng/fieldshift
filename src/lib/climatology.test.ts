@@ -15,6 +15,13 @@ describe("climatology", () => {
     expect(c.map((m) => m.month)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   });
 
+  it("keeps sunlight in MJ/m² per day as the middle year, and null when POWER has no value", () => {
+    const c = climatology(series([2001, 2002], flat(2, 10), flat(2, 1)));
+    expect(c.every((m) => m.solar === 15)).toBe(true);
+    const gaps = climatology({ ...series([2001], flat(1, 10), flat(1, 1)), ALLSKY_SFC_SW_DWN: flat(1, null) });
+    expect(gaps.every((m) => m.solar === null)).toBe(true);
+  });
+
   it("turns mm per day into mm per month with the real month length, leap years included", () => {
     const c = climatology(series([2023, 2024], flat(2, 10), flat(2, 2)));
     expect(c[0].rainMm).toBeCloseTo(62); // January: 31 days x 2 mm

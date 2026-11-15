@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildForecastUrl, buildGeocodeUrl, parseForecast, parseGeocode } from "./openmeteo";
+import { CURRENT_FIELDS, buildCurrentUrl, buildForecastUrl, buildGeocodeUrl, parseCurrent, parseForecast, parseGeocode, weatherKind } from "./openmeteo";
 
 describe("buildGeocodeUrl", () => {
   it("targets the geocoding host with name, count, language and format", () => {
@@ -43,5 +43,25 @@ describe("forecast", () => {
   });
   it("throws a clear error on an unexpected shape", () => {
     expect(() => parseForecast({ error: true, reason: "bad" })).toThrow(/daily\.time/);
+  });
+});
+
+describe("current conditions", () => {
+  // The live response for Riyadh, 15 Nov 2026 10:45 local time.
+  const live = { latitude: 24.710016, longitude: 46.688103, timezone: "Asia/Riyadh", current: { time: "2026-11-15T10:45", interval: 900, temperature_2m: 21.3, relative_humidity_2m: 29, apparent_temperature: 19.5, precipitation: 0.0, weather_code: 0, cloud_cover: 0, wind_speed_10m: 7.6, wind_direction_10m: 335, wind_gusts_10m: 24.5, is_day: 1 } };
+  it("asks for the current fields in the local timezone", () => {
+    const u = new URL(buildCurrentUrl(24.6877, 46.7219));
+    expect(u.searchParams.get("current")).toBe(CURRENT_FIELDS);
+    expect(u.searchParams.get("timezone")).toBe("auto");
+  });
+  it("parses the real response", () => {
+    expect(parseCurrent(live)).toEqual({ time: "2026-11-15T10:45", tempC: 21.3, feelsC: 19.5, humidityPct: 29, precipMm: 0, cloudPct: 0, windKmh: 7.6, gustKmh: 24.5, windFromDeg: 335, code: 0, isDay: true });
+  });
+  it("throws on an unexpected shape", () => { expect(() => parseCurrent({ daily: {} })).toThrow(/current\.time/); });
+  it("maps WMO codes to kinds", () => {
+    expect([0, 1, 2, 3, 45, 48, 53, 57, 63, 81, 66, 73, 77, 86, 95, 99].map(weatherKind)).toEqual(
+      ["clear", "mostlyClear", "partlyCloudy", "overcast", "fog", "fog", "drizzle", "drizzle", "rain", "rain", "rain", "snow", "snow", "snow", "thunder", "thunder"]);
+    expect(weatherKind(null)).toBeNull();
+    expect(weatherKind(42)).toBeNull();
   });
 });

@@ -1,7 +1,8 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
-import { cropName } from "@/data/crops";
+import { CROP_BY_ID, cropName } from "@/data/crops";
 import type { Confidence, Strategy } from "@/lib/rotation/types";
+import { CropIcon } from "./ui/CropIcon";
 import { Icon } from "./ui/Icon";
 import { useCountUp } from "./ui/hooks";
 
@@ -22,7 +23,7 @@ export function ConfidenceMeter({ level, label }: { level: Confidence; label: st
 
 /**
  * One strategy as a ledger entry: number, name, crops in order, the score with its likely range,
- * the five part-scores, the three-year return, then the reasoning.
+ * the five part-scores, the net return over the planned seasons, then the reasoning.
  * The score is a middle value with a range, never a promise.
  */
 export function StrategyCard({ s, index, top, money }: { s: Strategy; index: number; top: boolean; money: (usd: number) => string }) {
@@ -31,7 +32,7 @@ export function StrategyCard({ s, index, top, money }: { s: Strategy; index: num
   const locale = useLocale();
   const n0 = (v: number) => new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(v);
   const pct = (v: number) => `${Math.max(0, Math.min(100, v))}%`;
-  const net = useCountUp(s.netUsdHa3yr ?? 0);
+  const net = useCountUp(s.netUsdHa ?? 0);
   const rangeText = `${t("range")}: ${n0(s.band.p10)}–${n0(s.band.p90)}`;
 
   return (
@@ -48,7 +49,7 @@ export function StrategyCard({ s, index, top, money }: { s: Strategy; index: num
             {s.sequence.map((id, i) => (
               <span key={i} className="inline-flex items-center gap-1.5">
                 {i > 0 && <Icon name="arrow" size={12} className="text-muted" />}
-                <span className="fs-chip">{cropName(id, locale)}</span>
+                <span className="fs-chip inline-flex items-center gap-1.5">{CROP_BY_ID.get(id) && <CropIcon icon={CROP_BY_ID.get(id)!.icon} size={15} className="text-gold-text" />}{cropName(id, locale)}</span>
               </span>
             ))}
           </p>
@@ -83,8 +84,8 @@ export function StrategyCard({ s, index, top, money }: { s: Strategy; index: num
       </dl>
 
       <p className="mt-4 flex flex-wrap items-baseline gap-x-2 text-sm">
-        <span className="text-muted">{t("net")}</span>
-        {s.netUsdHa3yr === null ? <strong className="font-mono text-base">{t("netNa")}</strong> : <>
+        <span className="text-muted">{t("net", { count: s.sequence.length })}</span>
+        {s.netUsdHa === null ? <strong className="font-mono text-base">{t("netNa")}</strong> : <>
           <strong className="tnum font-mono text-base">{money(net)}</strong>
           <span className="text-muted">{t("perHa")}</span>
           <span className="fs-tag">{t("illustrative")}</span>

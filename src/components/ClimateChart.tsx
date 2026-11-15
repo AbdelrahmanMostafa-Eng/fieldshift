@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { climatology } from "@/lib/climatology";
 import type { ClimateSeries } from "@/lib/rotation/types";
 
-const W = 400, H = 190, PAD = { top: 14, bottom: 26, side: 34 };
+const W = 400, H = 198, PAD = { top: 22, bottom: 26, side: 34 };
 const INNER_W = W - PAD.side * 2, INNER_H = H - PAD.top - PAD.bottom;
 
 /** Rounds a range outward to "nice" axis ends. */
@@ -24,7 +24,7 @@ export function ClimateChart({ climate }: { climate: ClimateSeries }) {
   const stats = useMemo(() => climatology(climate), [climate]);
   const n = useMemo(() => new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }), [locale]);
   const monthName = useMemo(() => {
-    const short = new Intl.DateTimeFormat(locale, { month: "narrow" }), long = new Intl.DateTimeFormat(locale, { month: "long" });
+    const short = new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "narrow" }), long = new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "long" });
     return (m: number, full = false) => (full ? long : short).format(new Date(2026, m, 1));
   }, [locale]);
 

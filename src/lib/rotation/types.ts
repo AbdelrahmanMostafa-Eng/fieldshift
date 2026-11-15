@@ -1,9 +1,22 @@
 export type Family =
-  | "cereal" | "legume" | "brassica" | "solanum" | "root" | "oilseed" | "cucurbit" | "forage" | "allium" | "mallow" | "amaranth";
+  | "cereal" | "legume" | "brassica" | "solanum" | "root" | "oilseed" | "cucurbit" | "forage" | "allium" | "mallow" | "amaranth"
+  | "umbel" | "daisy" | "other";
+
+/** Drawn crop icons (components/ui/CropIcon.tsx). Several crops share one shape. */
+export type CropIcon =
+  | "grain" | "maize" | "rice" | "millet" | "pod" | "peanut" | "sunflower" | "flower4" | "potato" | "tuber" | "carrot" | "beet"
+  | "leaf" | "cabbage" | "broccoli" | "onion" | "tomato" | "eggplant" | "pepper" | "cucumber" | "melon" | "cotton" | "okra"
+  | "clover" | "sprig" | "grass";
+
+/** EcoCrop's soil texture words. */
+export type SoilTexture = "light" | "medium" | "heavy" | "organic";
 
 export interface Crop {
   id: string;
   name: string;
+  icon: CropIcon;
+  /** Soil textures in EcoCrop's best range (TEXT) and its tolerated range (TEXTR). Empty when the record has none. */
+  soil: { best: SoilTexture[]; tolerated: SoilTexture[] };
   /** Scientific name and FAO EcoPort record the agronomy comes from. */
   scientific: string;
   ecoPort: number;
@@ -75,7 +88,7 @@ export interface Strategy {
   band: { p10: number; p50: number; p90: number };
   confidence: Confidence;
   /** null when a crop in the sequence has no yield or price in the catalogue. */
-  netUsdHa3yr: number | null;
+  netUsdHa: number | null;
   why: string[];
   evidence: string[];
   gaps: string[];

@@ -2,7 +2,10 @@
 // It matches keywords (English + Arabic) to intents and fills fixed templates from the app's own data:
 // the crop catalog, the rotation engine's results, NASA POWER climate and the Open-Meteo forecast.
 import { CROPS, cropName } from "@/data/crops";
+import { fertilityNotes } from "@/lib/fertility";
 import { GLOSSARY } from "@/lib/glossary";
+import arMessages from "../../../messages/ar.json";
+import enMessages from "../../../messages/en.json";
 import { economics } from "@/lib/roi";
 import { hasEconomics, monthsFor } from "@/lib/rotation/engine";
 import type { ClimateSeries, Crop, Monthly, Strategy } from "@/lib/rotation/types";
@@ -39,7 +42,7 @@ function monthMean(m: Monthly, month: number): number | null {
   const v = m.map((row) => row[month]).filter((x): x is number => x !== null);
   return v.length ? mean(v) : null;
 }
-const monthName = (ctx: AssistantContext, m: number) => new Intl.DateTimeFormat(ctx.lang, { month: "long" }).format(new Date(2026, m, 1));
+const monthName = (ctx: AssistantContext, m: number) => new Intl.DateTimeFormat(ctx.lang, { calendar: "gregory", month: "long" }).format(new Date(2026, m, 1));
 
 // ---------- crop detection ----------
 /** Drop the Arabic definite article so "الذرة الرفيعة" matches the alias "ذرة رفيعة". */
@@ -99,7 +102,19 @@ const SRC = {
   glossary: "FieldShift glossary",
   built: "Built-in farming rules of thumb",
   texture: "USDA soil texture classes (general guidance)",
+  fertility: "General nutrient-management principles (FAO 2006; IPNI 4R), no doses",
 };
+
+/** Fertility notes for one crop, in the same words the crop library shows (messages/*.json, fertility.*). No doses. */
+function fertilityAnswer(c: Crop): L {
+  const notes = fertilityNotes(c);
+  const en = enMessages.fertility as Record<string, string>, ar = arMessages.fertility as Record<string, string>;
+  return {
+    en: `${c.name}: ${notes.map((k) => en[k]).join(" ")}`,
+    ar: `${cropName(c.id, "ar")}: ${notes.map((k) => ar[k]).join(" ")}`,
+  };
+}
+const FERTILITY_WORDS = ["fertil", "manure", "compost", "nutrient", "سماد", "تسميد", "اسمده", "مغذيات"];
 
 const SUGGEST: { en: string[]; ar: string[] } = {
   en: ["Tell me about wheat", "How is ROI calculated?", "Why rotate crops?", "What is NDVI?", "Which crops fix nitrogen?", "What's the weather this week?"],
@@ -243,9 +258,9 @@ function rankingAnswer(ctx: AssistantContext): Reply {
   // Same names as the strategy entries show (messages/ar.json results.strategy).
   const labelAr: Record<Strategy["id"], string> = { current: "خطتك الحالية", soil: "باني التربة", water: "موفّر المياه", income: "دخل متنوع", balanced: "متوازنة (أولوياتك)" };
   const bare = (s: string | undefined) => s?.replace(/\.\s*$/, "");
-  const net = top.netUsdHa3yr === null
+  const net = top.netUsdHa === null
     ? { en: "Three-year net: not available (a crop in it has no catalogue yield or price).", ar: "صافي ثلاث سنوات: غير متاح (أحد محاصيلها بلا إنتاج أو سعر في الكتالوج)." }
-    : { en: `Three-year net about ${ctx.money(top.netUsdHa3yr)} per hectare (illustrative).`, ar: `صافي ثلاث سنوات نحو ${ctx.money(top.netUsdHa3yr)} للهكتار (توضيحي).` };
+    : { en: `Three-year net about ${ctx.money(top.netUsdHa)} per hectare (illustrative).`, ar: `صافي ثلاث سنوات نحو ${ctx.money(top.netUsdHa)} للهكتار (توضيحي).` };
   return reply(ctx, "ranking", {
     en: `With your current priorities, "${top.label}" scores highest overall (${r0(top.scores.overall)}/100): ${seq}. ${net.en} Confidence: ${conf.en}. Why: ${bare(top.why[0]) ?? "see the card"}. A gap to remember: ${bare(top.gaps[0]) ?? "no local soil test yet"}. Move the priority sliders to see the ranking change.`,
     ar: `بحسب أولوياتك الحالية، تحصل استراتيجية «${labelAr[top.id]}» على أعلى درجة إجمالية (${r0(top.scores.overall)}/100): ${seq}. ${net.ar} الثقة: ${conf.ar}. السبب (بالإنجليزية): ${bare(top.why[0]) ?? "راجع البطاقة"}. ثغرة يجب تذكّرها (بالإنجليزية): ${bare(top.gaps[0]) ?? "لا يوجد تحليل تربة محلي بعد"}. حرّك مؤشرات الأولويات لترى التصنيف يتغيّر.`,
@@ -277,6 +292,7 @@ export function answer(question: string, ctx: AssistantContext): Reply {
 
   const crops = findCrops(question);
   if (crops.length === 2 && isCompare(q)) return reply(ctx, "compare", compareCrops(crops[0], crops[1], ctx.money), [SRC.catalog, SRC.econ]);
+  if (crops.length && FERTILITY_WORDS.some((w) => hasKeyword(q, w))) return reply(ctx, "fertility", fertilityAnswer(crops[0]), [SRC.fertility]);
   if (isCalendar(q)) {
     if (!ctx.location) return needPlace(ctx, "calendar");
     if (!ctx.climate) return climateLoading(ctx, "calendar");
