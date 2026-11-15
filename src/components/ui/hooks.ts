@@ -53,3 +53,16 @@ export function useCountUp(target: number, ms = 420): number {
   }, [target, ms]);
   return shown;
 }
+
+/** False while the browser reports no network. True on the server. */
+export function useOnline(): boolean {
+  return useSyncExternalStore(
+    (notify) => {
+      window.addEventListener("online", notify);
+      window.addEventListener("offline", notify);
+      return () => { window.removeEventListener("online", notify); window.removeEventListener("offline", notify); };
+    },
+    () => navigator.onLine,
+    () => true,
+  );
+}

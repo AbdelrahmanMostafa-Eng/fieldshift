@@ -34,11 +34,11 @@ export function AssistantChat(props: Ctx) {
 
   return (
     <div className="flex h-full flex-col">
-      <div ref={box} className="flex-1 space-y-4 overflow-y-auto py-2" aria-live="polite">
-        <p className="max-w-[92%] text-sm leading-relaxed">{first.text}</p>
+      <div ref={box} className="flex-1 space-y-4 overflow-y-auto py-2" aria-live="polite" role="log" aria-label={t("title")}>
+        <p className="max-w-[92%] text-sm leading-relaxed" dir="auto">{first.text}</p>
         {msgs.map((m, i) => (
           <div key={i} className={`fs-rise ${m.role === "user" ? "ms-auto max-w-[85%]" : "max-w-[92%]"}`}>
-            <p className={m.role === "user" ? "rounded-lg rounded-ee-sm bg-gold px-3 py-2 text-sm text-gold-ink" : "whitespace-pre-wrap text-sm leading-relaxed"}>{m.text}</p>
+            <p dir="auto" className={m.role === "user" ? "rounded-lg rounded-ee-sm bg-gold px-3 py-2 text-sm text-gold-ink" : "whitespace-pre-wrap text-sm leading-relaxed"}>{m.text}</p>
             {m.sources && m.sources.length > 0 && (
               <p className="mt-2 flex flex-wrap gap-1.5">{m.sources.map((s) => <span key={s} className="fs-chip text-muted">{s}</span>)}</p>
             )}
@@ -49,7 +49,7 @@ export function AssistantChat(props: Ctx) {
           {chips.map((c) => <button key={c} type="button" onClick={() => ask(c)} className="fs-chip">{c}</button>)}
         </div>
       </div>
-      <p className="pt-2 text-[11px] leading-snug text-muted">{t("note")}</p>
+      <p className="pt-2 text-[11px] leading-snug text-muted">{t("note")}{lang !== "en" && lang !== "ar" && <> {t("langNote")}</>}</p>
       <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); ask(input); }}>
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("placeholder")} aria-label={t("title")} maxLength={300} className="fs-field min-w-0 flex-1 text-sm" />
         <button disabled={!input.trim()} aria-label={t("send")} title={t("send")} className="fs-btn fs-btn-primary fs-btn-icon"><Icon name="send" /></button>

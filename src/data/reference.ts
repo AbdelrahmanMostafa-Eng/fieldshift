@@ -15,6 +15,8 @@ export const SEASON_RULES = {
   /** A month is "warm" or "cool" when its mean is this far above or below the place's own yearly mean. */
   tempDeltaC: { value: 2, source: "FieldShift display rule for describing a place's own year. Not an agronomic standard." },
   /** A month with at least this much rain is called "wet", otherwise "dry". */
+  /** A month "has frost" in a year when its lowest air temperature falls below this. */
+  frostC: { value: 0, source: "ETCCDI climate index FD (frost days): daily minimum air temperature below 0 °C. Applied here to NASA POWER's monthly lowest 2 m temperature (T2M_MIN)." },
   wetMonthMm: { value: 60, source: "Köppen-Geiger classification: under 60 mm in a month is a dry month in tropical climates (Peel, Finlayson and McMahon 2007, Hydrol. Earth Syst. Sci. 11, 1633-1644)." },
 } as const;
 

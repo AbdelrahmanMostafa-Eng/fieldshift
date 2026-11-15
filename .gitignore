@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Claude Code worktrees of other projects, never part of this repository
 /.claude/worktrees/
+
+# raw downloads for scripts/import-ecocrop.mjs (FAO EcoCrop); only the extract in src/data/ is committed
+/data/raw/

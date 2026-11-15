@@ -31,7 +31,7 @@ export function StrategyCard({ s, index, top, money }: { s: Strategy; index: num
   const locale = useLocale();
   const n0 = (v: number) => new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(v);
   const pct = (v: number) => `${Math.max(0, Math.min(100, v))}%`;
-  const net = useCountUp(s.netUsdHa3yr);
+  const net = useCountUp(s.netUsdHa3yr ?? 0);
   const rangeText = `${t("range")}: ${n0(s.band.p10)}–${n0(s.band.p90)}`;
 
   return (
@@ -41,7 +41,7 @@ export function StrategyCard({ s, index, top, money }: { s: Strategy; index: num
         <span className="pt-1 font-mono text-xs text-muted">{String(index + 1).padStart(2, "0")}</span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <h3 className="font-serif text-lg leading-tight">{s.label}</h3>
+            <h3 className="font-serif text-lg leading-tight">{t(`strategy.${s.id}`)}</h3>
             {top && <span className="fs-chip border-gold/50 bg-gold/15 font-medium">{t("top")}</span>}
           </div>
           <p className="mt-2 flex flex-wrap items-center gap-1.5 text-sm">
@@ -84,9 +84,11 @@ export function StrategyCard({ s, index, top, money }: { s: Strategy; index: num
 
       <p className="mt-4 flex flex-wrap items-baseline gap-x-2 text-sm">
         <span className="text-muted">{t("net")}</span>
-        <strong className="tnum font-mono text-base">{money(net)}</strong>
-        <span className="text-muted">{t("perHa")}</span>
-        <span className="fs-tag">{t("illustrative")}</span>
+        {s.netUsdHa3yr === null ? <strong className="font-mono text-base">{t("netNa")}</strong> : <>
+          <strong className="tnum font-mono text-base">{money(net)}</strong>
+          <span className="text-muted">{t("perHa")}</span>
+          <span className="fs-tag">{t("illustrative")}</span>
+        </>}
       </p>
 
       <details className="mt-3 text-sm">

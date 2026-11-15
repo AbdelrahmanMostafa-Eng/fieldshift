@@ -24,7 +24,8 @@
     "theme": "Tema",
     "light": "Claro",
     "dark": "Oscuro",
-    "system": "Sistema"
+    "system": "Sistema",
+    "offline": "Estás sin conexión. El globo y los datos de clima necesitan conexión; tus costos guardados siguen funcionando."
   },
   "layers": {
     "button": "Capas",
@@ -45,7 +46,12 @@
     "noWebgl": "Este dispositivo no puede dibujar el globo 3D, así que aquí tienes un mapa plano. Tócalo o usa la búsqueda para elegir un lugar.",
     "flatLabel": "Mapa plano del mundo. Toca para elegir un lugar."
   },
-  "place": { "n": "N", "s": "S", "e": "E", "w": "O" },
+  "place": {
+    "n": "N",
+    "s": "S",
+    "e": "E",
+    "w": "O"
+  },
   "family": {
     "cereal": "Cereal",
     "legume": "Leguminosa",
@@ -54,7 +60,10 @@
     "root": "Raíz o tubérculo",
     "oilseed": "Oleaginosa",
     "cucurbit": "Cucurbitácea",
-    "forage": "Forraje"
+    "forage": "Forraje",
+    "allium": "Aliáceas",
+    "mallow": "Malváceas",
+    "amaranth": "Amarantáceas"
   },
   "plan": {
     "field": "Tu parcela",
@@ -108,7 +117,16 @@
     "net": "Rendimiento neto, 3 años",
     "perHa": "por hectárea",
     "illustrative": "ilustrativo",
-    "range": "Rango probable en campañas pasadas"
+    "range": "Rango probable en campañas pasadas",
+    "netNa": "no disponible",
+    "pool": "Las estrategias sugeridas usan los {count} cultivos que tienen rendimientos y precios iniciales; cualquier cultivo puede ir en tu propio plan.",
+    "strategy": {
+      "current": "Tu plan actual",
+      "soil": "Constructor de suelo",
+      "water": "Ahorrador de agua",
+      "income": "Ingresos diversificados",
+      "balanced": "Equilibrada (tus prioridades)"
+    }
   },
   "money": {
     "currency": "Moneda",
@@ -120,27 +138,49 @@
     "send": "Enviar",
     "note": "Ayudante gratuito basado en reglas. Sin IA, sin coste, y lo que escribes no sale de tu dispositivo. Por ahora Atlas responde solo en inglés y árabe.",
     "copy": "Copiar respuesta",
-    "copied": "Copiado"
+    "copied": "Copiado",
+    "langNote": "Por ahora Atlas responde en inglés. Las respuestas solo están escritas en inglés y árabe."
   },
   "footer": {
     "credit": "Imágenes y datos climáticos: NASA (GIBS, POWER).",
     "disclaimer": "La NASA no respalda a ninguna entidad ajena al Gobierno de EE. UU. y no es responsable de la información de sitios web no gubernamentales. Se aplican las condiciones de uso de datos de cada fuente.",
     "weather": "Tiempo y búsqueda de lugares: Open-Meteo.com (CC BY 4.0).",
     "terrain": "Relieve: teselas de terreno de Mapzen, alojadas en AWS Open Data.",
-    "places": "Nombres de lugares: Natural Earth (dominio público)."
+    "places": "Nombres de lugares: Natural Earth (dominio público).",
+    "crops": "Requisitos de cultivos: base de datos FAO EcoCrop, vía OpenCLIM/ecocrop."
   },
-  "tabs": { "rotations": "Rotaciones", "seasons": "Estaciones", "costs": "Costes", "crops": "Cultivos", "soil": "Suelo", "atlas": "Atlas" },
+  "tabs": {
+    "rotations": "Rotaciones",
+    "seasons": "Estaciones",
+    "costs": "Costes",
+    "crops": "Cultivos",
+    "soil": "Suelo",
+    "atlas": "Atlas"
+  },
   "costs": {
     "title": "Costes y rendimiento",
     "note": "Los valores iniciales vienen del catálogo y son ilustrativos. Cámbialos por los tuyos.",
     "saved": "Tus datos se guardan solo en este dispositivo.",
     "area": "Superficie",
     "areaIs": "= {ha} hectáreas",
-    "unit": { "ha": "Hectáreas", "acre": "Acres", "feddan": "Feddanes" },
+    "unit": {
+      "ha": "Hectáreas",
+      "acre": "Acres",
+      "feddan": "Feddanes"
+    },
     "yield": "Rendimiento (toneladas por hectárea)",
     "price": "Precio por tonelada ({currency})",
     "perHa": "Costes por hectárea ({currency})",
-    "line": { "seed": "Semilla", "fertiliser": "Fertilizante", "protection": "Protección del cultivo", "labour": "Mano de obra", "machinery": "Maquinaria y combustible", "water": "Agua", "rent": "Renta de la tierra", "other": "Otros" },
+    "line": {
+      "seed": "Semilla",
+      "fertiliser": "Fertilizante",
+      "protection": "Protección del cultivo",
+      "labour": "Mano de obra",
+      "machinery": "Maquinaria y combustible",
+      "water": "Agua",
+      "rent": "Renta de la tierra",
+      "other": "Otros"
+    },
     "reset": "Restablecer este cultivo",
     "net": "Rendimiento neto",
     "total": "Coste total",
@@ -156,7 +196,9 @@
     "sensNote": "Rendimiento neto para tu superficie cuando el rendimiento y el precio bajan o suben un 20%.",
     "yieldRow": "Rendimiento",
     "priceCol": "Precio",
-    "three": "Las tres campañas juntas"
+    "three": "Las tres campañas juntas",
+    "missing": "El catálogo no tiene rendimiento ni precio para este cultivo. Escribe tu rendimiento, precio y costos para ver su retorno.",
+    "illustrative": "Valores iniciales ilustrativos"
   },
   "seasons": {
     "title": "Clima de este lugar",
@@ -168,13 +210,16 @@
     "dry": "Meses secos",
     "none": "ninguno",
     "rule": "Cálido y fresco significan {delta} °C por encima o por debajo de la media anual de este lugar ({mean} °C). Lluvioso significa {wet} mm de lluvia o más en el mes.",
+    "frost": "Noches de helada",
+    "frostV": "{month} ({count} de {years} años)",
+    "frostRule": "Helada significa que la temperatura del aire más baja del mes (NASA POWER T2M_MIN, a 2 m) bajó de {t} °C. La helada en el suelo puede llegar en noches algo más cálidas.",
     "windows": "Ventanas de siembra según la temperatura",
     "plantIn": "{crop}, por mes de siembra",
     "good": "Dentro del rango óptimo",
     "possible": "Tolerado",
     "no": "Fuera de los límites",
     "unknown": "Sin datos",
-    "windowsNote": "Derivado solo de límites de temperatura, con medias mensuales y los límites ilustrativos del catálogo. No ve heladas nocturnas, lluvia ni variedades.",
+    "windowsNote": "Derivado solo de los límites de temperatura, con medias mensuales y los límites de FAO EcoCrop de cada cultivo. No ve noches de helada, lluvia ni variedades.",
     "forecast": "Próximos 7 días",
     "forecastKey": "Cada día: máxima, mínima (°C), lluvia (mm), evapotranspiración de referencia ET0 (mm).",
     "forecastNone": "El pronóstico no está disponible ahora.",
@@ -188,15 +233,15 @@
     "count": "{count} cultivos",
     "none": "Ningún cultivo coincide.",
     "nfixShort": "fija nitrógeno",
-    "water": "Necesidad de agua",
-    "waterV": "{mm} mm por campaña",
-    "days": "Duración del ciclo",
-    "daysV": "{days} días",
     "best": "Temperatura óptima",
     "tolerates": "Tolera",
     "range": "{low}–{high} °C",
     "residue": "Rastrojo que deja",
-    "level": { "low": "Bajo", "medium": "Medio", "high": "Alto" },
+    "level": {
+      "low": "Bajo",
+      "medium": "Medio",
+      "high": "Alto"
+    },
     "nfix": "Fija nitrógeno",
     "yes": "Sí",
     "no": "No",
@@ -205,7 +250,39 @@
     "cost": "Coste por hectárea",
     "source": "Fuente",
     "use": "Usar en mi plan como campaña",
-    "roadmap": "Este catálogo inicial tiene {count} cultivos con valores ilustrativos. El siguiente paso es una biblioteca mayor y con fuentes (FAO EcoCrop o datos de extensión agraria nacionales)."
+    "sort": "Ordenar",
+    "sortFit": "Mejor aquí",
+    "sortName": "A–Z",
+    "pickForFit": "Elige un lugar para ver qué tan bien encaja cada cultivo allí.",
+    "fitNote": "Aptitud aquí: los límites de FAO EcoCrop comparados con las medias mensuales de NASA POWER de este lugar, para el mejor mes de siembra. Como en EcoCrop, cuenta la menor de las puntuaciones de temperatura y lluvia. Buena es 70 o más, posible de 40 a 69. Una guía de selección, no un pronóstico de rendimiento.",
+    "fitHere": "Aptitud en este lugar",
+    "fit": {
+      "good": "Buena aptitud",
+      "possible": "Posible",
+      "poor": "Poca aptitud"
+    },
+    "fitBest": "Mejor sembrado en {month}: temperatura {climate}/100, lluvia {water}/100.",
+    "fitBestIrrigated": "Mejor sembrado en {month}: temperatura {climate}/100. Con riego, la lluvia no cuenta.",
+    "windows": "Meses de siembra por temperatura",
+    "window": {
+      "good": "rango óptimo",
+      "possible": "tolerado",
+      "no": "fuera de los límites",
+      "unknown": "sin datos"
+    },
+    "rain": "Lluvia óptima en el ciclo",
+    "rainTolerates": "Lluvia que tolera",
+    "rainV": "{low}–{high} mm",
+    "cycle": "Ciclo del cultivo",
+    "cycleV": "{min}–{max} días (las puntuaciones usan {days})",
+    "kill": "Temperatura letal",
+    "killV": "{t} °C",
+    "na": "no disponible",
+    "scientific": "Nombre científico",
+    "econ": "Economía por hectárea",
+    "econNa": "No disponible en el catálogo. Escribe tus propios números en la pestaña Costos.",
+    "illustrative": "ilustrativo",
+    "about": "{count} cultivos. Los límites de temperatura, lluvia y ciclo vienen de la base de datos FAO EcoCrop. Hay rendimientos, precios y costos iniciales para {priced} de ellos, y son ilustrativos."
   },
   "soil": {
     "title": "Textura del suelo",
@@ -214,14 +291,32 @@
     "sand": "Arena",
     "silt": "Limo",
     "class": {
-      "sand": "Arenoso", "loamySand": "Arenoso franco", "sandyLoam": "Franco arenoso", "loam": "Franco", "siltLoam": "Franco limoso", "silt": "Limoso",
-      "sandyClayLoam": "Franco arcillo-arenoso", "clayLoam": "Franco arcilloso", "siltyClayLoam": "Franco arcillo-limoso", "sandyClay": "Arcillo-arenoso", "siltyClay": "Arcillo-limoso", "clay": "Arcilloso"
+      "sand": "Arenoso",
+      "loamySand": "Arenoso franco",
+      "sandyLoam": "Franco arenoso",
+      "loam": "Franco",
+      "siltLoam": "Franco limoso",
+      "silt": "Limoso",
+      "sandyClayLoam": "Franco arcillo-arenoso",
+      "clayLoam": "Franco arcilloso",
+      "siltyClayLoam": "Franco arcillo-limoso",
+      "sandyClay": "Arcillo-arenoso",
+      "siltyClay": "Arcillo-limoso",
+      "clay": "Arcilloso"
     },
     "drainage": "Drenaje",
     "waterHolding": "Retención de agua",
     "effort": "Esfuerzo de laboreo",
-    "speed": { "low": "Lento", "medium": "Moderado", "high": "Rápido" },
-    "level": { "low": "Bajo", "medium": "Medio", "high": "Alto" },
+    "speed": {
+      "low": "Lento",
+      "medium": "Moderado",
+      "high": "Rápido"
+    },
+    "level": {
+      "low": "Bajo",
+      "medium": "Medio",
+      "high": "Alto"
+    },
     "advice": {
       "low": "El agua pasa despacio. El riesgo habitual es el encharcamiento: no lo trabajes mojado, deja el rastrojo encima y usa cultivos de raíz profunda en la rotación.",
       "medium": "El agua pasa a ritmo moderado. Mantén la superficie cubierta para que no forme costra y deja raíces vivas entre cultivos.",

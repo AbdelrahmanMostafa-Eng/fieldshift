@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CROP_BY_ID, cropName } from "@/data/crops";
 import { AREA_UNITS } from "@/data/reference";
-import { COST_LINES, areaUnit, budgetResult, defaultBudget, rollup, sensitivity, toHectares, totalCostUsdHa, type CropBudget } from "@/lib/farm";
+import { COST_LINES, areaUnit, budgetReady, budgetResult, defaultBudget, rollup, sensitivity, toHectares, totalCostUsdHa, type CropBudget } from "@/lib/farm";
 import type { Rates } from "@/lib/roi";
 import { Segmented } from "./ui/Segmented";
 
@@ -50,6 +50,9 @@ export function CostTracker({ plan, currency, rates, money }: { plan: string[]; 
   const r = budgetResult(b, areaHa);
   const grid = sensitivity(b, areaHa);
   const all = rollup(plan.map(budgetOf), areaHa);
+  const ready = budgetReady(b), allReady = plan.every((id) => budgetReady(budgetOf(id)));
+  const fromCatalogue = !saved.budgets[cropId] && CROP_BY_ID.get(cropId)?.economicsSource;
+  const na = t("na");
   const n = (v: number, d = 1) => new Intl.NumberFormat(locale, { maximumFractionDigits: d }).format(v);
   const pct = (v: number | null) => (v === null ? t("na") : `${n(v, 0)}%`);
   const signed = (usd: number) => <span className={usd < 0 ? "text-danger" : ""}>{money(usd)}</span>;
@@ -69,6 +72,8 @@ export function CostTracker({ plan, currency, rates, money }: { plan: string[]; 
 
       <section>
         <Segmented block label={t("title")} value={String(slot)} onChange={(v) => setSlot(Number(v))} options={plan.map((id, i) => ({ value: String(i), label: `${i + 1} · ${cropName(id, locale)}` }))} />
+        {!ready && <p className="mt-3 rounded-md border border-dashed border-line-strong p-3 text-xs leading-relaxed text-muted" role="status">{t("missing")}</p>}
+        {ready && fromCatalogue && <p className="mt-3 text-xs text-muted"><span className="fs-tag">{t("illustrative")}</span></p>}
         <div className="mt-3 grid grid-cols-2 gap-3">
           <Num label={t("yield")} value={b.yieldTHa} onChange={(v) => patch({ yieldTHa: v })} />
           <Num label={t("price", { currency })} value={show(b.priceUsdPerT)} onChange={(v) => patch({ priceUsdPerT: v / rate })} />
@@ -84,11 +89,11 @@ export function CostTracker({ plan, currency, rates, money }: { plan: string[]; 
         <p className="fs-eyebrow">{cropName(cropId, locale)} · {n(areaHa, 2)} ha</p>
         <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
           <span className="text-muted">{t("net")}</span>
-          <strong className={`tnum font-serif text-3xl ${r.net < 0 ? "text-danger" : ""}`}>{money(r.net)}</strong>
+          <strong className={`tnum font-serif text-3xl ${ready && r.net < 0 ? "text-danger" : ""}`}>{ready ? money(r.net) : na}</strong>
         </p>
         <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
-          {([[t("total"), money(r.totalCost)], [t("revenue"), money(r.revenue)], [t("roi"), pct(r.roiPct)], [t("costHa"), money(totalCostUsdHa(b))],
-            [t("bePrice"), r.breakEvenPrice === null ? t("na") : `${money(r.breakEvenPrice)} ${t("perT")}`], [t("beYield"), r.breakEvenYield === null ? t("na") : `${n(r.breakEvenYield, 2)} t/ha`]] as const).map(([k, v]) => (
+          {([[t("total"), money(r.totalCost)], [t("revenue"), ready ? money(r.revenue) : na], [t("roi"), ready ? pct(r.roiPct) : na], [t("costHa"), money(totalCostUsdHa(b))],
+            [t("bePrice"), !ready || r.breakEvenPrice === null ? na : `${money(r.breakEvenPrice)} ${t("perT")}`], [t("beYield"), !ready || r.breakEvenYield === null ? na : `${n(r.breakEvenYield, 2)} t/ha`]] as const).map(([k, v]) => (
             <div key={k}><dt className="text-xs text-muted">{k}</dt><dd className="mt-0.5 font-mono">{v}</dd></div>
           ))}
         </dl>
@@ -103,7 +108,7 @@ export function CostTracker({ plan, currency, rates, money }: { plan: string[]; 
             <tbody>
               {grid.map((row, i) => (
                 <tr key={i}><th className="text-start font-normal text-muted">{steps[i]}</th>
-                  {row.map((v, j) => <td key={j} className={`rounded-sm px-1 py-2 ${i === 1 && j === 1 ? "bg-gold/20 font-semibold" : "bg-paper"}`}>{signed(v)}</td>)}</tr>
+                  {row.map((v, j) => <td key={j} className={`rounded-sm px-1 py-2 ${i === 1 && j === 1 ? "bg-gold/20 font-semibold" : "bg-paper"}`}>{ready ? signed(v) : "–"}</td>)}</tr>
               ))}
             </tbody>
           </table>
@@ -113,7 +118,7 @@ export function CostTracker({ plan, currency, rates, money }: { plan: string[]; 
       <section className="border-t border-line pt-5">
         <p className="fs-eyebrow">{t("three")}</p>
         <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-3">
-          {([[t("net"), signed(all.net)], [t("roi"), pct(all.roiPct)], [t("total"), money(all.totalCost)], [t("revenue"), money(all.revenue)]] as const).map(([k, v]) => (
+          {([[t("net"), allReady ? signed(all.net) : na], [t("roi"), allReady ? pct(all.roiPct) : na], [t("total"), money(all.totalCost)], [t("revenue"), allReady ? money(all.revenue) : na]] as const).map(([k, v]) => (
             <div key={k}><dt className="text-xs text-muted">{k}</dt><dd className="mt-0.5 font-mono">{v}</dd></div>
           ))}
         </dl>

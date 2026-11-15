@@ -1,10 +1,10 @@
 // A free, rule-based farm helper. No AI model, no network calls, no API keys.
 // It matches keywords (English + Arabic) to intents and fills fixed templates from the app's own data:
 // the crop catalog, the rotation engine's results, NASA POWER climate and the Open-Meteo forecast.
-import { CROPS } from "@/data/crops";
+import { CROPS, cropName } from "@/data/crops";
 import { GLOSSARY } from "@/lib/glossary";
 import { economics } from "@/lib/roi";
-import { monthsFor } from "@/lib/rotation/engine";
+import { hasEconomics, monthsFor } from "@/lib/rotation/engine";
 import type { ClimateSeries, Crop, Monthly, Strategy } from "@/lib/rotation/types";
 import type { ForecastDay } from "@/lib/openmeteo";
 import { GLOSSARY_AR } from "./arabic-glossary";
@@ -91,7 +91,8 @@ const SOILS: { id: string; words: string[]; en: string; ar: string }[] = [
 ];
 
 const SRC = {
-  catalog: "Crop catalog (illustrative demo values)",
+  catalog: "FAO EcoCrop crop requirements",
+  econ: "Catalogue economics (illustrative demo values)",
   power: "NASA POWER monthly climate (AG community)",
   engine: "FieldShift rotation engine",
   meteo: "Open-Meteo forecast",
@@ -119,12 +120,28 @@ const climateLoading = (ctx: AssistantContext, intent: string): Reply =>
   reply(ctx, intent, { en: "The climate data for that place is still loading or failed to load. Give it a few seconds, then ask again.", ar: "بيانات المناخ لذلك المكان ما زالت قيد التحميل أو تعذّر تحميلها. انتظر بضع ثوانٍ ثم اسأل مجددًا." }, []);
 
 // ---------- responders ----------
+const FAMILY_AR: Record<string, string> = {
+  cereal: "حبوب", legume: "بقوليات", brassica: "صليبيات", solanum: "باذنجانيات", root: "محاصيل جذرية", oilseed: "بذور زيتية",
+  cucurbit: "قرعيات", forage: "أعلاف", allium: "ثوميات", mallow: "خبازيات", amaranth: "قطيفيات",
+};
+const RESIDUE_AR: Record<Crop["residue"], string> = { low: "قليلة", medium: "متوسطة", high: "كثيرة" };
+
+/** Per-hectare economics from the catalogue, or null when the crop has none. */
+const cropEcon = (c: Crop) => (hasEconomics(c) ? economics({ yieldTHa: c.yieldTHa, priceUsdPerT: c.priceUsdPerT, costUsdHa: c.costUsdHa }) : null);
+
 function cropCard(ctx: AssistantContext, c: Crop): L {
-  const e = economics({ yieldTHa: c.yieldTHa, priceUsdPerT: c.priceUsdPerT, costUsdHa: c.costUsdHa });
+  const e = cropEcon(c);
   const fix = c.nFixing;
+  const kill = c.killC === null ? null : c.killC;
+  const econEn = hasEconomics(c) && e
+    ? `Demo economics per hectare (illustrative, not market prices): ${c.yieldTHa} t/ha at ${ctx.money(c.priceUsdPerT)}/t, cost ${ctx.money(c.costUsdHa)}, net ${ctx.money(e.net)}.`
+    : "Yield, price and cost: not available in the catalogue. Enter your own in the Costs tab.";
+  const econAr = hasEconomics(c) && e
+    ? `الاقتصاد التوضيحي للهكتار (قيم تجريبية وليست أسعار سوق): ${c.yieldTHa} طن/هكتار بسعر ${ctx.money(c.priceUsdPerT)}/طن، التكلفة ${ctx.money(c.costUsdHa)}، الصافي ${ctx.money(e.net)}.`
+    : "الإنتاج والسعر والتكلفة: غير متاحة في الكتالوج. أدخل أرقامك في تبويب التكاليف.";
   return {
-    en: `${c.name} (${c.family}). Needs about ${c.waterNeedMm} mm of water over a ~${c.seasonDays}-day season. Monthly-mean temperature: best ${c.tOptLow}-${c.tOptHigh} °C, tolerates ${c.tMin}-${c.tMax} °C. ${fix ? "It fixes nitrogen, so it is a good break crop." : "It does not fix nitrogen."} Residue: ${c.residue}.\nDemo economics per hectare (illustrative, not market prices): ${c.yieldTHa} t/ha at ${ctx.money(c.priceUsdPerT)}/t, cost ${ctx.money(c.costUsdHa)}, net ${ctx.money(e.net)}.`,
-    ar: `${c.aliases?.find((a) => /[؀-ۿ]/.test(a)) ?? c.name} (${c.family}). يحتاج نحو ${c.waterNeedMm} ملم ماء خلال موسم ~${c.seasonDays} يومًا. متوسط الحرارة الشهري: الأفضل ${c.tOptLow}-${c.tOptHigh} °م، ويتحمل ${c.tMin}-${c.tMax} °م. ${fix ? "يثبّت النيتروجين فهو محصول جيد للتناوب." : "لا يثبّت النيتروجين."} المخلفات: ${c.residue}.\nالاقتصاد التوضيحي للهكتار (قيم تجريبية وليست أسعار سوق): ${c.yieldTHa} طن/هكتار بسعر ${ctx.money(c.priceUsdPerT)}/طن، التكلفة ${ctx.money(c.costUsdHa)}، الصافي ${ctx.money(e.net)}.`,
+    en: `${c.name} (${c.family}, ${c.scientific}). FAO EcoCrop: best ${c.tOptLow}-${c.tOptHigh} °C and tolerates ${c.tMin}-${c.tMax} °C as a monthly mean${kill !== null ? `; killed near ${kill} °C` : ""}. Rain over the crop cycle: best ${c.rainMm.optLow}-${c.rainMm.optHigh} mm, tolerates ${c.rainMm.min}-${c.rainMm.max} mm. Crop cycle ${c.cycleDays[0]}-${c.cycleDays[1]} days. ${fix ? "It fixes nitrogen, so it is a good break crop." : "It does not fix nitrogen."} Residue: ${c.residue}.\n${econEn}`,
+    ar: `${cropName(c.id, "ar")} (${FAMILY_AR[c.family] ?? c.family}، ${c.scientific}). بحسب قاعدة بيانات الفاو EcoCrop: الأفضل ${c.tOptLow}-${c.tOptHigh} °م ويتحمل ${c.tMin}-${c.tMax} °م كمتوسط شهري${kill !== null ? `؛ ويموت قرب ${kill} °م` : ""}. المطر خلال دورة المحصول: الأفضل ${c.rainMm.optLow}-${c.rainMm.optHigh} ملم، ويتحمل ${c.rainMm.min}-${c.rainMm.max} ملم. دورة المحصول ${c.cycleDays[0]}-${c.cycleDays[1]} يومًا. ${fix ? "يثبّت النيتروجين فهو محصول جيد للتناوب." : "لا يثبّت النيتروجين."} المخلفات: ${RESIDUE_AR[c.residue]}.\n${econAr}`,
   };
 }
 
@@ -165,8 +182,8 @@ function waterAnswer(ctx: AssistantContext, crops: Crop[]): Reply {
   }
   const rain = seasonRainMm(ctx, c);
   const head: L = {
-    en: `${c.name} needs about ${c.waterNeedMm} mm of water over its ~${c.seasonDays}-day season (catalog value, illustrative).`,
-    ar: `يحتاج ${c.aliases?.find((a) => /[؀-ۿ]/.test(a)) ?? c.name} نحو ${c.waterNeedMm} ملم ماء خلال موسمه (~${c.seasonDays} يومًا) (قيمة توضيحية من الكتالوج).`,
+    en: `${c.name} needs about ${c.waterNeedMm} mm of water over its ~${c.seasonDays}-day season (FAO EcoCrop's lowest optimal rainfall for the crop).`,
+    ar: `يحتاج ${cropName(c.id, "ar")} نحو ${c.waterNeedMm} ملم ماء خلال موسمه (~${c.seasonDays} يومًا) (أدنى مطر مثالي للمحصول في قاعدة بيانات الفاو EcoCrop).`,
   };
   if (rain === null) {
     return reply(ctx, "water", { en: `${head.en} Pick a place and I'll compare that with the rain NASA POWER recorded there.`, ar: `${head.ar} اختر مكانًا وسأقارن ذلك بالمطر الذي سجّلته ناسا POWER هناك.` }, [SRC.catalog]);
@@ -187,12 +204,18 @@ function roiAnswer(ctx: AssistantContext, crops: Crop[]): Reply {
       ar: "طريقة عمل متتبّع التكاليف لكل هكتار: الإيراد = الإنتاج × السعر؛ الصافي = الإيراد − التكلفة؛ العائد % = الصافي ÷ التكلفة × 100. سعر التعادل = التكلفة ÷ الإنتاج (أدنى سعر يغطي تكلفتك). إنتاج التعادل = التكلفة ÷ السعر. اذكر محصولًا (مثلًا: عائد البطاطس) وسأعرض أرقامه. قيم الكتالوج توضيحية: استبدلها بإنتاجك وأسعارك وتكاليفك.",
     }, [SRC.built]);
   }
-  const e = economics({ yieldTHa: c.yieldTHa, priceUsdPerT: c.priceUsdPerT, costUsdHa: c.costUsdHa });
-  const name = { en: c.name, ar: c.aliases?.find((a) => /[؀-ۿ]/.test(a)) ?? c.name };
+  const name = { en: c.name, ar: cropName(c.id, "ar") };
+  const e = cropEcon(c);
+  if (!hasEconomics(c) || !e) {
+    return reply(ctx, "roi", {
+      en: `${name.en}: yield, price and cost are not available in the catalogue, so I can't show its return. Enter your own yield, price and costs in the Costs tab and it will compute net, ROI and break-even for you.`,
+      ar: `${name.ar}: الإنتاج والسعر والتكلفة غير متاحة في الكتالوج، فلا أستطيع عرض عائده. أدخل إنتاجك وسعرك وتكاليفك في تبويب التكاليف وسيحسب الصافي والعائد ونقطة التعادل.`,
+    }, [SRC.econ]);
+  }
   return reply(ctx, "roi", {
     en: `${name.en}, per hectare (illustrative catalog values): revenue ${ctx.money(e.revenue)}, cost ${ctx.money(e.totalCost)}, net ${ctx.money(e.net)}${e.roiPct !== null ? `, ROI ${r0(e.roiPct)}%` : ""}. Break-even price ${e.breakEvenPrice !== null ? ctx.money(e.breakEvenPrice) : "n/a"}/t at ${c.yieldTHa} t/ha; break-even yield ${e.breakEvenYield !== null ? r1(e.breakEvenYield) : "n/a"} t/ha at ${ctx.money(c.priceUsdPerT)}/t. Use your own local prices before deciding.`,
     ar: `${name.ar} لكل هكتار (قيم توضيحية من الكتالوج): الإيراد ${ctx.money(e.revenue)}، التكلفة ${ctx.money(e.totalCost)}، الصافي ${ctx.money(e.net)}${e.roiPct !== null ? `، العائد ${r0(e.roiPct)}٪` : ""}. سعر التعادل ${e.breakEvenPrice !== null ? ctx.money(e.breakEvenPrice) : "غير متاح"}/طن عند ${c.yieldTHa} طن/هكتار؛ إنتاج التعادل ${e.breakEvenYield !== null ? r1(e.breakEvenYield) : "غير متاح"} طن/هكتار عند ${ctx.money(c.priceUsdPerT)}/طن. استخدم أسعارك المحلية قبل أي قرار.`,
-  }, [SRC.catalog]);
+  }, [SRC.econ]);
 }
 
 function forecastAnswer(ctx: AssistantContext): Reply {
@@ -217,10 +240,16 @@ function rankingAnswer(ctx: AssistantContext): Reply {
   const top = [...ctx.strategies].sort((a, b) => b.scores.overall - a.scores.overall)[0];
   const seq = top.sequence.map(cropLabel).join(" → ");
   const conf = { low: { en: "low", ar: "منخفضة" }, medium: { en: "medium", ar: "متوسطة" }, high: { en: "high", ar: "مرتفعة" } }[top.confidence];
+  // Same names as the strategy entries show (messages/ar.json results.strategy).
+  const labelAr: Record<Strategy["id"], string> = { current: "خطتك الحالية", soil: "باني التربة", water: "موفّر المياه", income: "دخل متنوع", balanced: "متوازنة (أولوياتك)" };
+  const bare = (s: string | undefined) => s?.replace(/\.\s*$/, "");
+  const net = top.netUsdHa3yr === null
+    ? { en: "Three-year net: not available (a crop in it has no catalogue yield or price).", ar: "صافي ثلاث سنوات: غير متاح (أحد محاصيلها بلا إنتاج أو سعر في الكتالوج)." }
+    : { en: `Three-year net about ${ctx.money(top.netUsdHa3yr)} per hectare (illustrative).`, ar: `صافي ثلاث سنوات نحو ${ctx.money(top.netUsdHa3yr)} للهكتار (توضيحي).` };
   return reply(ctx, "ranking", {
-    en: `With your current priorities, "${top.label}" scores highest overall (${r0(top.scores.overall)}/100): ${seq}. Three-year net about ${ctx.money(top.netUsdHa3yr)} per hectare (illustrative). Confidence: ${conf.en}. Why: ${top.why[0] ?? "see the card"}. A gap to remember: ${top.gaps[0] ?? "no local soil test yet"}. Move the priority sliders to see the ranking change.`,
-    ar: `بحسب أولوياتك الحالية، تحصل استراتيجية «${top.label}» على أعلى درجة إجمالية (${r0(top.scores.overall)}/100): ${seq}. صافي ثلاث سنوات نحو ${ctx.money(top.netUsdHa3yr)} للهكتار (توضيحي). الثقة: ${conf.ar}. السبب (بالإنجليزية): ${top.why[0] ?? "راجع البطاقة"}. ثغرة يجب تذكّرها: ${top.gaps[0] ?? "لا يوجد تحليل تربة محلي بعد"}. حرّك مؤشرات الأولويات لترى التصنيف يتغيّر.`,
-  }, [SRC.engine, SRC.catalog]);
+    en: `With your current priorities, "${top.label}" scores highest overall (${r0(top.scores.overall)}/100): ${seq}. ${net.en} Confidence: ${conf.en}. Why: ${bare(top.why[0]) ?? "see the card"}. A gap to remember: ${bare(top.gaps[0]) ?? "no local soil test yet"}. Move the priority sliders to see the ranking change.`,
+    ar: `بحسب أولوياتك الحالية، تحصل استراتيجية «${labelAr[top.id]}» على أعلى درجة إجمالية (${r0(top.scores.overall)}/100): ${seq}. ${net.ar} الثقة: ${conf.ar}. السبب (بالإنجليزية): ${bare(top.why[0]) ?? "راجع البطاقة"}. ثغرة يجب تذكّرها (بالإنجليزية): ${bare(top.gaps[0]) ?? "لا يوجد تحليل تربة محلي بعد"}. حرّك مؤشرات الأولويات لترى التصنيف يتغيّر.`,
+  }, [SRC.engine, SRC.catalog, SRC.econ]);
 }
 
 function glossaryAnswer(ctx: AssistantContext, q: string): Reply | null {
@@ -247,7 +276,7 @@ export function answer(question: string, ctx: AssistantContext): Reply {
   if (isOverride(q)) return reply(ctx, "guarantee", DECLINE_GUARANTEE, []);
 
   const crops = findCrops(question);
-  if (crops.length === 2 && isCompare(q)) return reply(ctx, "compare", compareCrops(crops[0], crops[1], ctx.money), [SRC.catalog]);
+  if (crops.length === 2 && isCompare(q)) return reply(ctx, "compare", compareCrops(crops[0], crops[1], ctx.money), [SRC.catalog, SRC.econ]);
   if (isCalendar(q)) {
     if (!ctx.location) return needPlace(ctx, "calendar");
     if (!ctx.climate) return climateLoading(ctx, "calendar");
@@ -273,9 +302,9 @@ export function answer(question: string, ctx: AssistantContext): Reply {
     case "climate": return climateSummary(ctx);
     case "crop": {
       if (crops.length === 2) {
-        return reply(ctx, "crop", { en: `${cropCard(ctx, crops[0]).en}\n\n${cropCard(ctx, crops[1]).en}`, ar: `${cropCard(ctx, crops[0]).ar}\n\n${cropCard(ctx, crops[1]).ar}` }, [SRC.catalog]);
+        return reply(ctx, "crop", { en: `${cropCard(ctx, crops[0]).en}\n\n${cropCard(ctx, crops[1]).en}`, ar: `${cropCard(ctx, crops[0]).ar}\n\n${cropCard(ctx, crops[1]).ar}` }, [SRC.catalog, SRC.econ]);
       }
-      return reply(ctx, "crop", cropCard(ctx, crops[0]), [SRC.catalog]);
+      return reply(ctx, "crop", cropCard(ctx, crops[0]), [SRC.catalog, SRC.econ]);
     }
     case "nfix": {
       const list = CROPS.filter((c) => c.nFixing);
@@ -302,8 +331,8 @@ export function answer(question: string, ctx: AssistantContext): Reply {
     case "ranking": return rankingAnswer(ctx);
     case "sources":
       return reply(ctx, "sources", {
-        en: "I'm a rule-based helper, not an AI model, so I only say what is built into the app or computed from its data. Data sources: NASA POWER (24 years of monthly temperature, rain and sunlight), NASA GIBS (satellite imagery on the globe), Open-Meteo (place search and the 7-day forecast), ExchangeRate-API (currency rates). Crop yields, prices and costs in the catalog are illustrative placeholders, not market data.",
-        ar: "أنا مساعد قائم على قواعد وليس نموذج ذكاء اصطناعي، لذلك أقول فقط ما هو مضمّن في التطبيق أو محسوب من بياناته. مصادر البيانات: ناسا POWER (24 سنة من الحرارة والمطر والإشعاع الشهري)، وناسا GIBS (صور الأقمار الصناعية على الكرة)، وOpen-Meteo (البحث عن الأماكن وتوقعات 7 أيام)، وExchangeRate-API (أسعار العملات). إنتاجية المحاصيل وأسعارها وتكاليفها في الكتالوج قيم توضيحية وليست بيانات سوق.",
+        en: "I'm a rule-based helper, not an AI model, so I only say what is built into the app or computed from its data. Data sources: NASA POWER (24 years of monthly temperature, rain and sunlight), NASA GIBS (satellite imagery on the globe), Open-Meteo (place search and the 7-day forecast), ExchangeRate-API (currency rates), and the FAO EcoCrop database (temperature, rain and season limits for each crop). Crop yields, prices and costs in the catalog are illustrative placeholders, not market data, and most crops have none.",
+        ar: "أنا مساعد قائم على قواعد وليس نموذج ذكاء اصطناعي، لذلك أقول فقط ما هو مضمّن في التطبيق أو محسوب من بياناته. مصادر البيانات: ناسا POWER (24 سنة من الحرارة والمطر والإشعاع الشهري)، وناسا GIBS (صور الأقمار الصناعية على الكرة)، وOpen-Meteo (البحث عن الأماكن وتوقعات 7 أيام)، وExchangeRate-API (أسعار العملات)، وقاعدة بيانات الفاو EcoCrop (حدود الحرارة والمطر والموسم لكل محصول). إنتاجية المحاصيل وأسعارها وتكاليفها في الكتالوج قيم توضيحية وليست بيانات سوق، ومعظم المحاصيل بلا قيم.",
       }, []);
     case "howto":
       return reply(ctx, "howto", {

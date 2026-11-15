@@ -5,6 +5,7 @@ import { TEXTURE_CLASSES, type Level3 } from "@/data/reference";
 import { climatology } from "@/lib/climatology";
 import { plantingWindow } from "@/lib/farm";
 import { economics } from "@/lib/roi";
+import { hasEconomics } from "@/lib/rotation/engine";
 import type { ClimateSeries, Crop } from "@/lib/rotation/types";
 import { hasKeyword } from "./text";
 
@@ -51,14 +52,17 @@ export function fuzzyCrops(qNormalized: string): Crop[] {
 const COMPARE = ["compare", "versus", "vs$", "difference between", "better than", "قارن", "مقارنه", "الفرق بين", "ام$"];
 export const isCompare = (q: string) => any(q, COMPARE);
 export function compareCrops(a: Crop, b: Crop, money: (usd: number) => string): L {
-  const net = (c: Crop) => money(economics({ yieldTHa: c.yieldTHa, priceUsdPerT: c.priceUsdPerT, costUsdHa: c.costUsdHa }).net);
+  const net = (c: Crop, lang: "en" | "ar") => !hasEconomics(c)
+    ? (lang === "en" ? "net: not available in the catalogue" : "الصافي: غير متاح في الكتالوج")
+    : (lang === "en" ? `net about ${money(economics({ yieldTHa: c.yieldTHa, priceUsdPerT: c.priceUsdPerT, costUsdHa: c.costUsdHa }).net)} per hectare (illustrative)`
+      : `صافٍ نحو ${money(economics({ yieldTHa: c.yieldTHa, priceUsdPerT: c.priceUsdPerT, costUsdHa: c.costUsdHa }).net)} للهكتار (توضيحي)`);
   const line = (c: Crop, lang: "en" | "ar") => lang === "en"
-    ? `${c.name}: about ${c.waterNeedMm} mm of water, ~${c.seasonDays} days, best at ${c.tOptLow}-${c.tOptHigh} °C, ${c.nFixing ? "fixes nitrogen" : "does not fix nitrogen"}, net about ${net(c)} per hectare (illustrative).`
-    : `${cropName(c.id, "ar")}: نحو ${c.waterNeedMm} ملم ماء، ~${c.seasonDays} يومًا، الأفضل عند ${c.tOptLow}-${c.tOptHigh} °م، ${c.nFixing ? "يثبّت النيتروجين" : "لا يثبّت النيتروجين"}، صافٍ نحو ${net(c)} للهكتار (توضيحي).`;
+    ? `${c.name}: about ${c.waterNeedMm} mm of water, ~${c.seasonDays} days, best at ${c.tOptLow}-${c.tOptHigh} °C, ${c.nFixing ? "fixes nitrogen" : "does not fix nitrogen"}, ${net(c, "en")}.`
+    : `${cropName(c.id, "ar")}: نحو ${c.waterNeedMm} ملم ماء، ~${c.seasonDays} يومًا، الأفضل عند ${c.tOptLow}-${c.tOptHigh} °م، ${c.nFixing ? "يثبّت النيتروجين" : "لا يثبّت النيتروجين"}، ${net(c, "ar")}.`;
   const thirstier = a.waterNeedMm === b.waterNeedMm ? null : a.waterNeedMm > b.waterNeedMm ? a : b;
   return {
-    en: `${line(a, "en")}\n${line(b, "en")}\n${thirstier ? `${thirstier.name} needs more water. ` : ""}These are catalogue values, not measurements from your field.`,
-    ar: `${line(a, "ar")}\n${line(b, "ar")}\n${thirstier ? `${cropName(thirstier.id, "ar")} يحتاج ماءً أكثر. ` : ""}هذه قيم من الكتالوج وليست قياسات من حقلك.`,
+    en: `${line(a, "en")}\n${line(b, "en")}\n${thirstier ? `${thirstier.name} needs more water. ` : ""}Water, season and temperatures are FAO EcoCrop values for the species, not measurements from your field.`,
+    ar: `${line(a, "ar")}\n${line(b, "ar")}\n${thirstier ? `${cropName(thirstier.id, "ar")} يحتاج ماءً أكثر. ` : ""}الماء والموسم والحرارة قيم الفاو EcoCrop للنوع، وليست قياسات من حقلك.`,
   };
 }
 
@@ -79,12 +83,12 @@ export function calendarFor(crop: Crop, climate: ClimateSeries): L {
       const body = good.length ? `Best planting months: ${good.join(sep)}.${possible.length ? ` Also tolerated: ${possible.join(sep)}.` : ""}`
         : possible.length ? `No month keeps the whole season in its best range. Tolerated planting months: ${possible.join(sep)}.`
         : "No planting month keeps the whole season inside its temperature limits here.";
-      return `${name}, by monthly mean temperature only (a ~${crop.seasonDays}-day season, best ${crop.tOptLow}-${crop.tOptHigh} °C, tolerated ${crop.tMin}-${crop.tMax} °C). ${body} This is derived from temperature limits in the illustrative catalogue. It does not see frost nights, rain, day length or varieties, so check with a local calendar.`;
+      return `${name}, by monthly mean temperature only (a ~${crop.seasonDays}-day season, best ${crop.tOptLow}-${crop.tOptHigh} °C, tolerated ${crop.tMin}-${crop.tMax} °C). ${body} This is derived from FAO EcoCrop temperature limits. It does not see frost nights, rain, day length or varieties, so check with a local calendar.`;
     }
     const body = good.length ? `أفضل أشهر الزراعة: ${good.join(sep)}.${possible.length ? ` ومقبول أيضًا: ${possible.join(sep)}.` : ""}`
       : possible.length ? `لا يوجد شهر يُبقي الموسم كله في النطاق الأفضل. أشهر الزراعة المقبولة: ${possible.join(sep)}.`
       : "لا يوجد شهر زراعة يُبقي الموسم كله ضمن الحدود الحرارية هنا.";
-    return `${name}، بحسب متوسط الحرارة الشهري فقط (موسم ~${crop.seasonDays} يومًا، الأفضل ${crop.tOptLow}-${crop.tOptHigh} °م، والمحتمل ${crop.tMin}-${crop.tMax} °م). ${body} هذا مشتق من الحدود الحرارية في الكتالوج التوضيحي، ولا يرى ليالي الصقيع ولا المطر ولا طول النهار ولا الأصناف، فراجع تقويمًا محليًا.`;
+    return `${name}، بحسب متوسط الحرارة الشهري فقط (موسم ~${crop.seasonDays} يومًا، الأفضل ${crop.tOptLow}-${crop.tOptHigh} °م، والمحتمل ${crop.tMin}-${crop.tMax} °م). ${body} هذا مشتق من الحدود الحرارية في قاعدة بيانات الفاو EcoCrop، ولا يرى ليالي الصقيع ولا المطر ولا طول النهار ولا الأصناف، فراجع تقويمًا محليًا.`;
   };
   return { en: text("en"), ar: text("ar") };
 }

@@ -24,7 +24,8 @@
     "theme": "Theme",
     "light": "Light",
     "dark": "Dark",
-    "system": "System"
+    "system": "System",
+    "offline": "You are offline. The globe and climate data need a connection; your saved costs still work."
   },
   "layers": {
     "button": "Layers",
@@ -59,7 +60,10 @@
     "root": "Root crop",
     "oilseed": "Oilseed",
     "cucurbit": "Cucurbit",
-    "forage": "Forage"
+    "forage": "Forage",
+    "allium": "Onion family",
+    "mallow": "Mallow family",
+    "amaranth": "Amaranth family"
   },
   "plan": {
     "field": "Your field",
@@ -113,7 +117,16 @@
     "net": "Net return, 3 years",
     "perHa": "per hectare",
     "illustrative": "illustrative",
-    "range": "Likely range across past seasons"
+    "range": "Likely range across past seasons",
+    "netNa": "not available",
+    "pool": "Suggested strategies use the {count} crops that have starter yields and prices; any crop can go in your own plan.",
+    "strategy": {
+      "current": "Your current plan",
+      "soil": "Soil builder",
+      "water": "Water saver",
+      "income": "Income diversified",
+      "balanced": "Balanced (your priorities)"
+    }
   },
   "money": {
     "currency": "Currency",
@@ -125,14 +138,16 @@
     "send": "Send",
     "note": "Free rule-based helper. No AI, no cost, and what you type stays on your device.",
     "copy": "Copy answer",
-    "copied": "Copied"
+    "copied": "Copied",
+    "langNote": "Atlas answers in English for now. Answers are written in English and Arabic only."
   },
   "footer": {
     "credit": "Imagery and climate data: NASA (GIBS, POWER).",
     "disclaimer": "NASA does not endorse any non-U.S. Government entity and is not responsible for information contained on non-U.S. Government websites. Data use terms of each source apply.",
     "weather": "Weather and place search: Open-Meteo.com (CC BY 4.0).",
     "terrain": "Terrain: Mapzen terrain tiles, hosted by AWS Open Data.",
-    "places": "Place names: Natural Earth (public domain)."
+    "places": "Place names: Natural Earth (public domain).",
+    "crops": "Crop requirements: FAO EcoCrop database, via OpenCLIM/ecocrop."
   },
   "tabs": {
     "rotations": "Rotations",
@@ -181,7 +196,9 @@
     "sensNote": "Net return for your area when yield and price move 20% down or up.",
     "yieldRow": "Yield",
     "priceCol": "Price",
-    "three": "All three seasons together"
+    "three": "All three seasons together",
+    "missing": "The catalogue has no yield or price for this crop. Enter your own yield, price and costs to see its return.",
+    "illustrative": "Illustrative starting values"
   },
   "seasons": {
     "title": "Climate at this place",
@@ -193,13 +210,16 @@
     "dry": "Dry months",
     "none": "none",
     "rule": "Warm and cool mean {delta} °C above or below this place's yearly mean ({mean} °C). Wet means {wet} mm of rain or more in the month.",
+    "frost": "Frost nights",
+    "frostV": "{month} ({count} of {years} years)",
+    "frostRule": "Frost means the month's lowest air temperature (NASA POWER T2M_MIN, 2 m) fell below {t} °C. Ground frost can come on nights a little above that.",
     "windows": "Planting windows by temperature",
     "plantIn": "{crop}, by planting month",
     "good": "Inside the best range",
     "possible": "Tolerated",
     "no": "Outside the limits",
     "unknown": "No data",
-    "windowsNote": "Derived from temperature limits only, using monthly means and the catalogue's illustrative limits. It does not see frost nights, rain or varieties.",
+    "windowsNote": "Derived from temperature limits only, using monthly means and each crop's FAO EcoCrop limits. It does not see frost nights, rain or varieties.",
     "forecast": "Next 7 days",
     "forecastKey": "Each day: high, low (°C), rain (mm), reference evapotranspiration ET0 (mm).",
     "forecastNone": "The forecast is not available right now.",
@@ -213,10 +233,6 @@
     "count": "{count} crops",
     "none": "No crop matches.",
     "nfixShort": "fixes nitrogen",
-    "water": "Water need",
-    "waterV": "{mm} mm per season",
-    "days": "Season length",
-    "daysV": "{days} days",
     "best": "Best temperature",
     "tolerates": "Tolerates",
     "range": "{low}–{high} °C",
@@ -234,7 +250,39 @@
     "cost": "Cost per hectare",
     "source": "Source",
     "use": "Use in my plan as season",
-    "roadmap": "This starter catalogue has {count} crops with illustrative values. A larger, sourced library (FAO EcoCrop or national extension data) is the next step."
+    "sort": "Sort",
+    "sortFit": "Best fit here",
+    "sortName": "A–Z",
+    "pickForFit": "Pick a place to see how well each crop fits there.",
+    "fitNote": "Fit here: FAO EcoCrop limits checked against this place's NASA POWER monthly means, for the best planting month. As in EcoCrop, the lower of the temperature and rain scores counts. Good is 70 or more, possible 40 to 69. A screening guide, not a yield forecast.",
+    "fitHere": "Fit at this place",
+    "fit": {
+      "good": "Good fit",
+      "possible": "Possible",
+      "poor": "Poor fit"
+    },
+    "fitBest": "Best planted in {month}: temperature {climate}/100, rain {water}/100.",
+    "fitBestIrrigated": "Best planted in {month}: temperature {climate}/100. Irrigated, so rain is not counted.",
+    "windows": "Planting months by temperature",
+    "window": {
+      "good": "best range",
+      "possible": "tolerated",
+      "no": "outside the limits",
+      "unknown": "no data"
+    },
+    "rain": "Best rain over the cycle",
+    "rainTolerates": "Rain it tolerates",
+    "rainV": "{low}–{high} mm",
+    "cycle": "Crop cycle",
+    "cycleV": "{min}–{max} days (scores use {days})",
+    "kill": "Killing temperature",
+    "killV": "{t} °C",
+    "na": "not available",
+    "scientific": "Scientific name",
+    "econ": "Economics per hectare",
+    "econNa": "Not available in the catalogue. Enter your own numbers in the Costs tab.",
+    "illustrative": "illustrative",
+    "about": "{count} crops. Temperature, rain and crop-cycle limits come from the FAO EcoCrop database. Starter yields, prices and costs exist for {priced} of them and are illustrative."
   },
   "soil": {
     "title": "Soil texture",

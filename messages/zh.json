@@ -24,7 +24,8 @@
     "theme": "主题",
     "light": "浅色",
     "dark": "深色",
-    "system": "跟随系统"
+    "system": "跟随系统",
+    "offline": "你已离线。地球仪和气候数据需要网络；已保存的成本仍可使用。"
   },
   "layers": {
     "button": "图层",
@@ -45,7 +46,12 @@
     "noWebgl": "此设备无法显示三维地球，因此改用平面地图。轻触地图或使用搜索来选择地点。",
     "flatLabel": "平面世界地图。轻触以选择地点。"
   },
-  "place": { "n": "北", "s": "南", "e": "东", "w": "西" },
+  "place": {
+    "n": "北",
+    "s": "南",
+    "e": "东",
+    "w": "西"
+  },
   "family": {
     "cereal": "谷物",
     "legume": "豆类",
@@ -54,7 +60,10 @@
     "root": "根茎类",
     "oilseed": "油料作物",
     "cucurbit": "葫芦科",
-    "forage": "饲草"
+    "forage": "饲草",
+    "allium": "葱科",
+    "mallow": "锦葵科",
+    "amaranth": "苋科"
   },
   "plan": {
     "field": "你的田地",
@@ -108,7 +117,16 @@
     "net": "三年净收益",
     "perHa": "每公顷",
     "illustrative": "示例值",
-    "range": "过去各季的可能范围"
+    "range": "过去各季的可能范围",
+    "netNa": "无数据",
+    "pool": "推荐方案只使用有初始产量和价格的 {count} 种作物；你自己的计划可以放任何作物。",
+    "strategy": {
+      "current": "你当前的计划",
+      "soil": "养地型",
+      "water": "节水型",
+      "income": "多元收入型",
+      "balanced": "均衡型（按你的优先级）"
+    }
   },
   "money": {
     "currency": "货币",
@@ -120,27 +138,49 @@
     "send": "发送",
     "note": "基于规则的免费助手。没有 AI，不收费，你输入的内容只留在你的设备上。目前 Atlas 只用英语和阿拉伯语回答。",
     "copy": "复制回答",
-    "copied": "已复制"
+    "copied": "已复制",
+    "langNote": "Atlas 目前用英语回答。回答只有英语和阿拉伯语两种。"
   },
   "footer": {
     "credit": "影像和气候数据：NASA（GIBS、POWER）。",
     "disclaimer": "NASA 不为任何非美国政府实体背书，也不对非美国政府网站上的信息负责。各数据来源的使用条款均适用。",
     "weather": "天气和地点搜索：Open-Meteo.com（CC BY 4.0）。",
     "terrain": "地形：Mapzen 地形瓦片，由 AWS Open Data 托管。",
-    "places": "地名：Natural Earth（公有领域）。"
+    "places": "地名：Natural Earth（公有领域）。",
+    "crops": "作物需求：FAO EcoCrop 数据库，经 OpenCLIM/ecocrop 提供。"
   },
-  "tabs": { "rotations": "轮作", "seasons": "季节", "costs": "成本", "crops": "作物", "soil": "土壤", "atlas": "Atlas" },
+  "tabs": {
+    "rotations": "轮作",
+    "seasons": "季节",
+    "costs": "成本",
+    "crops": "作物",
+    "soil": "土壤",
+    "atlas": "Atlas"
+  },
   "costs": {
     "title": "成本与收益",
     "note": "初始数字来自作物目录，仅为示例。请换成你自己的数字。",
     "saved": "你的输入只保存在这台设备上。",
     "area": "田地面积",
     "areaIs": "= {ha} 公顷",
-    "unit": { "ha": "公顷", "acre": "英亩", "feddan": "费丹" },
+    "unit": {
+      "ha": "公顷",
+      "acre": "英亩",
+      "feddan": "费丹"
+    },
     "yield": "单产（吨/公顷）",
     "price": "每吨价格（{currency}）",
     "perHa": "每公顷成本（{currency}）",
-    "line": { "seed": "种子", "fertiliser": "肥料", "protection": "植保", "labour": "人工", "machinery": "机械和燃料", "water": "用水", "rent": "地租", "other": "其他" },
+    "line": {
+      "seed": "种子",
+      "fertiliser": "肥料",
+      "protection": "植保",
+      "labour": "人工",
+      "machinery": "机械和燃料",
+      "water": "用水",
+      "rent": "地租",
+      "other": "其他"
+    },
     "reset": "重置此作物",
     "net": "净收益",
     "total": "总成本",
@@ -156,7 +196,9 @@
     "sensNote": "当单产和价格下降或上升 20% 时，你这块面积的净收益。",
     "yieldRow": "单产",
     "priceCol": "价格",
-    "three": "三季合计"
+    "three": "三季合计",
+    "missing": "目录中没有这种作物的产量或价格。填入你自己的产量、价格和成本即可看到收益。",
+    "illustrative": "示例初始值"
   },
   "seasons": {
     "title": "此地的气候",
@@ -168,13 +210,16 @@
     "dry": "干燥月份",
     "none": "无",
     "rule": "温暖和凉爽指比此地年平均气温（{mean} °C）高或低 {delta} °C。多雨指当月降雨达到或超过 {wet} 毫米。",
+    "frost": "霜冻夜",
+    "frostV": "{month}（{years} 年中有 {count} 年）",
+    "frostRule": "霜冻指当月最低气温（NASA POWER T2M_MIN，2 米高度）低于 {t} °C。地面霜冻在稍暖一些的夜晚也可能出现。",
     "windows": "按气温推算的播种窗口",
     "plantIn": "{crop}，按播种月份",
     "good": "在最佳范围内",
     "possible": "可以耐受",
     "no": "超出界限",
     "unknown": "无数据",
-    "windowsNote": "仅根据温度界限推算，使用月平均值和目录中的示例界限。它不考虑霜冻夜晚、降雨和品种。",
+    "windowsNote": "仅由温度限值推算，使用月平均值和每种作物的 FAO EcoCrop 限值。看不到霜冻夜、降雨或品种差异。",
     "forecast": "未来 7 天",
     "forecastKey": "每天依次为：最高、最低气温（°C），降雨（毫米），参考蒸散量 ET0（毫米）。",
     "forecastNone": "天气预报暂时不可用。",
@@ -188,15 +233,15 @@
     "count": "{count} 种作物",
     "none": "没有匹配的作物。",
     "nfixShort": "固氮",
-    "water": "需水量",
-    "waterV": "每季 {mm} 毫米",
-    "days": "生长期",
-    "daysV": "{days} 天",
     "best": "最适温度",
     "tolerates": "耐受范围",
     "range": "{low}–{high} °C",
     "residue": "留茬量",
-    "level": { "low": "少", "medium": "中", "high": "多" },
+    "level": {
+      "low": "少",
+      "medium": "中",
+      "high": "多"
+    },
     "nfix": "是否固氮",
     "yes": "是",
     "no": "否",
@@ -205,7 +250,39 @@
     "cost": "每公顷成本",
     "source": "来源",
     "use": "放入我的计划，作为第几季",
-    "roadmap": "这份入门目录有 {count} 种作物，数值仅为示例。下一步是建立更大、有出处的作物库（FAO EcoCrop 或各国农技推广数据）。"
+    "sort": "排序",
+    "sortFit": "此地最适合",
+    "sortName": "按名称",
+    "pickForFit": "选择一个地点，查看每种作物在那里的适宜程度。",
+    "fitNote": "此地适宜度：把 FAO EcoCrop 的限值与此地 NASA POWER 的月平均值对比，取最佳播种月。与 EcoCrop 相同，取温度分和降雨分中较低的一个。70 分及以上为适宜，40 到 69 为可能。这是初筛参考，不是产量预测。",
+    "fitHere": "在此地的适宜度",
+    "fit": {
+      "good": "适宜",
+      "possible": "可能",
+      "poor": "不太适宜"
+    },
+    "fitBest": "最佳播种月：{month}。温度 {climate}/100，降雨 {water}/100。",
+    "fitBestIrrigated": "最佳播种月：{month}。温度 {climate}/100。有灌溉，不计降雨。",
+    "windows": "按温度的播种月份",
+    "window": {
+      "good": "最佳范围",
+      "possible": "可耐受",
+      "no": "超出限值",
+      "unknown": "无数据"
+    },
+    "rain": "生长期最佳降雨",
+    "rainTolerates": "可耐受降雨",
+    "rainV": "{low}–{high} 毫米",
+    "cycle": "生长周期",
+    "cycleV": "{min}–{max} 天（评分按 {days} 天）",
+    "kill": "致死温度",
+    "killV": "{t} °C",
+    "na": "无数据",
+    "scientific": "学名",
+    "econ": "每公顷经济数据",
+    "econNa": "目录中没有。请在“成本”页填入你自己的数字。",
+    "illustrative": "示例",
+    "about": "共 {count} 种作物。温度、降雨和生长周期限值来自 FAO EcoCrop 数据库。只有 {priced} 种有初始产量、价格和成本，均为示例值。"
   },
   "soil": {
     "title": "土壤质地",
@@ -214,14 +291,32 @@
     "sand": "砂粒",
     "silt": "粉粒",
     "class": {
-      "sand": "砂土", "loamySand": "壤质砂土", "sandyLoam": "砂质壤土", "loam": "壤土", "siltLoam": "粉砂壤土", "silt": "粉土",
-      "sandyClayLoam": "砂质黏壤土", "clayLoam": "黏壤土", "siltyClayLoam": "粉砂质黏壤土", "sandyClay": "砂质黏土", "siltyClay": "粉砂质黏土", "clay": "黏土"
+      "sand": "砂土",
+      "loamySand": "壤质砂土",
+      "sandyLoam": "砂质壤土",
+      "loam": "壤土",
+      "siltLoam": "粉砂壤土",
+      "silt": "粉土",
+      "sandyClayLoam": "砂质黏壤土",
+      "clayLoam": "黏壤土",
+      "siltyClayLoam": "粉砂质黏壤土",
+      "sandyClay": "砂质黏土",
+      "siltyClay": "粉砂质黏土",
+      "clay": "黏土"
     },
     "drainage": "排水",
     "waterHolding": "保水能力",
     "effort": "耕作难度",
-    "speed": { "low": "慢", "medium": "中等", "high": "快" },
-    "level": { "low": "低", "medium": "中", "high": "高" },
+    "speed": {
+      "low": "慢",
+      "medium": "中等",
+      "high": "快"
+    },
+    "level": {
+      "low": "低",
+      "medium": "中",
+      "high": "高"
+    },
     "advice": {
       "low": "水下渗很慢，常见风险是积水：不要在土壤潮湿时耕作，把秸秆留在地表，并在轮作中安排深根作物。",
       "medium": "水下渗速度中等。保持地表有覆盖以免结皮，并在两季作物之间让根系留在土里。",

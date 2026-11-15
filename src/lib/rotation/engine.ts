@@ -63,7 +63,36 @@ export function climateScoreForYear(seq: Crop[], c: ClimateSeries, yi: number, s
   return clamp(mean(scores));
 }
 
-export function netUsdHa(seq: Crop[]): number {
+export interface PlaceFit { month: number; climate: number; water: number; score: number }
+
+/**
+ * How well one crop suits a place, for its best planting month.
+ * Temperature and rain scores are averaged over the years; as in the EcoCrop model, the overall score is the
+ * lower of the two (the limiting factor). Irrigated: rain is not limiting, so only temperature counts.
+ * A screening guide from monthly means, not a yield forecast.
+ */
+export function placeFit(crop: Crop, climate: ClimateSeries, irrigated: boolean): PlaceFit | null {
+  const n = climate.years.length;
+  if (!n) return null;
+  let best: PlaceFit | null = null;
+  for (let month = 0; month < 12; month++) {
+    let cs = 0, ws = 0;
+    for (let yi = 0; yi < n; yi++) {
+      cs += climateScoreForYear([crop], climate, yi, month);
+      ws += waterScoreForYear([crop], climate, yi, month, false);
+    }
+    const c = cs / n, w = ws / n, score = irrigated ? c : Math.min(c, w);
+    if (!best || score > best.score + 1e-9) best = { month, climate: c, water: w, score };
+  }
+  return best;
+}
+
+type Priced = Crop & { yieldTHa: number; priceUsdPerT: number; costUsdHa: number };
+export const hasEconomics = (c: Crop): c is Priced => c.yieldTHa !== null && c.priceUsdPerT !== null && c.costUsdHa !== null;
+
+/** Three-season net per hectare, or null when any crop has no yield, price or cost in the catalogue. */
+export function netUsdHa(seq: Crop[]): number | null {
+  if (!seq.every(hasEconomics)) return null;
   return seq.reduce((s, c) => s + economics({ yieldTHa: c.yieldTHa, priceUsdPerT: c.priceUsdPerT, costUsdHa: c.costUsdHa }).net, 0);
 }
 
@@ -79,10 +108,10 @@ const normalize = (w: Weights): Weights => {
 };
 
 interface Evaluated {
-  seq: Crop[]; soil: number; econ: number; water: number[]; climate: number[]; net: number;
+  seq: Crop[]; soil: number; econ: number; water: number[]; climate: number[]; net: number | null;
 }
 
-function evaluate(seq: Crop[], history: Crop[], input: EngineInput, econNorm: (net: number) => number): Evaluated {
+function evaluate(seq: Crop[], history: Crop[], input: EngineInput, econNorm: (net: number | null) => number): Evaluated {
   const n = input.climate.years.length;
   const water = Array.from({ length: n }, (_, yi) => waterScoreForYear(seq, input.climate, yi, input.startMonth, input.irrigated));
   const climate = Array.from({ length: n }, (_, yi) => climateScoreForYear(seq, input.climate, yi, input.startMonth));
@@ -117,15 +146,22 @@ function explain(e: Evaluated, history: Crop[], input: EngineInput, label: strin
   const prev = history[history.length - 1];
   if (prev && e.seq[0].family !== prev.family) why.push(`Breaks the ${prev.family} run: ${e.seq[0].name} follows ${prev.name}.`);
   if (!why.length) why.push(`${label}: no standout soil benefit in the catalog data.`);
+  const unpriced = [...new Set(e.seq.filter((c) => !hasEconomics(c)).map((c) => c.name))];
   const evidence = [
-    `Median water score ${medWater.toFixed(0)}/100 across ${yrs.length} seasons (${yrs[0]}–${yrs[yrs.length - 1]}) of NASA POWER monthly data.`,
+    `Median water score ${medWater.toFixed(0)}/100 across ${yrs.length} seasons (${yrs[0]}–${yrs[yrs.length - 1]}) of NASA POWER monthly rain, against FAO EcoCrop rainfall needs.`,
+    "Climate fit compares NASA POWER monthly temperatures with each crop's FAO EcoCrop temperature limits.",
     `Soil score ${e.soil.toFixed(0)}/100 from family diversity, residue and legume flags (heuristic, not a measurement).`,
-    `Three-year net return about $${Math.round(e.net).toLocaleString("en-US")}/ha at the catalog's illustrative yields and prices.`,
+    e.net === null
+      ? `Three-year net return not available: the catalogue has no yield or price for ${unpriced.join(", ")}.`
+      : `Three-year net return about $${Math.round(e.net).toLocaleString("en-US")}/ha at the catalog's illustrative yields and prices.`,
   ];
   const gaps = [
     "Monthly means hide frost and heat spikes; no daily extremes in this version.",
     "POWER's native grid is coarse (about 0.5° × 0.625°); your field may differ.",
-    "Yields, prices and costs are illustrative catalog values; price volatility is not modelled.",
+    "EcoCrop limits describe the species as a whole, not your variety.",
+    e.net === null
+      ? "Income score is set to a neutral 50 because some crops have no catalogue yield or price. Enter your own in the Costs tab."
+      : "Yields, prices and costs are illustrative catalog values; price volatility is not modelled.",
   ];
   if (!input.hasLocalSoil) gaps.unshift("No local soil test supplied, so soil score uses crop traits only.");
   const risks = [
@@ -142,12 +178,14 @@ export function recommend(input: EngineInput): Strategy[] {
   const history = resolve(input.history);
   const current = resolve(input.current);
 
-  // enumerate every 3-year sequence (10 crops → 1,000 sequences)
+  // Suggested strategies use only crops with a yield, price and cost, so each one has an income figure.
+  // Any crop can still be in the farmer's own plan. 10 priced crops → 1,000 sequences.
+  const pool = input.catalog.filter(hasEconomics);
   const all: Crop[][] = [];
-  for (const a of input.catalog) for (const b of input.catalog) for (const c of input.catalog) all.push([a, b, c]);
-  const nets = all.map(netUsdHa);
+  for (const a of pool) for (const b of pool) for (const c of pool) all.push([a, b, c]);
+  const nets = all.map(netUsdHa).filter((v): v is number => v !== null);
   const lo = Math.min(...nets), hi = Math.max(...nets);
-  const econNorm = (net: number) => (hi === lo ? 50 : ((net - lo) / (hi - lo)) * 100);
+  const econNorm = (net: number | null) => (net === null || !(hi > lo) ? 50 : clamp(((net - lo) / (hi - lo)) * 100));
   const evaluated = all.map((seq) => evaluate(seq, history, input, econNorm));
 
   const key = (seq: Crop[]) => seq.map((c) => c.id).join(">");

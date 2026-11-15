@@ -1,10 +1,11 @@
-// Only languages that have a translated file in messages/. The plan is to add pt, id, sw, ru, tr and bn next.
-export const LOCALES = ["en", "ar", "es", "fr", "hi", "zh"] as const;
+// Only languages that have a translated file in messages/. All but English and Arabic are first-pass translations.
+export const LOCALES = ["en", "ar", "es", "fr", "pt", "ru", "tr", "id", "sw", "hi", "bn", "zh"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "en";
 
 export const NATIVE_NAMES: Record<Locale, string> = {
-  en: "English", ar: "العربية", es: "Español", fr: "Français", hi: "हिन्दी", zh: "中文",
+  en: "English", ar: "العربية", es: "Español", fr: "Français", pt: "Português", ru: "Русский", tr: "Türkçe",
+  id: "Bahasa Indonesia", sw: "Kiswahili", hi: "हिन्दी", bn: "বাংলা", zh: "中文",
 };
 
 const RTL = new Set(["ar", "he", "fa", "ur"]);

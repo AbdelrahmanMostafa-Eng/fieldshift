@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CROPS } from "@/data/crops";
 import { AREA_UNITS, TEXTURE_CLASSES } from "@/data/reference";
 import type { MonthStat } from "./climatology";
-import { budgetResult, defaultBudget, plantingWindow, rollup, seasons, sensitivity, textureClass, toHectares, totalCostUsdHa } from "./farm";
+import { budgetReady, budgetResult, defaultBudget, frostMonths, plantingWindow, rollup, seasons, sensitivity, textureClass, toHectares, totalCostUsdHa } from "./farm";
 
 const wheat = CROPS.find((c) => c.id === "wheat")!;
 const month = (m: number, tempC: number | null, rainMm: number | null): MonthStat =>
@@ -108,5 +108,34 @@ describe("textureClass", () => {
     expect(textureClass(70, 40)).toBeNull();
     const ids = new Set(TEXTURE_CLASSES.map((c) => c.id));
     for (let clay = 0; clay <= 100; clay += 5) for (let sand = 0; sand <= 100 - clay; sand += 5) expect(ids.has(textureClass(sand, clay) as string)).toBe(true);
+  });
+});
+
+describe("crops without catalogue economics", () => {
+  it("start blank, never as zero, and are not summed until a yield and price are entered", () => {
+    const okra = CROPS.find((c) => c.id === "okra")!;
+    const b = defaultBudget(okra);
+    expect(Number.isNaN(b.yieldTHa) && Number.isNaN(b.priceUsdPerT)).toBe(true);
+    expect(budgetReady(b)).toBe(false);
+    expect(budgetReady({ ...b, yieldTHa: 10, priceUsdPerT: 400 })).toBe(true);
+    expect(budgetReady(defaultBudget(CROPS.find((c) => c.id === "wheat")!))).toBe(true);
+  });
+});
+
+describe("frostMonths", () => {
+  const series = (min: (number | null)[][] | undefined) => ({
+    years: [2001, 2002, 2003], T2M: [[], [], []], PRECTOTCORR: [[], [], []], ALLSKY_SFC_SW_DWN: [[], [], []],
+    ...(min ? { T2M_MIN: min } : {}), meta: { lat: 0, lon: 0, source: "test", fetchedAt: "" },
+  });
+  const row = (jan: number | null, feb: number | null) => [jan, feb, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
+  it("counts the years whose coldest night in a month fell below 0 °C", () => {
+    expect(frostMonths(series([row(-2, 1), row(-0.1, -3), row(null, 0)]))).toEqual([
+      { month: 0, years: 2, of: 2 },
+      { month: 1, years: 1, of: 3 },
+    ]);
+  });
+  it("is empty without T2M_MIN, and when no night went below zero", () => {
+    expect(frostMonths(series(undefined))).toEqual([]);
+    expect(frostMonths(series([row(0, 1), row(2, 3), row(4, 5)]))).toEqual([]);
   });
 });

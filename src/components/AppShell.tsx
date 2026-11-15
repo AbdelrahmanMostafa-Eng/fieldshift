@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { CROPS } from "@/data/crops";
+import { CROPS, hasEconomics } from "@/data/crops";
 import { BASE_LAYER, GIBS_CREDIT, OVERLAYS, gibsDate } from "@/lib/gibs";
 import { dirFor } from "@/i18n/config";
 import { formatMoney, fromUsd, listCurrencies, type Rates } from "@/lib/roi";
@@ -25,7 +25,7 @@ import { CropCombobox } from "./ui/CropCombobox";
 import { Icon } from "./ui/Icon";
 import { Range } from "./ui/Range";
 import { Segmented } from "./ui/Segmented";
-import { useDismiss } from "./ui/hooks";
+import { useDismiss, useOnline } from "./ui/hooks";
 
 type Loc = { lat: number; lon: number };
 type Status = "idle" | "loading" | "ready" | "failed";
@@ -34,6 +34,7 @@ const TABS = ["rotations", "seasons", "costs", "crops", "soil", "atlas"] as cons
 type Tab = (typeof TABS)[number];
 const WEIGHT_KEYS = ["soil", "water", "climate", "economics", "risk"] as const;
 const MONTHS = Array.from({ length: 12 }, (_, i) => i);
+const PRICED = CROPS.filter(hasEconomics).length;
 const PANEL_WIDTH = 440; // the side panel on laptops (see ResultsSheet)
 const WIDE = 1024;       // the lg breakpoint
 // Header tiers, by the width left for it. Below COMPACT the view and theme controls move into one menu.
@@ -94,6 +95,7 @@ export function AppShell() {
   const [currency, setCurrency] = useState("USD");
   const [rates, setRates] = useState<Rates>({});
   const rtl = dirFor(locale) === "rtl";
+  const online = useOnline();
   const deferredWeights = useDeferredValue(weights);
 
   // Viewport size, for framing the globe around the intro text, the header and the results panel.
@@ -197,7 +199,7 @@ export function AppShell() {
   const statusLine = !loc ? t("plan.pickHint")
     : status === "loading" ? t("plan.loading")
     : status === "failed" ? t("plan.failed")
-    : top ? `${t("results.count", { count: strategies.length })} · ${t("results.topFor", { name: top.label, score: Math.round(top.scores.overall) })}`
+    : top ? `${t("results.count", { count: strategies.length })} · ${t("results.topFor", { name: t(`results.strategy.${top.id}`), score: Math.round(top.scores.overall) })}`
     : "";
   const viewOptions = [{ value: "globe" as const, label: t("nav.globe"), icon: "globe" as const }, { value: "flat" as const, label: t("nav.flat"), icon: "map" as const }];
   const setViewMode = (v: ViewMode) => setFlat(v === "flat");
@@ -291,7 +293,7 @@ export function AppShell() {
             {tab === "atlas" && <div className="mt-4 h-[55dvh]"><AssistantChat location={loc} climate={climate} forecast={forecast} strategies={strategies} startMonth={startMonth} money={money} /></div>}
             {tab === "seasons" && (climate ? <SeasonsPanel climate={climate} forecast={forecast} plan={current} /> : stateBlock)}
             {tab === "costs" && <CostTracker plan={current} currency={currency} rates={rates} money={money} />}
-            {tab === "crops" && <CropLibrary plan={current} onUse={(i, id) => setAt(current, setCurrent, i, id)} money={money} />}
+            {tab === "crops" && <CropLibrary plan={current} onUse={(i, id) => setAt(current, setCurrent, i, id)} money={money} climate={climate} irrigated={irrigated} />}
             {tab === "soil" && <SoilExplorer />}
             {tab === "rotations" && (
               <>
@@ -329,7 +331,7 @@ export function AppShell() {
                 {strategies.length > 0 && (
                   <section className="mt-6 border-t border-line pt-5">
                     <p className="fs-eyebrow">{t("results.title")}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted">{t("results.note")}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted">{t("results.note")} {t("results.pool", { count: PRICED })}</p>
                     <div className="divide-y divide-line">
                       {strategies.map((s, i) => <StrategyCard key={s.id} s={s} index={i} top={s.id === top?.id} money={money} />)}
                     </div>
@@ -340,12 +342,18 @@ export function AppShell() {
             )}
             <footer className="mt-6 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
               <p>{t("footer.credit")} {GIBS_CREDIT}. {BASE_LAYER.label}.</p>
+              <p className="mt-1">{t("footer.crops")}</p>
               <p className="mt-1">{t("footer.terrain")} {t("footer.places")}</p>
               <p className="mt-1">{t("footer.weather")}</p>
               <p className="mt-1">{t("footer.disclaimer")}</p>
             </footer>
           </ResultsSheet>
         </>
+      )}
+      {!online && (
+        <p role="status" className="fs-pop pointer-events-none absolute inset-x-3 z-50 mx-auto flex max-w-md items-start gap-2 px-4 py-3 text-sm" style={{ top: intro ? 64 : headerPx + 8 }}>
+          <Icon name="alert" size={18} className="mt-0.5 text-gold-text" />{t("nav.offline")}
+        </p>
       )}
       <CursorRing />
     </main>

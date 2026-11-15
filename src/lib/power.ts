@@ -1,6 +1,7 @@
 import type { ClimateSeries, Monthly } from "@/lib/rotation/types";
 
-export const POWER_PARAMS = ["T2M", "PRECTOTCORR", "ALLSKY_SFC_SW_DWN"] as const;
+// T2M_MIN (lowest 2 m air temperature of the month) was confirmed live on the monthly API, 15 Nov 2026.
+export const POWER_PARAMS = ["T2M", "T2M_MIN", "PRECTOTCORR", "ALLSKY_SFC_SW_DWN"] as const;
 const FILL = -999;
 
 export function buildPowerMonthlyUrl(o: { lat: number; lon: number; startYear: number; endYear: number }): string {
@@ -38,6 +39,7 @@ export function parsePowerMonthly(json: unknown, meta: { lat: number; lon: numbe
   return {
     years,
     T2M: toMonthly(p.T2M, years),
+    ...(p.T2M_MIN ? { T2M_MIN: toMonthly(p.T2M_MIN, years) } : {}),
     PRECTOTCORR: toMonthly(p.PRECTOTCORR, years),
     ALLSKY_SFC_SW_DWN: toMonthly(p.ALLSKY_SFC_SW_DWN, years),
     meta: { ...meta, source: "NASA POWER (AG community, monthly)", fetchedAt: new Date().toISOString() },

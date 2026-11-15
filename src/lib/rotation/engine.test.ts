@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CROPS } from "@/data/crops";
-import { recommend, percentile, soilScore, monthsFor } from "./engine";
+import { hasEconomics, monthsFor, percentile, placeFit, recommend, soilScore } from "./engine";
 import type { ClimateSeries, EngineInput } from "./types";
 
 const years = Array.from({ length: 24 }, (_, i) => 2001 + i);
@@ -64,4 +64,41 @@ describe("recommend", () => {
 describe("helpers", () => {
   it("interpolates percentiles", () => { expect(percentile([1, 2, 3, 4, 5], 0.5)).toBe(3); expect(percentile([0, 10], 0.1)).toBeCloseTo(1); });
   it("wraps seasons across the year end", () => { expect(monthsFor(10, 120)).toEqual([10, 11, 0, 1]); });
+});
+
+describe("crops without catalogue economics", () => {
+  it("builds suggested strategies only from crops that have a yield, price and cost", () => {
+    for (const s of recommend(base()).filter((x) => x.id !== "current")) {
+      for (const id of s.sequence) expect(hasEconomics(byId(id)), id).toBe(true);
+      expect(s.netUsdHa3yr).not.toBeNull();
+    }
+  });
+  it("says 'not available' for a plan with an unpriced crop and keeps income neutral", () => {
+    const cur = recommend(base({ current: ["wheat", "okra", "wheat"] })).find((s) => s.id === "current")!;
+    expect(cur.netUsdHa3yr).toBeNull();
+    expect(cur.scores.economics).toBe(50);
+    expect(cur.evidence.join(" ")).toMatch(/not available.*Okra/);
+    expect(cur.gaps.join(" ")).toMatch(/neutral 50/);
+  });
+});
+
+describe("placeFit", () => {
+  const cool = climate(3);
+  const hot: ClimateSeries = { ...cool, T2M: mk(() => 34) };
+  it("prefers a cool-season crop where it is cool and a heat-loving crop where it is hot", () => {
+    const wheat = byId("wheat"), sorghum = byId("sorghum");
+    expect(placeFit(wheat, cool, true)!.score).toBeGreaterThan(placeFit(wheat, hot, true)!.score);
+    expect(placeFit(sorghum, hot, true)!.score).toBeGreaterThan(placeFit(wheat, hot, true)!.score);
+  });
+  it("is limited by rain when rain-fed, and not when irrigated", () => {
+    const dry: ClimateSeries = { ...cool, PRECTOTCORR: mk(() => 0.1) };
+    const rice = byId("rice");
+    const rainfed = placeFit(rice, dry, false)!, irrigated = placeFit(rice, dry, true)!;
+    expect(rainfed.score).toBe(Math.min(rainfed.climate, rainfed.water));
+    expect(rainfed.water).toBeLessThan(20);
+    expect(irrigated.score).toBeGreaterThan(rainfed.score);
+  });
+  it("returns null with no years of data", () => {
+    expect(placeFit(byId("wheat"), { ...cool, years: [], T2M: [], PRECTOTCORR: [], ALLSKY_SFC_SW_DWN: [] }, false)).toBeNull();
+  });
 });

@@ -52,8 +52,8 @@
   --color-danger: var(--danger);
   --color-water: var(--water);
   /* Each stack ends with faces for other scripts, so Arabic, Hindi, Bengali and Chinese never fall to a random default. */
-  --font-sans: var(--font-grotesk), var(--font-arabic), var(--font-deva), var(--font-bengali), "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
-  --font-serif: var(--font-fraunces), var(--font-naskh), var(--font-deva), var(--font-bengali), "Songti SC", "SimSun", "Noto Serif SC", serif;
+  --font-sans: var(--font-grotesk), var(--font-cyr-sans), var(--font-arabic), var(--font-deva), var(--font-bengali), "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), var(--font-cyr-serif), var(--font-naskh), var(--font-deva), var(--font-bengali), "Songti SC", "SimSun", "Noto Serif SC", serif;
   --font-mono: var(--font-jbmono), var(--font-arabic), var(--font-deva), var(--font-bengali), "PingFang SC", "Microsoft YaHei", ui-monospace, monospace;
   /* radius scale 6 / 10 / 16 / 24 */
   --radius-sm: var(--r-1);

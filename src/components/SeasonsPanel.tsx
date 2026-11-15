@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { CROP_BY_ID, cropName } from "@/data/crops";
 import { SEASON_RULES } from "@/data/reference";
 import { climatology } from "@/lib/climatology";
-import { plantingWindow, seasons, type Fit } from "@/lib/farm";
+import { frostMonths, plantingWindow, seasons, type Fit } from "@/lib/farm";
 import type { ForecastDay } from "@/lib/openmeteo";
 import type { ClimateSeries } from "@/lib/rotation/types";
 import { ClimateChart } from "./ClimateChart";
@@ -17,6 +17,7 @@ export function SeasonsPanel({ climate, forecast, plan }: { climate: ClimateSeri
   const locale = useLocale();
   const stats = useMemo(() => climatology(climate), [climate]);
   const year = useMemo(() => seasons(stats), [stats]);
+  const frost = useMemo(() => (climate.T2M_MIN ? frostMonths(climate) : null), [climate]);
   const n = (v: number, d = 0) => new Intl.NumberFormat(locale, { maximumFractionDigits: d }).format(v);
   const monthName = (m: number, style: "short" | "narrow" | "long" = "short") => new Intl.DateTimeFormat(locale, { month: style }).format(new Date(2026, m, 1));
   const list = (months: number[]) => (months.length ? new Intl.ListFormat(locale, { style: "narrow", type: "unit" }).format(months.map((m) => monthName(m))) : t("none"));
@@ -36,9 +37,14 @@ export function SeasonsPanel({ climate, forecast, plan }: { climate: ClimateSeri
           {([["warm", year.warm], ["cool", year.cool], ["wet", year.wet], ["dry", year.dry]] as const).map(([k, months]) => (
             <div key={k} className="contents"><dt className="text-muted">{t(k)}</dt><dd>{list(months)}</dd></div>
           ))}
+          {frost && (
+            <div className="contents"><dt className="text-muted">{t("frost")}</dt>
+              <dd>{frost.length ? new Intl.ListFormat(locale, { style: "short", type: "unit" }).format(frost.map((f) => t("frostV", { month: monthName(f.month), count: n(f.years), years: n(f.of) }))) : t("none")}</dd></div>
+          )}
         </dl>
         {year.yearMeanC !== null && <p className="mt-3 text-xs leading-relaxed text-muted" title={`${SEASON_RULES.tempDeltaC.source} ${SEASON_RULES.wetMonthMm.source}`}>
           {t("rule", { delta: n(SEASON_RULES.tempDeltaC.value), mean: n(year.yearMeanC, 1), wet: n(SEASON_RULES.wetMonthMm.value) })}
+          {frost && <> {t("frostRule", { t: n(SEASON_RULES.frostC.value) })}</>}
         </p>}
       </section>
 

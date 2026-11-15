@@ -2,7 +2,7 @@ import { AREA_UNITS, SEASON_RULES, type AreaUnit } from "@/data/reference";
 import type { MonthStat } from "@/lib/climatology";
 import { economics, type EconomicsResult } from "@/lib/roi";
 import { monthsFor } from "@/lib/rotation/engine";
-import type { Crop } from "@/lib/rotation/types";
+import type { ClimateSeries, Crop } from "@/lib/rotation/types";
 
 // ---- Costs and return ----------------------------------------------------------------------------
 
@@ -15,15 +15,18 @@ export interface CropBudget { cropId: string; yieldTHa: number; priceUsdPerT: nu
 /**
  * Starting budget from the catalogue. The catalogue has one total cost per crop and no split,
  * so the whole amount starts under "other" instead of inventing a breakdown.
+ * A crop without catalogue economics starts blank (NaN shows as an empty box), never as zero.
  */
 export function defaultBudget(crop: Crop): CropBudget {
   const costs = Object.fromEntries(COST_LINES.map((k) => [k, 0])) as Record<CostLine, number>;
-  costs.other = crop.costUsdHa;
-  return { cropId: crop.id, yieldTHa: crop.yieldTHa, priceUsdPerT: crop.priceUsdPerT, costs };
+  costs.other = crop.costUsdHa ?? Number.NaN;
+  return { cropId: crop.id, yieldTHa: crop.yieldTHa ?? Number.NaN, priceUsdPerT: crop.priceUsdPerT ?? Number.NaN, costs };
 }
 
 const num = (v: number) => (Number.isFinite(v) && v > 0 ? v : 0);
 export const totalCostUsdHa = (b: CropBudget) => COST_LINES.reduce((s, k) => s + num(b.costs[k]), 0);
+/** A budget can be summed only once it has a yield and a price. Until then the screen says "not available". */
+export const budgetReady = (b: CropBudget) => num(b.yieldTHa) > 0 && num(b.priceUsdPerT) > 0;
 
 export function budgetResult(b: CropBudget, areaHa = 1): EconomicsResult {
   return economics({ yieldTHa: num(b.yieldTHa), priceUsdPerT: num(b.priceUsdPerT), costUsdHa: totalCostUsdHa(b), areaHa: num(areaHa) });
@@ -60,6 +63,25 @@ export function seasons(stats: MonthStat[]): Seasons {
       else if (s.tempC <= yearMeanC - d) out.cool.push(s.month);
     }
     if (s.rainMm !== null) (s.rainMm >= wetMm ? out.wet : out.dry).push(s.month);
+  }
+  return out;
+}
+
+export interface FrostMonth { month: number; years: number; of: number }
+
+/**
+ * Months in which the coldest night fell below the frost threshold, and in how many of the years with data.
+ * Uses NASA POWER T2M_MIN (air at 2 m). Ground frost can happen on nights a little above it. Empty when the series has no T2M_MIN.
+ */
+export function frostMonths(series: ClimateSeries): FrostMonth[] {
+  const min = series.T2M_MIN;
+  if (!min) return [];
+  const limit = SEASON_RULES.frostC.value;
+  const out: FrostMonth[] = [];
+  for (let m = 0; m < 12; m++) {
+    const vals = min.map((row) => row?.[m]).filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+    const years = vals.filter((v) => v < limit).length;
+    if (years > 0) out.push({ month: m, years, of: vals.length });
   }
   return out;
 }
