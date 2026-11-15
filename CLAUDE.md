@@ -19,6 +19,8 @@ Decision-support web app for farmers (NASA Space Apps 2026, "Field Shift"). Next
 - Use logical CSS (`ms-`, `me-`, `ps-`, `pe-`, `start-`, `end-`) so Arabic RTL works. No `left`/`right` utilities.
 - Floating UI (island, header controls, pop-ups, map buttons) uses the one glass material in `globals.css` (`--glass-*`, `.fs-glass`, `.fs-chrome`). Do not invent a second one, and never show scroll bars (`.fs-scroll` fades the edges).
 - The globe's sunlight is `src/components/globe/optics.ts`; its sun direction also feeds MapLibre's `light`, so change it in one place only.
+- Imagery has three tiers (`src/components/globe/style.ts`): Blue Marble for the wide view, daily VIIRS in the middle, the Landsat 30 m mosaic (around 2000) at field scale. JPEG layers mark gaps in black; `globe/tiles.ts` turns those clear. Do not remove either, or the globe goes black or soft again.
+- Only one data layer is on at a time, over toned-down imagery, so colours match the legend. Legend stops and ranges come from the GIBS colour map XML, never by eye.
 - Footer must keep the NASA non-endorsement line and the data-use note.
 - Code is a decision aid. Show uncertainty (bands, confidence, gaps). Never present a score as a guarantee.
 

@@ -49,7 +49,10 @@
     "rainUnit": "Millimeter pro Stunde, aus der IMERG-Satellitenschätzung der NASA.",
     "soilWaterUnit": "Wasservolumen je Bodenvolumen im Wurzelraum (Modell MERRA-2).",
     "monthlyNote": "Monatsmittel: Es zeigt den neuesten von der NASA veröffentlichten Monat, meist einige Monate zurück, nicht das Bilddatum unten.",
-    "lagNote": "Täglich, etwa {days} Tage verzögert: Die neuesten Daten zeigen den letzten verfügbaren Tag."
+    "lagNote": "Täglich, etwa {days} Tage verzögert: Die neuesten Daten zeigen den letzten verfügbaren Tag.",
+    "rainShort": "Regen",
+    "snow": "Schnee",
+    "sharp": "Nächste Ansicht: ein Landsat-Mosaik mit 30 m Auflösung aus Bildern um das Jahr 2000. Felder, Straßen und Orte können sich seitdem verändert haben."
   },
   "globe": {
     "label": "Interaktive Erde. Ziehen zum Drehen, scrollen oder mit zwei Fingern zoomen, klicken oder tippen, um einen Ort zu wählen.",

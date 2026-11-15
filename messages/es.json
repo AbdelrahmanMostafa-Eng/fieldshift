@@ -49,7 +49,10 @@
     "rainUnit": "Milímetros por hora, de la estimación satelital de lluvia IMERG de la NASA.",
     "soilWaterUnit": "Volumen de agua por volumen de suelo en la zona de raíces (modelo MERRA-2).",
     "monthlyNote": "Media mensual: muestra el mes más reciente que la NASA ha publicado, normalmente de hace unos meses, no la fecha de imagen de abajo.",
-    "lagNote": "Diario, con unos {days} días de retraso: las fechas más recientes muestran el último día disponible."
+    "lagNote": "Diario, con unos {days} días de retraso: las fechas más recientes muestran el último día disponible.",
+    "rainShort": "Lluvia",
+    "snow": "Nieve",
+    "sharp": "Vista más cercana: un mosaico Landsat de 30 m, hecho con imágenes de alrededor del año 2000. Los campos, caminos y pueblos pueden haber cambiado desde entonces."
   },
   "globe": {
     "label": "Tierra interactiva. Arrastra para girarla, desplaza o pellizca para acercar, haz clic o toca para elegir un lugar.",

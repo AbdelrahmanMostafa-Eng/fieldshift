@@ -112,9 +112,8 @@ h1, h2, h3 { font-optical-sizing: auto; text-wrap: balance; }
 @layer components {
 
 /* ==== Type roles =============================================================================== */
-/* Small mono caption, the "pencilled margin note" of the notebook. */
-.fs-eyebrow { font-family: var(--font-mono); font-size: 11px; line-height: 1.4; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
-:lang(ar) .fs-eyebrow { font-size: 12px; }
+/* Section label: small, semibold, in ordinary sentence case. Quiet enough to repeat down a long panel. */
+.fs-eyebrow { font-size: 12px; line-height: 1.4; font-weight: 600; letter-spacing: .01em; color: var(--muted); }
 
 /* ==== Controls: one family, 44 px targets, 10 px corners ======================================= */
 .fs-field {
@@ -133,12 +132,9 @@ select.fs-field { padding-inline-end: 8px; }
 }
 .fs-btn:active:not(:disabled) { transform: scale(.97); transition-duration: 60ms; }
 .fs-btn:disabled { opacity: .55; cursor: default; }
-/* The one gold button: a lit top edge and a soft cast shadow, like a pressed brass key. */
-.fs-btn-primary {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 86%, #fff) 0%, var(--gold) 55%, color-mix(in srgb, var(--gold) 92%, #000) 100%); color: var(--gold-ink);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .42), inset 0 -1px 0 rgb(0 0 0 / .14), 0 1px 2px rgb(0 0 0 / .25), 0 8px 18px -8px color-mix(in srgb, var(--gold) 70%, #000);
-}
-.fs-btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), inset 0 -1px 0 rgb(0 0 0 / .14), 0 2px 3px rgb(0 0 0 / .25), 0 14px 24px -10px color-mix(in srgb, var(--gold) 75%, #000); }
+/* The one gold button: flat colour, a hairline of light on top, a short neutral shadow. No glow. */
+.fs-btn-primary { background: var(--gold); color: var(--gold-ink); box-shadow: inset 0 1px 0 rgb(255 255 255 / .3), 0 1px 2px rgb(0 0 0 / .28); }
+.fs-btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--gold) 90%, #fff); }
 .fs-btn-quiet { background: var(--fill); border-color: var(--line); color: var(--ink); font-weight: 500; }
 .fs-btn-quiet:hover:not(:disabled) { border-color: var(--line-strong); background: var(--fill-hover); }
 .fs-btn-icon { width: 44px; padding: 0; flex: none; }
@@ -161,8 +157,7 @@ select.fs-field { padding-inline-end: 8px; }
 /* Once ui/hooks useThumb has measured the choice, one gold thumb slides between the options instead of the fill jumping. */
 .fs-seg::before {
   content: ""; position: absolute; top: 3px; bottom: 3px; left: 0; width: var(--thumb-w, 0); transform: translateX(var(--thumb-x, 0)); border-radius: calc(var(--seg-r) - 3px); opacity: 0; pointer-events: none;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 86%, #fff), var(--gold) 60%, color-mix(in srgb, var(--gold) 93%, #000));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), 0 1px 2px rgb(0 0 0 / .22), 0 4px 10px -4px color-mix(in srgb, var(--gold) 70%, #000);
+  background: var(--gold); box-shadow: inset 0 1px 0 rgb(255 255 255 / .3), 0 1px 2px rgb(0 0 0 / .25);
 }
 .fs-seg[data-thumb]::before { opacity: 1; }
 .fs-seg[data-thumb="live"]::before { transition: transform 520ms var(--spring), width 520ms var(--spring); }
@@ -386,9 +381,10 @@ details[open] > summary .fs-caret { transform: rotate(180deg); }
   .fs-intro-veil { background: linear-gradient(to right, rgb(var(--veil) / .9) 0%, rgb(var(--veil) / .55) 28%, rgb(var(--veil) / 0) 54%); }
   [dir="rtl"] .fs-intro-veil { background: linear-gradient(to left, rgb(var(--veil) / .9) 0%, rgb(var(--veil) / .55) 28%, rgb(var(--veil) / 0) 54%); }
 }
-/* One italic word in the headline. Arabic has no italics, so the emphasis is colour alone. */
-.fs-intro-title em { font-style: italic; color: #e9c26a; }
-:lang(ar) .fs-intro-title em { font-style: normal; }
+/* One italic word in the headline, in the same colour as the rest: emphasis by voice, not by paint. */
+.fs-intro-title em { font-style: italic; }
+/* Scripts without italics carry the emphasis in colour instead. */
+:is(:lang(ar), :lang(fa), :lang(ur), :lang(hi), :lang(bn), :lang(th), :lang(zh)) .fs-intro-title em { font-style: normal; color: #e9c26a; }
 
 /* Place names: plain DOM text placed by src/components/globe/labels.ts, so every script shapes correctly. */
 .fs-labels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; direction: ltr; }
@@ -420,6 +416,6 @@ details[open] > summary .fs-caret { transform: rotate(180deg); }
 .fs-pin-flat { position: absolute; transform: translate(-50%, -50%); pointer-events: none; }
 
 /* Wells inside the island let the glass through. */
-.fs-island .bg-paper { background-color: var(--fill); }
+.fs-island .bg-paper, .fs-pop .bg-paper { background-color: var(--fill); }
 
 @media (prefers-reduced-motion: reduce) { * { animation-duration: .001ms !important; animation-delay: 0ms !important; transition-duration: .001ms !important; } }

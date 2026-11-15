@@ -1,6 +1,7 @@
 import type { ExpressionSpecification, RasterSourceSpecification, SkySpecification, StyleSpecification } from "maplibre-gl";
-import { BASE_LAYER, BLUE_MARBLE, GIBS_CREDIT, TERRAIN, tileUrl, type GibsLayer } from "@/lib/gibs";
+import { BASE_LAYER, BLUE_MARBLE, GIBS_CREDIT, SHARP_LAYER, TERRAIN, type GibsLayer } from "@/lib/gibs";
 import { sunLightPosition } from "./optics";
+import { tilesFor } from "./tiles";
 
 export type Theme = "light" | "dark";
 
@@ -46,8 +47,13 @@ export function skyFor(theme: Theme): SkySpecification {
 
 const TERRAIN_ATTR = `<a href="${TERRAIN.source}" target="_blank" rel="noreferrer">© AWS Terrain Tiles</a>`;
 
-export const rasterSource = (l: GibsLayer, date: string): RasterSourceSpecification => ({
-  type: "raster", tiles: [tileUrl(l, date)], tileSize: 256, maxzoom: l.maxZoom, attribution: GIBS_CREDIT,
+/**
+ * `crisp`: on screens with two or more device pixels per CSS pixel, a 256 px tile drawn at 256 CSS px is stretched
+ * to twice its size and looks soft. Declaring the tiles as 128 px makes MapLibre fetch one level deeper, so
+ * picture pixels and screen pixels line up again. Only used for the base imagery, where sharpness is the point.
+ */
+export const rasterSource = (l: GibsLayer, date: string, crisp = false): RasterSourceSpecification => ({
+  type: "raster", tiles: tilesFor(l, date), tileSize: crisp ? 128 : 256, maxzoom: l.maxZoom, attribution: GIBS_CREDIT,
 });
 
 const demSource = () => ({
@@ -55,7 +61,26 @@ const demSource = () => ({
 });
 
 /** Layer ids, bottom to top. Overlays are inserted just below `hillshade`. */
-export const LAYER = { ground: "ground", blueMarble: "bluemarble", daily: "viirs", hillshade: "hillshade" } as const;
+export const LAYER = { ground: "ground", blueMarble: "bluemarble", daily: "viirs", sharp: "landsat", hillshade: "hillshade" } as const;
+/** The three imagery layers, widest view first. */
+export const IMAGERY = [LAYER.blueMarble, LAYER.daily, LAYER.sharp] as const;
+/** The 30 m mosaic fades in over this zoom range, where the 250 m daily image starts to look soft. */
+export const SHARP_FROM_ZOOM = 6.8, SHARP_FULL_ZOOM = 7.8;
+
+/**
+ * Colour of the imagery. Normally the wide view is toned down a little (a planet seen through air) and the close view
+ * is left alone, since colour is information there. Under a data layer the imagery goes nearly grey and a bit darker,
+ * so the data's colours are the only colours on the map and match their legend.
+ */
+export function imageryTone(layer: (typeof IMAGERY)[number], underData: boolean): { saturation: ExpressionSpecification | number; contrast: ExpressionSpecification | number; brightness: number } {
+  if (underData) return { saturation: -0.82, contrast: -0.08, brightness: 0.78 };
+  if (layer !== LAYER.blueMarble) return { saturation: 0, contrast: 0, brightness: 1 };
+  return {
+    saturation: ["interpolate", ["linear"], ["zoom"], 2.5, -0.1, 4.5, 0],
+    contrast: ["interpolate", ["linear"], ["zoom"], 2.5, 0.04, 4.5, 0],
+    brightness: 1,
+  };
+}
 export const overlayId = (l: GibsLayer) => `ov-${l.key}`;
 /** Hillshade starts here, so the wide view downloads no elevation tiles at all. */
 export const RELIEF_MIN_ZOOM = 4.5;
@@ -64,14 +89,16 @@ export const TERRAIN_ON_ZOOM = 5.2;
 export const TERRAIN_OFF_ZOOM = 4.8;
 export const TERRAIN_EXAGGERATION = 1.3;
 
-export function buildStyle(date: string, theme: Theme): StyleSpecification {
+export function buildStyle(date: string, theme: Theme, crisp = false): StyleSpecification {
+  const wide = imageryTone(LAYER.blueMarble, false);
   return {
     version: 8,
     state: { [FLAT_STATE]: { default: 0 } },
     projection: { type: ["interpolate", ["linear"], ["global-state", FLAT_STATE], 0, "vertical-perspective", 1, "mercator"] },
     sources: {
-      bluemarble: rasterSource(BLUE_MARBLE, date),
-      viirs: rasterSource(BASE_LAYER, date),
+      bluemarble: rasterSource(BLUE_MARBLE, date, crisp),
+      viirs: rasterSource(BASE_LAYER, date, crisp),
+      landsat: rasterSource(SHARP_LAYER, date, crisp),
       // Same tiles twice: MapLibre wants separate sources for hillshade and for 3D terrain.
       "dem-hill": demSource(),
       "dem-terrain": demSource(),
@@ -81,19 +108,18 @@ export function buildStyle(date: string, theme: Theme): StyleSpecification {
       // This fill only colours the sphere itself while imagery is still loading.
       { id: LAYER.ground, type: "background", paint: { "background-color": PALETTE[theme].ground } },
       {
-        // The composite is a touch too vivid for a planet seen through air: slightly less colour, slightly more depth.
-        // Back to the untouched picture by field scale, where colour is information.
         id: LAYER.blueMarble, type: "raster", source: "bluemarble",
-        paint: {
-          "raster-fade-duration": 350,
-          "raster-saturation": ["interpolate", ["linear"], ["zoom"], 2.5, -0.1, 4.5, 0],
-          "raster-contrast": ["interpolate", ["linear"], ["zoom"], 2.5, 0.04, 4.5, 0],
-        },
+        paint: { "raster-fade-duration": 350, "raster-saturation": wide.saturation, "raster-contrast": wide.contrast },
       },
       {
         // Daily imagery has clouds and swath gaps, so it only fades in once the user moves closer.
         id: LAYER.daily, type: "raster", source: "viirs", minzoom: 2.4,
         paint: { "raster-opacity": ["interpolate", ["linear"], ["zoom"], 2.4, 0, 3.6, 1], "raster-fade-duration": 350 },
+      },
+      {
+        // Field scale: the 30 m mosaic takes over from the 250 m daily image, which stays underneath for any gap.
+        id: LAYER.sharp, type: "raster", source: "landsat", minzoom: SHARP_FROM_ZOOM,
+        paint: { "raster-opacity": ["interpolate", ["linear"], ["zoom"], SHARP_FROM_ZOOM, 0, SHARP_FULL_ZOOM, 1], "raster-fade-duration": 350 },
       },
       {
         id: LAYER.hillshade, type: "hillshade", source: "dem-hill", minzoom: RELIEF_MIN_ZOOM,

@@ -49,7 +49,10 @@
     "rainUnit": "Milimita kwa saa, kutoka makadirio ya mvua ya setilaiti ya NASA (IMERG).",
     "soilWaterUnit": "Ujazo wa maji kwa ujazo wa udongo katika eneo la mizizi (modeli ya MERRA-2).",
     "monthlyNote": "Wastani wa mwezi: inaonyesha mwezi wa karibuni zaidi uliotolewa na NASA, kwa kawaida miezi michache iliyopita, si tarehe ya picha hapa chini.",
-    "lagNote": "Kila siku, nyuma kwa takriban siku {days}: tarehe za karibuni zinaonyesha siku ya mwisho iliyopo."
+    "lagNote": "Kila siku, nyuma kwa takriban siku {days}: tarehe za karibuni zinaonyesha siku ya mwisho iliyopo.",
+    "rainShort": "Mvua",
+    "snow": "Theluji",
+    "sharp": "Mwonekano wa karibu zaidi: picha ya Landsat ya mita 30, iliyotengenezwa kwa picha za karibu mwaka 2000. Mashamba, barabara na miji huenda vimebadilika tangu hapo."
   },
   "globe": {
     "label": "Dunia shirikishi. Buruta kuizungusha, sogeza au bana kukuza, bofya au gusa kuchagua mahali.",
