@@ -49,7 +49,10 @@
     "rainUnit": "Saatte milimetre, NASA'nın IMERG uydu yağış tahmininden.",
     "soilWaterUnit": "Kök bölgesinde toprak hacmi başına su hacmi (MERRA-2 modeli).",
     "monthlyNote": "Aylık ortalama: NASA'nın yayımladığı en yeni ayı gösterir, genellikle birkaç ay öncesidir; aşağıdaki görüntü tarihini değil.",
-    "lagNote": "Günlük, yaklaşık {days} gün geriden gelir: en yeni tarihler mevcut son günü gösterir."
+    "lagNote": "Günlük, yaklaşık {days} gün geriden gelir: en yeni tarihler mevcut son günü gösterir.",
+    "rainShort": "Yağmur",
+    "snow": "Kar",
+    "sharp": "En yakın görünüm: 2000 yılı dolaylarındaki görüntülerden yapılmış 30 m çözünürlüklü Landsat mozaiği. Tarlalar, yollar ve yerleşimler o zamandan beri değişmiş olabilir."
   },
   "globe": {
     "label": "Etkileşimli Dünya. Döndürmek için sürükleyin, yakınlaştırmak için kaydırın ya da iki parmakla sıkıştırın, bir yer seçmek için tıklayın ya da dokunun.",

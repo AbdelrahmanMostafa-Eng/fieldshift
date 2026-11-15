@@ -49,7 +49,10 @@
     "rainUnit": "Millimètres par heure, d'après l'estimation satellitaire des pluies IMERG de la NASA.",
     "soilWaterUnit": "Volume d'eau par volume de sol dans la zone racinaire (modèle MERRA-2).",
     "monthlyNote": "Moyenne mensuelle : elle montre le mois le plus récent publié par la NASA, en général il y a quelques mois, et non la date d'image ci-dessous.",
-    "lagNote": "Quotidien, avec environ {days} jours de retard : les dates les plus récentes montrent le dernier jour disponible."
+    "lagNote": "Quotidien, avec environ {days} jours de retard : les dates les plus récentes montrent le dernier jour disponible.",
+    "rainShort": "Pluie",
+    "snow": "Neige",
+    "sharp": "Vue la plus proche : une mosaïque Landsat à 30 m, faite d'images des années 2000 environ. Les champs, les routes et les villes ont pu changer depuis."
   },
   "globe": {
     "label": "Terre interactive. Faites glisser pour la tourner, défilez ou pincez pour zoomer, cliquez ou touchez pour choisir un lieu.",

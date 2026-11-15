@@ -49,7 +49,10 @@
     "rainUnit": "Milimeter per jam, dari perkiraan hujan satelit IMERG milik NASA.",
     "soilWaterUnit": "Volume air per volume tanah di zona akar (model MERRA-2).",
     "monthlyNote": "Rata-rata bulanan: menampilkan bulan terbaru yang diterbitkan NASA, biasanya beberapa bulan lalu, bukan tanggal citra di bawah.",
-    "lagNote": "Harian, terlambat sekitar {days} hari: tanggal terbaru menampilkan hari terakhir yang tersedia."
+    "lagNote": "Harian, terlambat sekitar {days} hari: tanggal terbaru menampilkan hari terakhir yang tersedia.",
+    "rainShort": "Hujan",
+    "snow": "Salju",
+    "sharp": "Tampilan terdekat: mosaik Landsat 30 m dari citra sekitar tahun 2000. Ladang, jalan, dan kota mungkin sudah berubah sejak itu."
   },
   "globe": {
     "label": "Bumi interaktif. Seret untuk memutar, gulir atau cubit untuk memperbesar, klik atau ketuk untuk memilih tempat.",

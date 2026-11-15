@@ -2,7 +2,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CROP_BY_ID, CROPS, hasEconomics } from "@/data/crops";
-import { BASE_LAYER, GIBS_CREDIT, OVERLAYS, gibsDate } from "@/lib/gibs";
+import { BASE_LAYER, GIBS_CREDIT, OVERLAYS, SHARP_LAYER, gibsDate } from "@/lib/gibs";
 import { dirFor } from "@/i18n/config";
 import { formatMoney, fromUsd, listCurrencies, type Rates } from "@/lib/roi";
 import { MAX_SEASONS, recommend, weightsFrom, type Importance } from "@/lib/rotation/engine";
@@ -237,7 +237,12 @@ export function AppShell() {
     return wide ? { top: headerPx, bottom: 0, start: PANEL_WIDTH + ISLAND_GAP, end: 0 } : { top: headerPx, bottom: sheetPx, start: 0, end: 0 };
   }, [intro, wide, view.w, view.h, headerPx, sheetPx, introTextPx]);
   const activeOverlays = useMemo(() => OVERLAYS.filter((o) => overlays[o.id]?.on).map((o) => ({ layer: o, opacity: overlays[o.id].opacity })), [overlays]);
-  const changeOverlay = useCallback((id: string, patch: Partial<{ on: boolean; opacity: number }>) => setOverlays((s) => ({ ...s, [id]: { ...s[id], ...patch } })), []);
+  // One data layer at a time: two colour scales on top of each other cannot be read against either legend.
+  const changeOverlay = useCallback((id: string, patch: Partial<{ on: boolean; opacity: number }>) => setOverlays((s) => {
+    const next = { ...s, [id]: { ...s[id], ...patch } };
+    if (patch.on) for (const k of Object.keys(next)) if (k !== id && next[k].on) next[k] = { ...next[k], on: false };
+    return next;
+  }), []);
   const stopSpin = useCallback(() => setSpin(false), []);
   const globeUnsupported = useCallback(() => setNoGlobe(true), []);
 
@@ -414,7 +419,7 @@ export function AppShell() {
             </div>
             </div>
             <footer className="mt-6 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
-              <p>{t("footer.credit")} {GIBS_CREDIT}. {BASE_LAYER.label}.</p>
+              <p>{t("footer.credit")} {GIBS_CREDIT}. {BASE_LAYER.label}. {SHARP_LAYER.label}.</p>
               <p className="mt-1">{t("footer.crops")}</p>
               <p className="mt-1">{t("footer.terrain")} {t("footer.places")}</p>
               <p className="mt-1">{t("footer.weather")}</p>

@@ -49,7 +49,10 @@
     "rainUnit": "Millimetres per hour, from NASA's IMERG satellite rain estimate.",
     "soilWaterUnit": "Volume of water per volume of soil in the root zone (MERRA-2 model).",
     "monthlyNote": "Monthly mean: it shows the newest month NASA has published, usually a few months back, not the image date below.",
-    "lagNote": "Daily, about {days} days behind: the newest dates show the latest day available."
+    "lagNote": "Daily, about {days} days behind: the newest dates show the latest day available.",
+    "rainShort": "Rain",
+    "snow": "Snow",
+    "sharp": "Closest view: a Landsat mosaic at 30 m, made from images of around the year 2000. Fields, roads and towns may have changed since."
   },
   "globe": {
     "label": "Interactive Earth. Drag to turn it, scroll or pinch to zoom, click or tap to choose a place.",

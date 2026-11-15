@@ -49,7 +49,10 @@
     "rainUnit": "Milimét mỗi giờ, theo ước tính mưa vệ tinh IMERG của NASA.",
     "soilWaterUnit": "Thể tích nước trên thể tích đất ở vùng rễ (mô hình MERRA-2).",
     "monthlyNote": "Trung bình tháng: hiển thị tháng mới nhất NASA đã công bố, thường cách đây vài tháng, không phải ngày ảnh bên dưới.",
-    "lagNote": "Hằng ngày, chậm khoảng {days} ngày: các ngày mới nhất hiển thị ngày có sẵn gần nhất."
+    "lagNote": "Hằng ngày, chậm khoảng {days} ngày: các ngày mới nhất hiển thị ngày có sẵn gần nhất.",
+    "rainShort": "Mưa",
+    "snow": "Tuyết",
+    "sharp": "Góc nhìn gần nhất: ảnh ghép Landsat 30 m, làm từ ảnh chụp khoảng năm 2000. Ruộng đồng, đường sá và thị trấn có thể đã thay đổi từ đó."
   },
   "globe": {
     "label": "Trái Đất tương tác. Kéo để xoay, cuộn hoặc chụm ngón tay để phóng to, nhấp hoặc chạm để chọn địa điểm.",

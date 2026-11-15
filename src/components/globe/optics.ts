@@ -38,10 +38,10 @@ const MAX_PITCH = 25;     // the limb is no longer a circle once the camera tilt
 
 interface Look { night: number; shade: [number, number, number]; haze: [number, number, number]; hazeAmount: number; air: [number, number, number]; airAmount: number; glint: number }
 const LOOK: Record<Theme, Look> = {
-  // deep night: a real shadow side, thin cold air
-  dark: { night: 0.8, shade: [3, 6, 14], haze: [150, 196, 255], hazeAmount: 0.5, air: [118, 176, 255], airAmount: 0.5, glint: 0.13 },
+  // deep night: a real shadow side, but never so dark that the land under it cannot be read or picked
+  dark: { night: 0.64, shade: [3, 6, 14], haze: [150, 196, 255], hazeAmount: 0.5, air: [118, 176, 255], airAmount: 0.5, glint: 0.13 },
   // blue hour: a gentler shadow so the whole disc stays readable, fuller pale air
-  light: { night: 0.62, shade: [10, 20, 38], haze: [196, 224, 255], hazeAmount: 0.56, air: [176, 214, 255], airAmount: 0.6, glint: 0.1 },
+  light: { night: 0.5, shade: [10, 20, 38], haze: [196, 224, 255], hazeAmount: 0.56, air: [176, 214, 255], airAmount: 0.6, glint: 0.1 },
 };
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);

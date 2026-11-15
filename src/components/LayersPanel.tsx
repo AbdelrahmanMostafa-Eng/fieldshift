@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { DATE_RANGE_DAYS, OVERLAYS, gibsDate, kelvinToCelsius, legendGradient, type GibsLayer } from "@/lib/gibs";
+import { DATE_RANGE_DAYS, OVERLAYS, gibsDate, kelvinToCelsius, legendGradient, legendMid, type GibsLayer } from "@/lib/gibs";
 import { Icon } from "./ui/Icon";
 import { Range } from "./ui/Range";
 import { useDismiss } from "./ui/hooks";
@@ -38,10 +38,21 @@ function Legend({ layer, rtl }: { layer: GibsLayer; rtl: boolean }) {
     : layer.key === "ndvi" ? t("ndviUnit")
     : t(`${layer.key as "wind" | "humidity" | "rain" | "soilWater"}Unit`);
   const note = layer.cadence === "rolling8" ? t("ndviNote") : layer.cadence === "monthly" ? t("monthlyNote") : layer.lagDays ? t("lagNote", { days: layer.lagDays }) : "";
+  const toward = rtl ? "to left" : "to right";
+  const bar = (stops: string[]) => <div className="h-2 flex-1 rounded-full shadow-[inset_0_0_0_1px_var(--line-strong)]" style={{ background: legendGradient({ ...legend, stops }, toward) }} />;
   return (
     <div className="mt-1">
-      <div className="h-2 rounded-full border border-line" style={{ background: legendGradient(legend, rtl ? "to left" : "to right") }} />
-      <div className="mt-1 flex justify-between font-mono text-[11px] text-muted"><span dir="ltr">{fmt(legend.min)}</span><span dir="ltr">{fmt(legend.max)}</span></div>
+      {legend.second ? (
+        // Two ramps over one range (rain and snow): each bar is named, the numbers below serve both.
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2"><span className="w-12 shrink-0 text-[11px] text-muted">{t(layer.key === "rain" ? "rainShort" : layer.key)}</span>{bar(legend.stops)}</div>
+          <div className="flex items-center gap-2"><span className="w-12 shrink-0 text-[11px] text-muted">{t(legend.second.key)}</span>{bar(legend.second.stops)}</div>
+        </div>
+      ) : <div className="flex">{bar(legend.stops)}</div>}
+      {/* Start, middle and end of the bar. The middle is what makes a logarithmic scale readable. */}
+      <div className={`mt-1 grid grid-cols-3 font-mono text-[11px] text-muted ${legend.second ? "ps-14" : ""}`}>
+        <span dir="ltr" className="text-start">{fmt(legend.min)}</span><span dir="ltr" className="text-center">{fmt(legendMid(legend))}</span><span dir="ltr" className="text-end">{fmt(legend.max)}</span>
+      </div>
       <p className="mt-0.5 text-[11px] leading-snug text-muted">{unitText}{note ? ` ${note}` : ""}</p>
     </div>
   );
@@ -110,6 +121,7 @@ export function LayersPanel({ state, onChange, daysBack, onDaysBack, rtl, onOpen
             </label>
             <p className="text-[11px] leading-snug text-muted">{t("dateHint", { days: DATE_RANGE_DAYS })}</p>
             <p className="mt-1 text-[11px] leading-snug text-muted">{t("base")}</p>
+            <p className="mt-1 text-[11px] leading-snug text-muted">{t("sharp")}</p>
           </div>
         </div>
       )}

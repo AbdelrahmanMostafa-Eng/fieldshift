@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { GeoJSONSource, Map as MlMap, Marker, PaddingOptions } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { BASE_LAYER, OVERLAYS, tileUrl, type GibsLayer } from "@/lib/gibs";
+import { BASE_LAYER, OVERLAYS, type GibsLayer } from "@/lib/gibs";
 import { easeOutCubic, wrapLon, zoomForGlobeDiameter } from "@/lib/geo";
 import type { Box, zonesGeoJson } from "@/lib/zones";
 import { FlatFallback } from "./globe/FlatFallback";
@@ -11,9 +11,10 @@ import { LabelLayer } from "./globe/labels";
 import { GlobeOptics } from "./globe/optics";
 import { StarField, type StarFieldHandle } from "./globe/StarField";
 import {
-  FLAT_STATE, LAYER, PALETTE, TERRAIN_EXAGGERATION, TERRAIN_OFF_ZOOM, TERRAIN_ON_ZOOM,
-  buildStyle, overlayId, rasterSource, skyFor, type Theme,
+  FLAT_STATE, IMAGERY, LAYER, PALETTE, TERRAIN_EXAGGERATION, TERRAIN_OFF_ZOOM, TERRAIN_ON_ZOOM,
+  buildStyle, imageryTone, overlayId, rasterSource, skyFor, type Theme,
 } from "./globe/style";
+import { registerTileProtocol, tilesFor } from "./globe/tiles";
 import { useTheme } from "./globe/useTheme";
 
 export interface GlobeInset { top: number; bottom: number; start: number; end: number }
@@ -48,7 +49,7 @@ const SPIN_DEG_PER_MS = 0.002;   // 2 degrees per second
 const DOLLY_MS = 4000;           // gentle move-in at the start
 const DOLLY_ZOOM = 0.55;         // how much farther away the intro starts
 const GLOBE_FILL = 0.84;         // share of the free space the globe fills
-const PICK_ZOOM = 8;             // closest view the daily imagery still supports sharply
+const PICK_ZOOM = 9.6;           // field scale: about 150 km across on a laptop, drawn from the 30 m mosaic
 const PICK_PITCH = 38;           // where 3D terrain runs, a picked place is seen at an angle, so hills read as hills
 const STARS_MAX_ZOOM = 4;         // above this the planet covers the whole view
 const FLY_MS = 2500;
@@ -61,15 +62,20 @@ const ZONE_COLOURS = { good: "#3f9d4a", possible: "#e3b23c", poor: "#c8483a" } a
 const HOME_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
   + '<path d="M3 10a7 7 0 1 0 2.05-4.95L3 7.1"/><path d="M3 3.2v3.9h3.9"/>'
   + '<circle cx="10" cy="10" r="3.4"/><ellipse cx="10" cy="10" rx="1.4" ry="3.4"/><path d="M6.6 10h6.8"/></svg>';
-const MIN_ZOOM = 0.4, MAX_ZOOM = 10.5;
+const MIN_ZOOM = 0.4, MAX_ZOOM = 12;  // 12 is where the 30 m mosaic runs out of detail
+const FLAT_MIN_ZOOM = 0.9;       // the flat map never shrinks to a stamp
 
 const toPadding = (i: GlobeInset, rtl: boolean): PaddingOptions => ({ top: i.top, bottom: i.bottom, left: rtl ? i.end : i.start, right: rtl ? i.start : i.end });
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/** Zoom at which the globe fills the free part of the container. */
-function fitZoom(el: HTMLElement, pad: PaddingOptions, lat: number): number {
+/**
+ * Zoom at which the whole Earth fills the free part of the container:
+ * the sphere's diameter on the globe, the full width of the world on the flat map (512 px wide at zoom 0).
+ */
+function fitZoom(el: HTMLElement, pad: PaddingOptions, lat: number, flat = false): number {
   const w = el.clientWidth - (pad.left ?? 0) - (pad.right ?? 0), h = el.clientHeight - (pad.top ?? 0) - (pad.bottom ?? 0);
+  if (flat) return Math.max(FLAT_MIN_ZOOM, Math.min(3, Math.log2(Math.max(240, Math.min(w, h * 1.6)) / 512)));
   const z = zoomForGlobeDiameter(Math.max(180, Math.min(w, h) * GLOBE_FILL), lat);
   return Math.max(MIN_ZOOM, Math.min(3, z));
 }
@@ -156,6 +162,9 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
         // scripts/copy-maplibre-worker.mjs puts a copy in public/ before dev and build.
         ml.setWorkerUrl(`/maplibre-gl-worker.mjs?v=${ml.getVersion()}`);
         lib.current = ml;
+        registerTileProtocol(ml);
+        // Two or more device pixels per CSS pixel: fetch imagery one level deeper so it is not stretched (see globe/style.ts).
+        const crisp = (window.devicePixelRatio || 1) >= 1.5;
 
         const pad = toPadding(live.current.inset, live.current.rtl);
         const target = fitZoom(el.current, pad, START.lat);
@@ -165,7 +174,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
 
         m = new ml.Map({
           container: el.current,
-          style: buildStyle(live.current.date, live.current.theme),
+          style: buildStyle(live.current.date, live.current.theme, crisp),
           center: [START.lon, START.lat],
           zoom: dolly.current.from,
           minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM, maxPitch: 70,
@@ -204,7 +213,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
           flight.current = null;
           autoFit.current = true; // from here on the globe keeps fitting the free space again
           mm.stop();
-          mm.flyTo({ center: [c.lon, c.lat], zoom: fitZoom(box, pad, c.lat), bearing: 0, pitch: 0, padding: pad, curve: 1.2, easing: easeInOut, duration: prefersReducedMotion() ? 0 : HOME_MS, essential: true });
+          mm.flyTo({ center: [c.lon, flatness.current >= 0.5 ? 0 : c.lat], zoom: fitZoom(box, pad, c.lat, flatness.current >= 0.5), bearing: 0, pitch: 0, padding: pad, curve: 1.2, easing: easeInOut, duration: prefersReducedMotion() ? 0 : HOME_MS, essential: true });
         });
         homeBox.appendChild(homeBtn);
         m.addControl({ onAdd: () => homeBox, onRemove: () => homeBox.remove() }, corner);
@@ -301,6 +310,10 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
       if (optics.current) optics.current.flatness = f;
     };
     if (from === to) return;
+    // The flat map is a map: seen from straight above, north up, and never smaller than a readable world.
+    // The globe gets its full zoom range back.
+    m.setMinZoom(to ? FLAT_MIN_ZOOM : MIN_ZOOM);
+    if (to && (m.getPitch() !== 0 || m.getBearing() !== 0)) { flight.current = null; m.easeTo({ pitch: 0, bearing: 0, duration: prefersReducedMotion() ? 0 : FLATTEN_MS, essential: true }); }
     if (prefersReducedMotion()) { apply(to); return; }
     const t0 = performance.now();
     let raf = requestAnimationFrame(function step(now) {
@@ -332,6 +345,13 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
       else { m.setLayoutProperty(id, "visibility", "visible"); m.setPaintProperty(id, "raster-opacity", on.opacity); }
     }
     if (m.getLayer(ZONES.layer)) m.moveLayer(ZONES.layer, LAYER.hillshade); // zones stay above any satellite layer
+    // Under a data layer the photograph steps back to near grey, so the data's colours read true against the legend.
+    for (const id of IMAGERY) {
+      const tone = imageryTone(id, overlays.length > 0);
+      m.setPaintProperty(id, "raster-saturation", tone.saturation);
+      m.setPaintProperty(id, "raster-contrast", tone.contrast);
+      m.setPaintProperty(id, "raster-brightness-max", tone.brightness);
+    }
   }, [overlays, ready]);
 
   // ---- crop suitability zones: coloured grid squares, framed once per crop and place ---------------------
@@ -365,7 +385,12 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
   useEffect(() => {
     const m = map.current;
     if (!ready || !m) return;
-    const retile = (id: string, l: GibsLayer) => (m.getSource(id) as unknown as { setTiles(t: string[]): void } | undefined)?.setTiles([tileUrl(l, date)]);
+    // Only sources whose address really changes are reloaded: monthly maps and lagging layers keep theirs across many dates.
+    const retile = (id: string, l: GibsLayer) => {
+      const src = m.getSource(id) as unknown as { tiles?: string[]; setTiles(t: string[]): void } | undefined;
+      const next = tilesFor(l, date);
+      if (src && src.tiles?.[0] !== next[0]) src.setTiles(next);
+    };
     retile(LAYER.daily, BASE_LAYER);
     for (const l of OVERLAYS) retile(overlayId(l), l);
   }, [date, ready]);
@@ -413,7 +438,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
       if (!dolly.current.t0) dolly.current.from = dolly.current.to - DOLLY_ZOOM;
     } else {
       // Until the user has moved the globe themselves, keep it sized to the free space (panel opened, sheet dragged, window resized).
-      const zoom = autoFit.current ? { zoom: fitZoom(box, pad, m.getCenter().lat) } : {};
+      const zoom = autoFit.current ? { zoom: fitZoom(box, pad, m.getCenter().lat, flatness.current >= 0.5) } : {};
       m.easeTo({ padding: pad, ...zoom, duration: reduce ? 0 : 600, essential: true });
     }
   }, [marker, top, bottom, start, end, rtl, ready]);
