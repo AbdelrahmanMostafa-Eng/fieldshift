@@ -45,6 +45,8 @@ const DOLLY_MS = 4000;           // gentle move-in at the start
 const DOLLY_ZOOM = 0.55;         // how much farther away the intro starts
 const GLOBE_FILL = 0.84;         // share of the free space the globe fills
 const PICK_ZOOM = 8;             // closest view the daily imagery still supports sharply
+const PICK_PITCH = 38;           // where 3D terrain runs, a picked place is seen at an angle, so hills read as hills
+const STARS_MAX_ZOOM = 4;         // above this the planet covers the whole view
 const FLY_MS = 2500;
 const FLATTEN_MS = 900;
 const HOME_MS = 1800;
@@ -100,7 +102,8 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
   const flatness = useRef(0);                 // 0 = globe, 1 = flat map, in between while animating
   const lastMarker = useRef<GlobeProps["marker"]>(null);
   const dolly = useRef({ from: 0, to: 0, t0: 0 });
-  const flight = useRef<{ lon: number; lat: number; zoom: number; end: number } | null>(null);
+  const flight = useRef<{ lon: number; lat: number; zoom: number; pitch: number; end: number } | null>(null);
+  const relief = useRef(false);               // true where the device draws 3D terrain
   const lib = useRef<typeof import("maplibre-gl") | null>(null);
   const autoFit = useRef(true);               // true until the user moves the globe or picks a place
   const restartSpin = useRef<() => void>(() => {});
@@ -220,6 +223,7 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
 
         // 3D terrain only from field-ish zooms, and only where it is likely to stay smooth.
         const capable = finePointer && window.innerWidth >= 768 && (navigator.hardwareConcurrency ?? 4) >= 4;
+        relief.current = capable;
         let terrainOn = false;
         const syncTerrain = () => {
           if (!m || !capable) return;
@@ -229,7 +233,8 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
         };
         m.on("zoom", syncTerrain);
         // The sky behind turns with the camera, a little, which is what gives the scene its depth.
-        m.on("move", () => { if (m) { const c = m.getCenter(); stars.current?.turn(c.lng + m.getBearing(), c.lat); } });
+        // Skipped once the planet fills the view and no sky is left to see.
+        m.on("move", () => { if (m && m.getZoom() < STARS_MAX_ZOOM) { const c = m.getCenter(); stars.current?.turn(c.lng + m.getBearing(), c.lat); } });
 
         m.once("load", async () => {
           if (cancelled || !m || !el.current) return;
@@ -355,15 +360,17 @@ export function Globe({ projection, spin, marker, overlays, date, locale, rtl, i
         // opacityWhenCovered also hides the pin when it is on the far side of the globe
         pin.current = new ml.Marker({ element: holder, anchor: "center", opacityWhenCovered: "0" }).setLngLat([marker.lon, marker.lat]).addTo(m);
         const zoom = Math.max(PICK_ZOOM, m.getZoom());
-        flight.current = { lon: marker.lon, lat: marker.lat, zoom, end: performance.now() + (reduce ? 0 : FLY_MS) };
-        m.flyTo({ center: [marker.lon, marker.lat], zoom, padding: pad, duration: reduce ? 0 : FLY_MS, curve: 1.3, easing: easeInOut, essential: true });
+        // Never flatten a view the user has already tilted further themselves.
+        const pitch = flatness.current < 0.5 && relief.current ? Math.max(PICK_PITCH, m.getPitch()) : m.getPitch();
+        flight.current = { lon: marker.lon, lat: marker.lat, zoom, pitch, end: performance.now() + (reduce ? 0 : FLY_MS) };
+        m.flyTo({ center: [marker.lon, marker.lat], zoom, pitch, padding: pad, duration: reduce ? 0 : FLY_MS, curve: 1.3, easing: easeInOut, essential: true });
         return;
       }
     }
     const f = flight.current;
     if (f && performance.now() < f.end - 60) {
       // The layout changed while flying to a picked place (the panel opened): keep flying, with the new framing.
-      m.flyTo({ center: [f.lon, f.lat], zoom: f.zoom, padding: pad, duration: f.end - performance.now(), curve: 1.3, easing: easeOutCubic, essential: true });
+      m.flyTo({ center: [f.lon, f.lat], zoom: f.zoom, pitch: f.pitch, padding: pad, duration: f.end - performance.now(), curve: 1.3, easing: easeOutCubic, essential: true });
     } else if (live.current.spin && !reduce) {
       // Still in the intro: re-frame without fighting the spin loop.
       m.setPadding(pad);

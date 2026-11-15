@@ -83,7 +83,7 @@ function paint(canvas: HTMLCanvasElement, look: Look) {
         const rad = Math.sqrt(rr), t = rad - 1;
         const facing = sunXY > 0 ? (x * lx + y * ly) / (rad * sunXY) : 0; // 1 on the sunward side of the rim, -1 opposite
         // Night reaches a hair past the edge, so the air MapLibre draws there does not glow on the dark side.
-        over(look.shade, (1 - smooth(-0.2, 0.42, facing * sunXY)) * look.night * Math.exp(-t / 0.014));
+        over(look.shade, (1 - smooth(-0.2, 0.42, facing * sunXY)) * Math.max(look.night, 0.9) * Math.exp(-t / 0.016));
         const lit = 0.1 + 0.9 * smooth(-0.6, 0.75, facing);
         over(look.air, (Math.exp(-t / 0.011) * 0.6 + Math.exp(-t / 0.06) * 0.16) * look.airAmount * lit * smooth(MARGIN - 1, (MARGIN - 1) * 0.6, t));
       }

@@ -20,7 +20,7 @@ export const PALETTE: Record<Theme, {
     sky: { "sky-color": "#06101c", "horizon-color": "#4f97a6", "fog-color": "#14283a", "sky-horizon-blend": 0.75, "horizon-fog-blend": 0.55, "fog-ground-blend": 0.35 },
   },
   light: {
-    ground: "#12293b", atmosphere: 0.95, stars: 0.6,
+    ground: "#12293b", atmosphere: 0.86, stars: 0.6,
     sky: { "sky-color": "#3f7fb5", "horizon-color": "#cfe6ea", "fog-color": "#dbe8ea", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.7, "fog-ground-blend": 0.25 },
   },
 };

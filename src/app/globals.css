@@ -20,7 +20,7 @@
   --spring: linear(0, .11 4%, .38 10%, .66 17%, .87 25%, .99 33%, 1.035 41%, 1.04 49%, 1.025 59%, 1.008 71%, 1 86%, 1);
   --grain-blend: multiply; --grain-opacity: .04;
   /* Glass: a tinted, blurred pane. --glass-a is the pane that carries reading text, --glass-thin-a the small controls over the globe. */
-  --glass-rgb: 250 246 238; --glass-a: .82; --glass-thin-a: .66; --glass-bright: 1.04; --glass-glare: rgb(255 255 255 / .55);
+  --glass-rgb: 251 247 240; --glass-a: .9; --glass-thin-a: .8; --glass-bright: 1.08; --glass-glare: rgb(255 255 255 / .55);
   --rim-hi: rgb(255 255 255 / .95); --rim-lo: rgb(255 255 255 / .34); --rim-shade: rgb(70 50 16 / .16); --sheen: rgb(255 255 255 / .95);
   --fill: rgb(255 255 255 / .56); --fill-hover: rgb(255 255 255 / .82);
   --shadow-float: 0 1px 1px rgb(40 28 8 / .08), 0 10px 24px -8px rgb(40 28 8 / .2), 0 36px 80px -28px rgb(16 12 4 / .5);
@@ -28,6 +28,8 @@
   --dir: 1;
 }
 [dir="rtl"] { --dir: -1; }
+/* Browsers without linear() easing get a plain curve with a small overshoot instead of no motion at all. */
+@supports not (transition-timing-function: linear(0, 1)) { :root { --spring: cubic-bezier(.2, .9, .25, 1.06); } }
 :root[data-theme="dark"] {
   --paper: #0e0d0b; --surface: #17150f; --raised: #1f1c14; --ink: #f1ece0; --muted: #a59e8e;
   --line: rgb(255 240 210 / .1); --line-strong: rgb(255 240 210 / .2); --gold: #d8a63f; --gold-ink: #14110a; --gold-text: #e3b95c;
@@ -336,6 +338,9 @@ details[open] > summary .fs-caret { transform: rotate(180deg); }
 .fs-space { background: radial-gradient(120% 90% at 50% 40%, var(--space-near) 0%, var(--space-far) 72%); }
 .fs-globe .maplibregl-map { background: transparent; font-family: inherit; }
 .fs-globe .maplibregl-canvas { outline: none; }
+/* The planet comes up out of the dark once its first frame is ready, instead of popping in. */
+.fs-globe .maplibregl-canvas-container, .fs-globe .fs-labels { opacity: 0; transition: opacity 1100ms var(--ease); }
+.fs-globe[data-ready="true"] .maplibregl-canvas-container, .fs-globe[data-ready="true"] .fs-labels { opacity: 1; }
 /* Sunlight on the sphere (globe/optics.ts): one small canvas, moved and scaled with the camera. */
 .fs-optics { position: absolute; top: 0; left: 0; transform-origin: 50% 50%; pointer-events: none; opacity: 0; will-change: transform, opacity; }
 .fs-globe .maplibregl-canvas:focus-visible { outline: 2px solid var(--gold); outline-offset: -4px; }
